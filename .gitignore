@@ -41,4 +41,4 @@ include/
 lib/
 
 # Ignore .DS_Store
-.DS_Store
+**/.DS_Store
