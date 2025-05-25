@@ -2,3 +2,11 @@
 	path = submodules/SDL
 	url = https://github.com/libsdl-org/SDL
 	branch = release-3.2.x
+[submodule "submodules/SDL_image"]
+	path = submodules/SDL_image
+	url = https://github.com/libsdl-org/SDL_image
+	branch = release-3.2.x
+[submodule "submodules/SDL_ttf"]
+	path = submodules/SDL_ttf
+	url = https://github.com/libsdl-org/SDL_ttf
+	branch = release-3.2.x
