@@ -47,6 +47,9 @@ endif()
 add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${C_SOURCES} ${DEP_SOURCES} ${HPP_HEADERS} ${H_HEADERS} ${INC_HEADERS})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
 
+# Add GLM library
+add_subdirectory(submodules/glm EXCLUDE_FROM_ALL)
+
 set(SDL_SHARED ON)
 
 # Configure SDL by calling its CMake file.
@@ -71,6 +74,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 	SDL3_ttf::SDL3_ttf      # remove if you are not using SDL_ttf
 	SDL3_image::SDL3_image	# remove if you are not using SDL_image
     SDL3::SDL3              # If using satelite libraries, SDL must be the last item in the list. 
+    glm::glm                # GLM library
 )
 
 # SDL_Image bug: https://github.com/libsdl-org/SDL_image/issues/506
