@@ -41,14 +41,13 @@ void App::Run() {
 
     const float oneTargetFPS = 1.f/targetFPS;
 
-    float movement;
+    float velocity = 0.f;
     const bool* keyboardState;
     float paddleSpeed = 300.f;
 
     while (state != AppState::Quitting) {
         timer.Tick();
         deltaTime += timer.timeElapsedSecs;
-        Log("deltaTime = " + to_string(deltaTime));
         if (isless(deltaTime, oneTargetFPS)) continue;
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -72,15 +71,22 @@ void App::Run() {
                 }
 
                 keyboardState = SDL_GetKeyboardState(NULL);
-                movement = 0.f;
-                if (keyboardState[SDL_SCANCODE_W]) movement -= paddleSpeed * deltaTime;
-                if (keyboardState[SDL_SCANCODE_S]) movement += paddleSpeed * deltaTime;
+                if (keyboardState[SDL_SCANCODE_W]) velocity -= paddleSpeed * deltaTime;
+                if (keyboardState[SDL_SCANCODE_S]) velocity += paddleSpeed * deltaTime;
 
-                paddle.y += movement;
+                paddle.y += velocity;
 
-                // Optional: Clamp paddle within window
-                if (paddle.y < 0) paddle.y = 0;
-                if (paddle.y + paddle.h > 720) paddle.y = 720 - paddle.h;
+                if (abs(velocity) < 0.01f) velocity = 0.f;
+                velocity *= 0.75f;
+
+                if (paddle.y < 0) {
+                    paddle.y = 0;
+                    velocity = 0.f;
+                }
+                if (paddle.y + paddle.h > 600) {
+                    paddle.y = 600 - paddle.h;
+                    velocity = 0.f;
+                }
                 
                 // Set draw colour
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
