@@ -17,14 +17,12 @@ enum class AppState {
 
 struct Timer {
     float timeElapsedSecs = 0.f;
-    uint64_t ticks = 0;
+    uint64_t prevTime = 0;
 
     void Tick() {
-        const uint64_t now = SDL_GetPerformanceCounter();
-        const uint64_t delta = now - ticks;
-        static const uint64_t ticksPerSec = SDL_GetPerformanceFrequency();
-        timeElapsedSecs = delta/static_cast<float>(ticksPerSec);
-        ticks = now;
+        const uint64_t currentTime = SDL_GetPerformanceCounter();
+        timeElapsedSecs = (currentTime - prevTime)/(float)SDL_GetPerformanceFrequency();
+        prevTime = currentTime;
     }
 };
 
@@ -41,7 +39,7 @@ private:
     SDL_Renderer* renderer;
     Timer timer;
     float deltaTime = 0.;
-    int targetFPS = 30;
+    int targetFPS = 60;
 
     vec2 paddlePos;
     vec2 ballPos;

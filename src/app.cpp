@@ -33,7 +33,6 @@ void App::Run() {
     // TODO: Any loading should be done here
     float paddleWidth = 20.f;
     float paddleHeight = 200.f;
-    float paddleSpeed = 0.f;
     SDL_FRect paddle = {paddlePos.x - paddleWidth/2, paddlePos.y - paddleHeight/2, paddleWidth, paddleHeight};
     float ballRadius = 20.f;
     SDL_FRect ball = {ballPos.x - ballRadius, ballPos.y - ballRadius, ballRadius, ballRadius};
@@ -42,13 +41,15 @@ void App::Run() {
 
     const float oneTargetFPS = 1.f/targetFPS;
 
+    float movement;
+    const bool* keyboardState;
+    float paddleSpeed = 300.f;
+
     while (state != AppState::Quitting) {
         timer.Tick();
         deltaTime += timer.timeElapsedSecs;
-        Log("timer.timeElapsedSecs = " + to_string(timer.timeElapsedSecs));
         Log("deltaTime = " + to_string(deltaTime));
         if (isless(deltaTime, oneTargetFPS)) continue;
-        deltaTime -= oneTargetFPS;
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
@@ -66,16 +67,20 @@ void App::Run() {
             case AppState::Running:
                 SDL_Event event;
                 while (SDL_PollEvent(&event)) {
-                    if (event.type == SDL_EVENT_QUIT) state = AppState::Quitting;
-                    if (event.type == SDL_EVENT_KEY_DOWN) {
-                        if (event.key.key == SDLK_W) paddleSpeed -= 1*oneTargetFPS;
-                        if (event.key.key == SDLK_S) paddleSpeed += 1*oneTargetFPS;
-                    }
+                    if (event.type == SDL_EVENT_QUIT)
+                        state = AppState::Quitting;
                 }
 
-                if (abs(paddleSpeed) < 0.05f) paddleSpeed = 0.f;
-                paddle.y += paddleSpeed;
-                paddleSpeed *= 0.5f;
+                keyboardState = SDL_GetKeyboardState(NULL);
+                movement = 0.f;
+                if (keyboardState[SDL_SCANCODE_W]) movement -= paddleSpeed * deltaTime;
+                if (keyboardState[SDL_SCANCODE_S]) movement += paddleSpeed * deltaTime;
+
+                paddle.y += movement;
+
+                // Optional: Clamp paddle within window
+                if (paddle.y < 0) paddle.y = 0;
+                if (paddle.y + paddle.h > 720) paddle.y = 720 - paddle.h;
                 
                 // Set draw colour
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -93,6 +98,7 @@ void App::Run() {
                 break;
         }
         SDL_RenderPresent(renderer);
+        deltaTime = 0.f;
     }
 }
 
