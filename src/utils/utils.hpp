@@ -1,4 +1,8 @@
+#pragma once
+
 #include <iostream>
+
+using namespace std;
 
 namespace utils {
 
@@ -24,7 +28,7 @@ class Modifier {
     ColourCode colour;
 public:
     Modifier(ColourCode code) : colour(code) {}
-    friend std::ostream& operator<<(std::ostream& os, const Modifier& modifier) {
+    friend ostream& operator<<(ostream& os, const Modifier& modifier) {
         return os << "\033[" << modifier.colour << "m";
     }
 };
@@ -38,15 +42,10 @@ public:
 #define TEXT_CYAN       Modifier(FG_CYAN)
 #define TEXT_WHITE      Modifier(FG_WHITE)
 
-void Error_(const std::string& message, const char* file, int line) {
-    std::cout << TEXT_RED << "Error: " << TEXT_YELLOW << message << TEXT_RESET << " | " << file << " (" << line << ")" << std::endl;
-}
+void Error_(const string& message, const char* file, int line);
+#define Error(message) utils::Error_(message, __FILE__, __LINE__)
 
-void Log_(const std::string& message) {
-    std::cout << TEXT_GREEN << "LOG: " << message << TEXT_RESET << std::endl;
-}
+void Log_(const string& message);
+#define Log(message) utils::Log_(message)
 
 } // namespace utils
-
-#define Error(message) utils::Error_(message, __FILE__, __LINE__)
-#define Log(message) utils::Log_(message)
