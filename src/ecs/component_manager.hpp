@@ -38,8 +38,8 @@ class ComponentManager {
 private:
     static ComponentManager* instance;
     static unsigned int nComponents;
-    static inline unordered_map<std::type_index, std::unique_ptr<IComponentArray>> components;
-    static inline unordered_map<std::type_index, unsigned int> typeToID;
+    static inline unordered_map<type_index, unique_ptr<IComponentArray>> components;
+    static inline unordered_map<type_index, unsigned int> typeToID;
 
     template<class T>
     static ComponentArray<T>* GetComponentArray() {
@@ -61,14 +61,14 @@ public:
 
     template <class T>
     static unsigned int GetComponentID() {
-        const std::type_index typeIdx = typeid(T);
+        const type_index typeIdx = typeid(T);
     
         // If not registered, register now
         if (typeToID.find(typeIdx) == typeToID.end()) {
-            Log("[ComponentManager::GetComponentID] Registering new component of type '" + std::string(typeid(T).name()) + "'");
+            Log("[ComponentManager::GetComponentID] Registering new component of type '" + string(typeid(T).name()) + "'");
             unsigned int newID = nComponents++;
             typeToID[typeIdx] = newID;
-            components[typeIdx] = std::make_unique<ComponentArray<T>>();  // Register the component array here
+            components[typeIdx] = make_unique<ComponentArray<T>>();  // Register the component array here
         }
 
         return typeToID[typeIdx];
