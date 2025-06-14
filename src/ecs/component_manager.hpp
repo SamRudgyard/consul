@@ -49,7 +49,6 @@ public:
 class ComponentManager {
 private:
     static ComponentManager* instance;
-    static unsigned int nComponents;
     static inline unordered_map<type_index, unique_ptr<IComponentArray>> components;
     static inline unordered_map<type_index, unsigned int> typeToID;
 
@@ -96,7 +95,7 @@ public:
         // If not registered, register now
         if (typeToID.find(typeIdx) == typeToID.end()) {
             Log("[ComponentManager::GetComponentID] Registering new component of type '" + string(typeid(T).name()) + "'");
-            unsigned int newID = nComponents++;
+            unsigned int newID = typeToID.size();
             typeToID[typeIdx] = newID;
             components[typeIdx] = make_unique<ComponentArray<T>>();  // Register the component array here
         }
