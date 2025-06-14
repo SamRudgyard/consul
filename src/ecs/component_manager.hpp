@@ -19,7 +19,7 @@ public:
 template<class T>
 class ComponentArray : public IComponentArray {
 private:
-    vector<T> components;
+    vector<T> components; // Array of components, where the index corresponds to the entity
 public:
     /**
      * Sets the component of a given entity to a specified value.
@@ -49,7 +49,7 @@ public:
 class ComponentManager {
 private:
     static ComponentManager* instance;
-    static inline unordered_map<type_index, unique_ptr<IComponentArray>> components;
+    static inline unordered_map<type_index, unique_ptr<IComponentArray>> components; // Map of component arrays, i.e. each component type has its own array
     static inline unordered_map<type_index, unsigned int> typeToID;
 
     /**
