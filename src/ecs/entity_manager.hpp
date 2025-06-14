@@ -95,6 +95,13 @@ public:
         componentManager->AddComponent<T>(entity, component);
     }
 
+    /**
+     * Removes a component of type T from the specified entity.
+     *
+     * @tparam T The type of the component to remove.
+     * @param entity The ID of the entity from which to remove the component.
+     */
+
     template<typename T>
     void RemoveComponent(Entity entity) {
         unsigned int componentID = componentManager->GetComponentID<T>();
