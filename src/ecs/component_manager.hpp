@@ -45,7 +45,9 @@ private:
     static ComponentArray<T>* GetComponentArray() {
         type_index typeIdx = typeid(T);
         string name = typeIdx.name();
+        Log("[ComponentManager::GetComponentArray] Getting component array of type '" + name + "'");
         if (components.find(typeIdx) == components.end()) Error("[ComponentManager::GetComponentArray] Component array of type '" + name + "' not registered.");
+        Log("[ComponentManager::GetComponentArray] Got component array of type '" + name + "'");
         return static_cast<ComponentArray<T>*>(components[typeIdx].get());
     }
 public:
@@ -60,6 +62,8 @@ public:
     template <typename T>
     static void RegisterComponent() {
         const std::type_index typeIdx = typeid(T);
+        string name = typeIdx.name();
+        Log("[ComponentManager::RegisterComponent] Registering component array of type '" + name + "'");
         if (components.find(typeIdx) == components.end()) {
             components[typeIdx] = std::make_unique<ComponentArray<T>>();
         }

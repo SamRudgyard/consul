@@ -14,11 +14,16 @@ private:
     bool isFilled = true;
     bool isCentred = true;
 public:
+    Rectangle() {
+        this->width = 0;
+        this->height = 0;
+        this->colour = vec4(255, 255, 255, 255);
+    }
     Rectangle(int width, int height, vec4 colour) {
         this->width = width;
         this->height = height;
         this->colour = colour;
-    };
+    }
 
     float GetWidth() { return width; }
     float GetHeight() { return height; }

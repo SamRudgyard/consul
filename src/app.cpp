@@ -48,12 +48,18 @@ void App::Run() {
     componentManager->RegisterComponent<Transform2D>();
     componentManager->RegisterComponent<Rectangle>();
 
-    // Add components to paddle
+    // Add components to paddle in entityManager
     entityManager->Add(paddle, componentManager->GetComponentID<Transform2D>());
     entityManager->Add(paddle, componentManager->GetComponentID<Rectangle>());
 
+    // Add components to paddle in componentManager
+    componentManager->AddComponent(paddle, Transform2D());
+    componentManager->AddComponent(paddle, Rectangle());
+
     // Access the paddle's transform component and adjust its position
-    componentManager->GetComponent<Transform2D>(paddle).SetPosition(paddlePos);
+    Transform2D& paddleTransform = componentManager->GetComponent<Transform2D>(paddle);
+    Log("Initial paddle position: " + to_string(paddleTransform.GetPosition().x) + ", " + to_string(paddleTransform.GetPosition().y));
+    paddleTransform.SetPosition(paddlePos);
 
     while (state != AppState::Quitting) {
         timer.Tick();
