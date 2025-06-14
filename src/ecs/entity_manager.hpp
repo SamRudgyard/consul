@@ -7,6 +7,16 @@
 
 using namespace std;
 
+/**
+ * The EntityManager class is a singleton that manages entities and their
+ * associated components. It provides functions for adding, removing, and
+ * retrieving entities and their components.
+ * 
+ * As it simply holds a bitmask of components for each entity, it is not
+ * intended for modifying the components of an entity directly. Instead, use
+ * the ComponentManager class to add, remove, and retrieve components
+ * directly.
+ */
 class EntityManager {
 private:
     static EntityManager* instance;
