@@ -19,6 +19,8 @@ void DrawSystem::Draw() {
             sdlRect.w = rect.GetWidth();
             sdlRect.h = rect.GetHeight();
 
+            vec4 colour = rect.GetColour();
+            SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, colour.a);
             SDL_RenderFillRect(renderer, &sdlRect);
         }
     }
