@@ -59,25 +59,19 @@ public:
         return instance;
     }
 
-    template <typename T>
-    static void RegisterComponent() {
-        const std::type_index typeIdx = typeid(T);
-        string name = typeIdx.name();
-        Log("[ComponentManager::RegisterComponent] Registering component array of type '" + name + "'");
-        if (components.find(typeIdx) == components.end()) {
-            components[typeIdx] = std::make_unique<ComponentArray<T>>();
-        }
-    }
-
     template <class T>
     static unsigned int GetComponentID() {
         const std::type_index typeIdx = typeid(T);
-        auto it = typeToID.find(typeIdx);
-        if (it != typeToID.end()) return it->second;
+    
+        // If not registered, register now
+        if (typeToID.find(typeIdx) == typeToID.end()) {
+            Log("[ComponentManager::GetComponentID] Registering new component of type '" + std::string(typeid(T).name()) + "'");
+            unsigned int newID = nComponents++;
+            typeToID[typeIdx] = newID;
+            components[typeIdx] = std::make_unique<ComponentArray<T>>();  // Register the component array here
+        }
 
-        unsigned int newID = nComponents++;
-        typeToID[typeIdx] = newID;
-        return newID;
+        return typeToID[typeIdx];
     }
 
     template<class T>

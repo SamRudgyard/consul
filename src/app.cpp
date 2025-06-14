@@ -44,10 +44,6 @@ void App::Run() {
 
     Entity paddle = entityManager->CreateEntity();
 
-    // Register components
-    componentManager->RegisterComponent<Transform2D>();
-    componentManager->RegisterComponent<Rectangle>();
-
     // Add components to paddle in entityManager
     entityManager->Add(paddle, componentManager->GetComponentID<Transform2D>());
     entityManager->Add(paddle, componentManager->GetComponentID<Rectangle>());
