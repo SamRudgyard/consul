@@ -3,6 +3,8 @@
 #include "SDL3/SDL.h"
 #include "glm/glm.hpp"
 
+#include "ecs/entity_manager.hpp"
+
 using namespace glm;
 
 enum class AppState {
@@ -38,6 +40,8 @@ private:
     SDL_Window* window;
     SDL_Renderer* renderer;
     Timer timer;
+    EntityManager* entityManager = EntityManager::GetInstance();
+
     float deltaTime = 0.;
     int targetFPS = 60;
 

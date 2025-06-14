@@ -3,6 +3,8 @@
 
 #include "SDL3/SDL.h"
 #include "SDL3_image/SDL_image.h"
+#include "ecs/components/transform_2d.hpp"
+#include "ecs/components/rectangle.hpp"
 
 #include <glm/glm.hpp>
 
