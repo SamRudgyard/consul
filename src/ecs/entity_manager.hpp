@@ -1,18 +1,10 @@
 #pragma once
 
-#include <bitset>
-#include <cstdint>
 #include <vector>
 
-#include "component_manager.hpp"
+#include "ecs_types.hpp"
 
 using namespace std;
-
-using Entity = uint32_t;
-const Entity MAX_ENTITIES = 5000;
-using ComponentType = uint32_t;
-const ComponentType MAX_COMPONENTS = 32;
-typedef bitset<MAX_COMPONENTS> ComponentMask;
 
 class EntityManager {
 private:
@@ -45,6 +37,16 @@ public:
         }
         return instance;
     }
+
+    /**
+     * Retrieves the vector of entities.
+     *
+     * This function returns a reference to the vector of entities managed by
+     * the EntityManager.
+     *
+     * @return A reference to the vector of entities.
+     */
+    vector<EntityContainer>& GetEntities() { return entities; }
     
     /**
      * Creates a new entity.
@@ -67,26 +69,23 @@ public:
     void DestroyEntity(Entity entity);
 
     /**
-     * Adds a component of type T to the specified entity.
+     * Adds a component of the specified type to the specified entity.
      *
-     * @tparam T The type of the component to be added.
-     * @param entity The entity from which the component is to be added.
+     * @param entity The entity to which the component is to be added.
+     * @param componentID The ID of the component to be added.
      */
-    template<typename T>
-    void Add(Entity entity) {
-        unsigned int componentID = ComponentManager::Get<T>();
+    void Add(Entity entity, unsigned int componentID) {
         entities[entity].mask.set(componentID);
     }
 
     /**
-     * Removes a component of type T from the specified entity.
+     * Removes a component of the specified type from the specified entity.
      *
-     * @tparam T The type of the component to be removed.
      * @param entity The entity from which the component is to be removed.
+     * @param componentID The ID of the component to be removed.
      */
     template<typename T>
-    void Remove(Entity entity) {
-        unsigned int componentID = ComponentManager::Get<T>();
+    void Remove(Entity entity, unsigned int componentID) {
         entities[entity].mask.reset(componentID);
     }
 };
