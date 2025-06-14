@@ -101,7 +101,6 @@ public:
      * @tparam T The type of the component to remove.
      * @param entity The ID of the entity from which to remove the component.
      */
-
     template<typename T>
     void RemoveComponent(Entity entity) {
         unsigned int componentID = componentManager->GetComponentID<T>();
