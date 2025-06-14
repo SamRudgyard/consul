@@ -3,12 +3,14 @@
 #include <vector>
 
 #include "ecs_types.hpp"
+#include "ecs/component_manager.hpp"
 
 using namespace std;
 
 class EntityManager {
 private:
     static EntityManager* instance;
+    ComponentManager* componentManager = ComponentManager::GetInstance();
 
     struct EntityContainer {
         Entity entity; // ID of a given entity
@@ -69,23 +71,33 @@ public:
     void DestroyEntity(Entity entity);
 
     /**
-     * Adds a component of the specified type to the specified entity.
+     * Adds a component of type T to the specified entity (with default value).
      *
-     * @param entity The entity to which the component is to be added.
-     * @param componentID The ID of the component to be added.
+     * @param entity The ID of the entity to add the component to.
      */
-    void Add(Entity entity, unsigned int componentID) {
+    template<class T>
+    void AddComponent(Entity entity) {
+        unsigned int componentID = componentManager->GetComponentID<T>();
         entities[entity].mask.set(componentID);
+        componentManager->AddComponent<T>(entity, T());
     }
 
     /**
-     * Removes a component of the specified type from the specified entity.
+     * Adds a component of type T to the specified entity (with specified value).
      *
-     * @param entity The entity from which the component is to be removed.
-     * @param componentID The ID of the component to be removed.
+     * @param entity The ID of the entity to add the component to.
+     * @param component The value of the component to add.
      */
+    template<class T>
+    void AddComponent(Entity entity, const T& component) {
+        unsigned int componentID = componentManager->GetComponentID<T>();
+        entities[entity].mask.set(componentID);
+        componentManager->AddComponent<T>(entity, component);
+    }
+
     template<typename T>
-    void Remove(Entity entity, unsigned int componentID) {
+    void RemoveComponent(Entity entity) {
+        unsigned int componentID = componentManager->GetComponentID<T>();
         entities[entity].mask.reset(componentID);
     }
 };
