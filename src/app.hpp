@@ -5,6 +5,7 @@
 
 #include "ecs/entity_manager.hpp"
 #include "ecs/component_manager.hpp"
+#include "ecs/system_manager.hpp"
 
 using namespace glm;
 
@@ -43,6 +44,7 @@ private:
     Timer timer;
     EntityManager* entityManager = EntityManager::GetInstance();
     ComponentManager* componentManager = ComponentManager::GetInstance();
+    SystemManager* systemManager = SystemManager::GetInstance();
 
     float deltaTime = 0.;
     int targetFPS = 60;

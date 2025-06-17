@@ -1,6 +1,6 @@
-#include "draw_system.hpp"
+#include "render_system.hpp"
 
-void DrawSystem::Draw() {
+void RenderSystem::Render() {
     for (const auto& entityContainer : entityManager->GetEntities()) {
         Entity entity = entityContainer.entity;
         ComponentMask mask = entityContainer.mask;
@@ -18,6 +18,11 @@ void DrawSystem::Draw() {
             sdlRect.y = transform.GetPosition().y;
             sdlRect.w = rect.GetWidth();
             sdlRect.h = rect.GetHeight();
+
+            if (rect.IsCentred()) {
+                sdlRect.x -= rect.GetWidth()/2;
+                sdlRect.y -= rect.GetHeight()/2;
+            }
 
             vec4 colour = rect.GetColour();
             SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, colour.a);

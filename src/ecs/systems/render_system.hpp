@@ -2,17 +2,18 @@
 
 #include "../entity_manager.hpp"
 #include "../component_manager.hpp"
+#include "../system_manager.hpp"
 #include "../components/transform_2d.hpp"
 #include "../components/rectangle.hpp"
 
 #include "SDL3/SDL.h"
 
-class DrawSystem {
+class RenderSystem : public IRenderSystem {
 public:
-    DrawSystem(SDL_Renderer* renderer)
+    RenderSystem(SDL_Renderer* renderer)
         : renderer(renderer), entityManager(EntityManager::GetInstance()), componentManager(ComponentManager::GetInstance()) {}
 
-    void Draw();
+    void Render() override;
 
 private:
     SDL_Renderer* renderer;

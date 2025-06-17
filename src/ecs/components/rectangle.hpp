@@ -30,4 +30,10 @@ public:
     vec4 GetColour() { return colour; }
     bool IsFilled() { return isFilled; }
     bool IsCentred() { return isCentred; }
+
+    void SetWidth(float width) { this->width = width; }
+    void SetHeight(float height) { this->height = height; }
+    void SetColour(vec4 colour) { this->colour = colour; }
+    void SetFilled(bool isFilled) { this->isFilled = isFilled; }
+    void SetCentred(bool isCentred) { this->isCentred = isCentred; }
 };

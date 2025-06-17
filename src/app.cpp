@@ -6,6 +6,8 @@
 #include "ecs/components/transform_2d.hpp"
 #include "ecs/components/rectangle.hpp"
 
+#include "ecs/systems/render_system.hpp"
+
 #include <glm/glm.hpp>
 
 using namespace std;
@@ -40,7 +42,7 @@ void App::Run() {
 
     float velocity = 0.f;
     const bool* keyboardState;
-    float paddleSpeed = 300.f;
+    float paddleSpeed = 50.f;
 
     Entity paddle = entityManager->CreateEntity();
 
@@ -52,6 +54,16 @@ void App::Run() {
     Transform2D& paddleTransform = componentManager->GetComponent<Transform2D>(paddle);
     Log("Initial paddle position: " + to_string(paddleTransform.GetPosition().x) + ", " + to_string(paddleTransform.GetPosition().y));
     paddleTransform.SetPosition(paddlePos);
+
+    // Adjust paddle colour
+    Rectangle& paddleRect = componentManager->GetComponent<Rectangle>(paddle);
+    paddleRect.SetColour(vec4(255.f, 0.f, 0.f, 255.f));
+    paddleRect.SetWidth(20.f);
+    paddleRect.SetHeight(100.f);
+    paddleRect.SetCentred(true);
+
+    RenderSystem renderSystem(renderer);
+    systemManager->AddRenderSystem(&renderSystem);
 
     while (state != AppState::Quitting) {
         timer.Tick();
@@ -79,13 +91,20 @@ void App::Run() {
                 }
 
                 keyboardState = SDL_GetKeyboardState(NULL);
-                if (keyboardState[SDL_SCANCODE_W]) velocity -= paddleSpeed * deltaTime;
-                if (keyboardState[SDL_SCANCODE_S]) velocity += paddleSpeed * deltaTime;
-                
-                // Set draw colour
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                if (keyboardState[SDL_SCANCODE_W]) velocity -= paddleSpeed*deltaTime;
+                if (keyboardState[SDL_SCANCODE_S]) velocity += paddleSpeed*deltaTime;
 
-                // Draw objects
+                if (abs(velocity) < 0.1f) {
+                    velocity = 0.f;
+                } else {
+                    velocity *= 0.9f;
+                }
+
+                paddlePos.y += velocity;
+                paddleTransform.SetPosition(paddlePos);
+
+                systemManager->Update();
+                systemManager->Render();
 
                 break;
             case AppState::GameOver:
