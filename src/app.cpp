@@ -55,20 +55,20 @@ void App::Run() {
 
     // Access the paddle's transform component and adjust its position
     Transform2D& paddleTransform = componentManager->GetComponent<Transform2D>(paddle);
-    Log("Initial paddle position: " + to_string(paddleTransform.GetPosition().x) + ", " + to_string(paddleTransform.GetPosition().y));
-    paddleTransform.SetPosition(paddlePos);
+    Log("Initial paddle position: " + to_string(paddleTransform.position.x) + ", " + to_string(paddleTransform.position.y));
+    paddleTransform.position = paddlePos;
 
     // Adjust paddle colour
     Rectangle& paddleRect = componentManager->GetComponent<Rectangle>(paddle);
-    paddleRect.SetColour(vec4(255.f, 0.f, 0.f, 255.f));
-    paddleRect.SetWidth(20.f);
-    paddleRect.SetHeight(100.f);
-    paddleRect.SetCentred(true);
+    paddleRect.colour = vec4(255.f, 0.f, 0.f, 255.f);
+    paddleRect.width = 20.f;
+    paddleRect.height = 100.f;
+    paddleRect.isCentred = true;
 
     // Set paddle speed
     Physics2D& paddlePhysics = componentManager->GetComponent<Physics2D>(paddle);
-    paddlePhysics.SetSpeed(500.f);
-    paddlePhysics.SetCoefficientOfFriction(0.9f);
+    paddlePhysics.speed =500.f;
+    paddlePhysics.coefficientOfFriction = 0.9f;
 
     RenderSystem renderSystem(renderer);
     InputHandler inputHandlerSystem;

@@ -14,18 +14,17 @@ void RenderSystem::Render() {
             Rectangle& rect = componentManager->GetComponent<Rectangle>(entity);
 
             SDL_FRect sdlRect;
-            sdlRect.x = transform.GetPosition().x;
-            sdlRect.y = transform.GetPosition().y;
-            sdlRect.w = rect.GetWidth();
-            sdlRect.h = rect.GetHeight();
+            sdlRect.x = transform.position.x;
+            sdlRect.y = transform.position.y;
+            sdlRect.w = rect.width;
+            sdlRect.h = rect.height;
 
-            if (rect.IsCentred()) {
-                sdlRect.x -= rect.GetWidth()/2;
-                sdlRect.y -= rect.GetHeight()/2;
+            if (rect.isCentred) {
+                sdlRect.x -= rect.width/2;
+                sdlRect.y -= rect.height/2;
             }
-
-            vec4 colour = rect.GetColour();
-            SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, colour.a);
+            
+            SDL_SetRenderDrawColor(renderer, rect.colour.r, rect.colour.g, rect.colour.b, rect.colour.a);
             SDL_RenderFillRect(renderer, &sdlRect);
         }
     }

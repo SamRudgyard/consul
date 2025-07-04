@@ -11,12 +11,12 @@ void MovementSystem::Update(float deltaTime) {
         Physics2D& physics = componentManager->GetComponent<Physics2D>(entity);
         PlayerController& playerController = componentManager->GetComponent<PlayerController>(entity);
 
-        if (playerController.GetInputDirection() == vec2(0.f, 0.f)) {
-            physics.SetAcceleration(-physics.GetVelocity()*physics.GetCoefficientOfFriction());
+        if (playerController.inputDirection == vec2(0.f, 0.f)) {
+            physics.acceleration = -physics.velocity*physics.coefficientOfFriction;
             continue;
         }
 
-        physics.SetAcceleration(physics.GetSpeed()*playerController.GetInputDirection());
+        physics.acceleration = physics.speed*playerController.inputDirection;
     }
 
     entities = entityManager->View<Transform2D, Physics2D>();
@@ -25,7 +25,7 @@ void MovementSystem::Update(float deltaTime) {
         Transform2D& transform = componentManager->GetComponent<Transform2D>(entity);
         Physics2D& physics = componentManager->GetComponent<Physics2D>(entity);
 
-        physics.SetVelocity(physics.GetVelocity() + physics.GetAcceleration()*deltaTime);
-        transform.SetPosition(transform.GetPosition() + physics.GetVelocity()*deltaTime);
+        physics.velocity += physics.acceleration*deltaTime;
+        transform.position += physics.velocity*deltaTime;
     }
 }

@@ -22,7 +22,7 @@ void InputHandler::Update(float deltaTime) {
 
     for (Entity entity : entities) {
         PlayerController& playerController = componentManager->GetComponent<PlayerController>(entity);
-        playerController.SetInputDirection(direction);
+        playerController.inputDirection = direction;
     }
 
     Log("Input: " + to_string(direction.x) + ", " + to_string(direction.y));
