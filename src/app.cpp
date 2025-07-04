@@ -136,4 +136,7 @@ void App::SetUpEntities() {
     ballPhysics.velocity = vec2(-250.f, 100.f);
     entityManager->AddComponent<Physics2D>(ball, ballPhysics);
     entityManager->AddComponent<CollisionEdgeOfScreen>(ball);
+
+    entityManager->AddComponent<RectCollider>(ball, RectCollider(vec2(20.f, 20.f)));
+    entityManager->AddComponent<RectCollider>(paddle, RectCollider(vec2(20.f, 100.f)));
 }
