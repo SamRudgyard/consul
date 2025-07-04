@@ -52,7 +52,7 @@ void App::Run() {
     systemManager->AddUpdateSystem(&inputHandlerSystem);
     systemManager->AddUpdateSystem(&movementSystem); // Order matters - input handler needs to be first
 
-    state = AppState::Running;
+    state = AppState::Paused;
 
     const float oneTargetFPS = 1.f/targetFPS;
 
@@ -64,6 +64,12 @@ void App::Run() {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT)
+                state = AppState::Quitting;
+        }
+
         switch (state) {
             case AppState::Loading:
                 // TODO: Load assets
@@ -72,15 +78,9 @@ void App::Run() {
                 // TODO: Menu
                 break;
             case AppState::Paused:
-                // TODO: Paused
+                systemManager->Render();
                 break;
             case AppState::Running:
-                SDL_Event event;
-                while (SDL_PollEvent(&event)) {
-                    if (event.type == SDL_EVENT_QUIT)
-                        state = AppState::Quitting;
-                }
-
                 systemManager->Update(deltaTime);
                 systemManager->Render();
 
