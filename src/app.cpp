@@ -5,6 +5,7 @@
 #include "SDL3/SDL_video.h"
 #include "SDL3_image/SDL_image.h"
 
+#include "ecs/components/collisions.hpp"
 #include "ecs/components/transform_2d.hpp"
 #include "ecs/components/physics_2d.hpp"
 #include "ecs/components/rectangle.hpp"
@@ -13,6 +14,7 @@
 #include "ecs/systems/render_system.hpp"
 #include "ecs/systems/input_handler.hpp"
 #include "ecs/systems/movement.hpp"
+#include "ecs/systems/collisions.hpp"
 
 #include <glm/glm.hpp>
 
@@ -47,12 +49,14 @@ void App::Run() {
     RenderSystem renderSystem(renderer);
     InputHandler inputHandlerSystem;
     MovementSystem movementSystem;
+    Collisions collisions;
 
     systemManager->AddRenderSystem(&renderSystem);
     systemManager->AddUpdateSystem(&inputHandlerSystem);
     systemManager->AddUpdateSystem(&movementSystem); // Order matters - input handler needs to be first
+    systemManager->AddUpdateSystem(&collisions);
 
-    state = AppState::Paused;
+    state = AppState::Running;
 
     const float oneTargetFPS = 1.f/targetFPS;
 
@@ -116,4 +120,23 @@ void App::SetUpEntities() {
     paddlePhysics.coefficientOfFriction = 0.9f;
     entityManager->AddComponent<Physics2D>(paddle, paddlePhysics);
     entityManager->AddComponent<PlayerController>(paddle);
+
+    // Create bll
+    Entity ball = entityManager->CreateEntity();
+    Transform2D balltransform;
+    balltransform.position = vec2(width/2.f, height/2.f);
+    entityManager->AddComponent<Transform2D>(ball, balltransform);
+    Rectangle ballRect;
+    ballRect.colour = vec4(0.f, 0.f, 255.f, 255.f);
+    ballRect.width = 20.f;
+    ballRect.height = 20.f;
+    ballRect.isCentred = true;
+    entityManager->AddComponent<Rectangle>(ball, ballRect);
+    Physics2D ballPhysics;
+    ballPhysics.velocity = vec2(-250.f, 100.f);
+    entityManager->AddComponent<Physics2D>(ball, ballPhysics);
+    entityManager->AddComponent<CollisionEdgeOfScreen>(ball);
+
+    entityManager->AddComponent<RectCollider>(ball, RectCollider(vec2(20.f, 20.f)));
+    entityManager->AddComponent<RectCollider>(paddle, RectCollider(vec2(20.f, 100.f)));
 }
