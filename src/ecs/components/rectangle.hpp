@@ -6,8 +6,7 @@
 
 using namespace glm;
 
-class Rectangle {
-public:
+struct Rectangle {
     float width;
     float height;
     vec4 colour;

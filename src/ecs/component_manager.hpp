@@ -16,7 +16,7 @@ public:
     virtual ~IComponentArray() = default;
 };
 
-template<class T>
+template<typename T>
 class ComponentArray : public IComponentArray {
 private:
     vector<T> components; // Array of components, where the index corresponds to the entity
@@ -59,7 +59,7 @@ private:
      * @return A pointer to the ComponentArray of type T.
      */
 
-    template<class T>
+    template<typename T>
     static ComponentArray<T>* GetComponentArray() {
         type_index typeIdx = typeid(T);
         string name = typeIdx.name();
@@ -88,7 +88,7 @@ public:
      * @tparam T The type of the component.
      * @return The unique ID of the component type.
      */
-    template <class T>
+    template <typename T>
     static unsigned int GetComponentID() {
         const type_index typeIdx = typeid(T);
     
@@ -110,7 +110,7 @@ public:
      * @param entity The entity to add the component to.
      * @param component The value of the component to add.
      */
-    template<class T>
+    template<typename T>
     static void AddComponent(Entity entity, const T& component) {
         GetComponentArray<T>()->SetComponent(entity, component);
     }
@@ -123,7 +123,7 @@ public:
      * 
      * @return The component of type T from the specified entity.
      */
-    template <class T>
+    template <typename T>
     static T& GetComponent(Entity entity) {
         return GetComponentArray<T>()->GetComponent(entity);
     }

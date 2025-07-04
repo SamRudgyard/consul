@@ -85,7 +85,7 @@ public:
      *
      * @param entity The ID of the entity to add the component to.
      */
-    template<class T>
+    template<typename T>
     void AddComponent(Entity entity) {
         unsigned int componentID = componentManager->GetComponentID<T>();
         entities[entity].mask.set(componentID);
@@ -98,7 +98,7 @@ public:
      * @param entity The ID of the entity to add the component to.
      * @param component The value of the component to add.
      */
-    template<class T>
+    template<typename T>
     void AddComponent(Entity entity, const T& component) {
         unsigned int componentID = componentManager->GetComponentID<T>();
         entities[entity].mask.set(componentID);
@@ -123,7 +123,7 @@ public:
      * @tparam T The types of the components to query for.
      * @return The entities that have all the given components.
      */
-    template<class... T>
+    template<typename... T>
     vector<Entity> View() {
         vector<Entity> result;
         ComponentMask mask;
