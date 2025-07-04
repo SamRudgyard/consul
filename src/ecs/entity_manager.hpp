@@ -136,4 +136,18 @@ public:
         }
         return result;
     }
+
+    template<typename... Components, typename Func>
+    void ForEach(Func func) {
+        ComponentMask mask;
+        ((mask.set(componentManager->GetComponentID<Components>())), ...);
+
+        for (const auto& entityContainer : entities) {
+            if ((entityContainer.mask & mask) == mask) {
+                Entity entity = entityContainer.entity;
+                func(componentManager->GetComponent<Components>(entity)...);
+            }
+        }
+    }
+
 };

@@ -18,12 +18,9 @@ void InputHandler::Update(float deltaTime) {
     EntityManager* entityManager = EntityManager::GetInstance();
     ComponentManager* componentManager = ComponentManager::GetInstance();
 
-    vector<Entity> entities = entityManager->View<Transform2D, PlayerController>();
-
-    for (Entity entity : entities) {
-        PlayerController& playerController = componentManager->GetComponent<PlayerController>(entity);
+    entityManager->ForEach<Transform2D, PlayerController>([&](Transform2D& transform, PlayerController& playerController) {
         playerController.inputDirection = direction;
-    }
+    });
 
     Log("Input: " + to_string(direction.x) + ", " + to_string(direction.y));
 }

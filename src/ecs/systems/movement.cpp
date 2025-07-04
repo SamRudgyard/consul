@@ -5,27 +5,16 @@
 #include "../components/player_controller.hpp"
 
 void MovementSystem::Update(float deltaTime) {
-    vector<Entity> entities = entityManager->View<Physics2D, PlayerController>();
-
-    for (Entity entity : entities) {
-        Physics2D& physics = componentManager->GetComponent<Physics2D>(entity);
-        PlayerController& playerController = componentManager->GetComponent<PlayerController>(entity);
-
-        if (playerController.inputDirection == vec2(0.f, 0.f)) {
-            physics.acceleration = -physics.velocity*physics.coefficientOfFriction;
-            continue;
+    entityManager->ForEach<Physics2D, PlayerController>([=](Physics2D& physics, PlayerController& controller) {
+        if (controller.inputDirection == vec2(0.f, 0.f)) {
+            physics.acceleration = -physics.velocity * physics.coefficientOfFriction;
+        } else {
+            physics.acceleration = physics.speed * controller.inputDirection;
         }
+    });
 
-        physics.acceleration = physics.speed*playerController.inputDirection;
-    }
-
-    entities = entityManager->View<Transform2D, Physics2D>();
-
-    for (Entity entity : entities) {
-        Transform2D& transform = componentManager->GetComponent<Transform2D>(entity);
-        Physics2D& physics = componentManager->GetComponent<Physics2D>(entity);
-
+    entityManager->ForEach<Physics2D, Transform2D>([=](Physics2D& physics, Transform2D& transform) {
         physics.velocity += physics.acceleration*deltaTime;
         transform.position += physics.velocity*deltaTime;
-    }
+    });
 }
