@@ -1,12 +1,8 @@
 #include "collisions.hpp"
 
-#include "glm/glm.hpp"
-
 #include "../components/collisions.hpp"
 #include "../components/transform_2d.hpp"
 #include "../components/physics_2d.hpp"
-
-using namespace glm;
 
 void Collisions::Update(float deltaTime) {
     entityManager->ForEach<CollisionEdgeOfScreen, Transform2D, Physics2D>([&](CollisionEdgeOfScreen& collision, Transform2D& transform, Physics2D& physics) {
@@ -21,17 +17,26 @@ void Collisions::Update(float deltaTime) {
         for (unsigned int j = i + 1; j < collisionEntities.size(); j++) {
             Entity entityA = collisionEntities[i];
             Entity entityB = collisionEntities[j];
-            if (HasCollidedAABB(entityA, entityB)) {
+
+            vec2 collisionNormal;
+            if (HasCollidedAABB(entityA, entityB, collisionNormal)) {
                 Physics2D& physicsA = componentManager->GetComponent<Physics2D>(entityA);
-                physicsA.velocity *= -1.f;
                 Physics2D& physicsB = componentManager->GetComponent<Physics2D>(entityB);
-                physicsB.velocity *= -1.f;
+
+                if (collisionNormal.x == 1.f) {
+                    physicsA.velocity.x *= -1.f;
+                    physicsB.velocity.x *= -1.f;
+                }
+                if (collisionNormal.y == 1.f) {
+                    physicsA.velocity.y *= -1.f;
+                    physicsB.velocity.y *= -1.f;
+                }
             }
         }
     }
 }
 
-bool Collisions::HasCollidedAABB(Entity entityA, Entity entityB) {
+bool Collisions::HasCollidedAABB(Entity entityA, Entity entityB, vec2& collisionNormal) {
     RectCollider& aRect = componentManager->GetComponent<RectCollider>(entityA);
     RectCollider& bRect = componentManager->GetComponent<RectCollider>(entityB);
     Transform2D& aTransform = componentManager->GetComponent<Transform2D>(entityA);
@@ -43,8 +48,20 @@ bool Collisions::HasCollidedAABB(Entity entityA, Entity entityB) {
     vec2 bMin = bTransform.position + bRect.offset;
     vec2 bMax = bMin + bRect.size;
 
-    return (aMin.x < bMax.x && 
-            aMax.x > bMin.x &&
-            aMin.y < bMax.y && 
-            aMax.y > bMin.y);
+    if (aMin.x < bMax.x && aMax.x > bMin.x &&
+        aMin.y < bMax.y && aMax.y > bMin.y) {
+        
+        float overlapX = std::min(aMax.x, bMax.x) - std::max(aMin.x, bMin.x);
+        float overlapY = std::min(aMax.y, bMax.y) - std::max(aMin.y, bMin.y);
+
+        if (overlapX < overlapY) {
+            collisionNormal = vec2(1.0f, 0.0f); // Horizontal collision
+        } else {
+            collisionNormal = vec2(0.0f, 1.0f); // Vertical collision
+        }
+
+        return true;
+    }
+
+    return false;
 }
