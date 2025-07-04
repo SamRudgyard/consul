@@ -52,7 +52,7 @@ void App::Run() {
     systemManager->AddUpdateSystem(&inputHandlerSystem);
     systemManager->AddUpdateSystem(&movementSystem); // Order matters - input handler needs to be first
 
-    state = AppState::Paused;
+    state = AppState::Running;
 
     const float oneTargetFPS = 1.f/targetFPS;
 
@@ -116,4 +116,20 @@ void App::SetUpEntities() {
     paddlePhysics.coefficientOfFriction = 0.9f;
     entityManager->AddComponent<Physics2D>(paddle, paddlePhysics);
     entityManager->AddComponent<PlayerController>(paddle);
+
+    // Create bll
+    Entity ball = entityManager->CreateEntity();
+    Transform2D balltransform;
+    balltransform.position = vec2(width/2.f, height/2.f);
+    entityManager->AddComponent<Transform2D>(ball, balltransform);
+    Rectangle ballRect;
+    ballRect.colour = vec4(0.f, 0.f, 255.f, 255.f);
+    ballRect.width = 20.f;
+    ballRect.height = 20.f;
+    ballRect.isCentred = true;
+    entityManager->AddComponent<Rectangle>(ball, ballRect);
+    Physics2D ballPhysics;
+    ballPhysics.velocity = vec2(-50.f, 0.f);
+    entityManager->AddComponent<Physics2D>(ball, ballPhysics);
+
 }
