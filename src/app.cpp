@@ -5,6 +5,7 @@
 #include "SDL3/SDL_video.h"
 #include "SDL3_image/SDL_image.h"
 
+#include "ecs/components/collisions.hpp"
 #include "ecs/components/transform_2d.hpp"
 #include "ecs/components/physics_2d.hpp"
 #include "ecs/components/rectangle.hpp"
@@ -13,6 +14,7 @@
 #include "ecs/systems/render_system.hpp"
 #include "ecs/systems/input_handler.hpp"
 #include "ecs/systems/movement.hpp"
+#include "ecs/systems/collisions.hpp"
 
 #include <glm/glm.hpp>
 
@@ -47,10 +49,12 @@ void App::Run() {
     RenderSystem renderSystem(renderer);
     InputHandler inputHandlerSystem;
     MovementSystem movementSystem;
+    Collisions collisions;
 
     systemManager->AddRenderSystem(&renderSystem);
     systemManager->AddUpdateSystem(&inputHandlerSystem);
     systemManager->AddUpdateSystem(&movementSystem); // Order matters - input handler needs to be first
+    systemManager->AddUpdateSystem(&collisions);
 
     state = AppState::Running;
 
@@ -129,7 +133,7 @@ void App::SetUpEntities() {
     ballRect.isCentred = true;
     entityManager->AddComponent<Rectangle>(ball, ballRect);
     Physics2D ballPhysics;
-    ballPhysics.velocity = vec2(-50.f, 0.f);
+    ballPhysics.velocity = vec2(-250.f, 100.f);
     entityManager->AddComponent<Physics2D>(ball, ballPhysics);
-
+    entityManager->AddComponent<CollisionEdgeOfScreen>(ball);
 }
