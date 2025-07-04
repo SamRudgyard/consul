@@ -36,6 +36,7 @@ public:
     ~App();
     void Init(const char* title, int x, int y, int width, int height, Uint32 flags);
     void Run();
+    void SetUpEntities();
 
     AppState state = AppState::Startup;
 private:
@@ -48,7 +49,4 @@ private:
 
     float deltaTime = 0.;
     int targetFPS = 60;
-
-    vec2 paddlePos;
-    vec2 ballPos;
 };
