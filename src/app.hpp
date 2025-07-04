@@ -21,7 +21,7 @@ enum class AppState {
 
 struct Timer {
     float timeElapsedSecs = 0.f;
-    uint64_t prevTime = 0;
+    uint64_t prevTime = SDL_GetPerformanceCounter();
 
     void Tick() {
         const uint64_t currentTime = SDL_GetPerformanceCounter();
