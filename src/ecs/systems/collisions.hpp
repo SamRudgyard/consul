@@ -13,4 +13,5 @@ public:
     Collisions() : entityManager(EntityManager::GetInstance()), componentManager(ComponentManager::GetInstance()) {}
     
     void Update(float deltaTime) override;
+    bool HasCollidedAABB(Entity entityA, Entity entityB);
 };
