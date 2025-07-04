@@ -3,10 +3,15 @@
 
 #include "SDL3/SDL.h"
 #include "SDL3_image/SDL_image.h"
+
 #include "ecs/components/transform_2d.hpp"
+#include "ecs/components/physics_2d.hpp"
 #include "ecs/components/rectangle.hpp"
+#include "ecs/components/player_controller.hpp"
 
 #include "ecs/systems/render_system.hpp"
+#include "ecs/systems/input_handler.hpp"
+#include "ecs/systems/movement.hpp"
 
 #include <glm/glm.hpp>
 
@@ -40,15 +45,13 @@ void App::Run() {
 
     const float oneTargetFPS = 1.f/targetFPS;
 
-    float velocity = 0.f;
-    const bool* keyboardState;
-    float paddleSpeed = 50.f;
-
     Entity paddle = entityManager->CreateEntity();
 
     // Add components to paddle
     entityManager->AddComponent<Transform2D>(paddle);
+    entityManager->AddComponent<Physics2D>(paddle);
     entityManager->AddComponent<Rectangle>(paddle);
+    entityManager->AddComponent<PlayerController>(paddle);
 
     // Access the paddle's transform component and adjust its position
     Transform2D& paddleTransform = componentManager->GetComponent<Transform2D>(paddle);
@@ -62,8 +65,17 @@ void App::Run() {
     paddleRect.SetHeight(100.f);
     paddleRect.SetCentred(true);
 
+    // Set paddle speed
+    Physics2D& paddlePhysics = componentManager->GetComponent<Physics2D>(paddle);
+    paddlePhysics.SetSpeed(500.f);
+    paddlePhysics.SetCoefficientOfFriction(0.9f);
+
     RenderSystem renderSystem(renderer);
+    InputHandler inputHandlerSystem;
+    MovementSystem movementSystem;
     systemManager->AddRenderSystem(&renderSystem);
+    systemManager->AddUpdateSystem(&inputHandlerSystem);
+    systemManager->AddUpdateSystem(&movementSystem); // Order matters - input handler needs to be first
 
     while (state != AppState::Quitting) {
         timer.Tick();
@@ -90,20 +102,7 @@ void App::Run() {
                         state = AppState::Quitting;
                 }
 
-                keyboardState = SDL_GetKeyboardState(NULL);
-                if (keyboardState[SDL_SCANCODE_W]) velocity -= paddleSpeed*deltaTime;
-                if (keyboardState[SDL_SCANCODE_S]) velocity += paddleSpeed*deltaTime;
-
-                if (abs(velocity) < 0.1f) {
-                    velocity = 0.f;
-                } else {
-                    velocity *= 0.9f;
-                }
-
-                paddlePos.y += velocity;
-                paddleTransform.SetPosition(paddlePos);
-
-                systemManager->Update();
+                systemManager->Update(deltaTime);
                 systemManager->Render();
 
                 break;

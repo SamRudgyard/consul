@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "ecs_types.hpp"
-#include "ecs/component_manager.hpp"
+#include "component_manager.hpp"
 
 using namespace std;
 
@@ -115,5 +115,25 @@ public:
     void RemoveComponent(Entity entity) {
         unsigned int componentID = componentManager->GetComponentID<T>();
         entities[entity].mask.reset(componentID);
+    }
+
+    /**
+     * Collects all entities with a given set of components.
+     *
+     * @tparam T The types of the components to query for.
+     * @return The entities that have all the given components.
+     */
+    template<class... T>
+    vector<Entity> View() {
+        vector<Entity> result;
+        ComponentMask mask;
+
+        ((mask.set(componentManager->GetComponentID<T>())), ...);
+        for (const auto& entityCotainer : entities) {
+            if ((entityCotainer.mask & mask) == mask) {
+                result.push_back(entityCotainer.entity);
+            }
+        }
+        return result;
     }
 };

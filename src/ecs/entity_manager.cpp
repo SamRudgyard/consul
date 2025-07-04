@@ -1,6 +1,6 @@
 #include "entity_manager.hpp"
 
-#include "utils/utils.hpp"
+#include "../utils/utils.hpp"
 
 EntityManager* EntityManager::instance = nullptr;
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ecs/entity_manager.hpp"
+#include "entity_manager.hpp"
 
 class IUpdateSystem {
 public:
-    virtual void Update() = 0;
+    virtual void Update(float deltaTime) = 0;
 };
 
 class IRenderSystem {
@@ -32,9 +32,9 @@ public:
 
     void AddUpdateSystem(IUpdateSystem* system) { updateSystems.push_back(system); }
     void AddRenderSystem(IRenderSystem* system) { renderSystems.push_back(system); }
-    void Update() {
+    void Update(float deltaTime) {
         for (auto system : updateSystems) {
-            system->Update();
+            system->Update(deltaTime);
         }
     }
     void Render() {
