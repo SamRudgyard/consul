@@ -119,7 +119,7 @@ void App::SetUpEntities() {
     paddleRect.isCentred = true;
     entityManager->AddComponent<Rectangle>(paddle, paddleRect);
     Physics2D paddlePhysics;
-    paddlePhysics.speed = 500.f;
+    paddlePhysics.oneMass = 500.f;
     paddlePhysics.coefficientOfFriction = 0.9f;
     entityManager->AddComponent<Physics2D>(paddle, paddlePhysics);
     entityManager->AddComponent<PlayerController>(paddle);

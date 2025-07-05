@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../entity_manager.hpp"
+#include "../component_manager.hpp"
 #include "../system_manager.hpp"
 
 #include "SDL3/SDL.h"
@@ -9,9 +11,9 @@ using namespace glm;
 
 class InputHandler : public IUpdateSystem {
 private:
-    vec2 direction;
-    void DetectMovement();
+    EntityManager* entityManager;
+    ComponentManager* componentManager;
 public:
-    InputHandler();
+    InputHandler() : entityManager(EntityManager::GetInstance()), componentManager(ComponentManager::GetInstance()) {};
     void Update(float deltaTime) override;
 };
