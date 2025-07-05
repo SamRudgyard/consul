@@ -15,6 +15,7 @@
 #include "ecs/systems/input_handler.hpp"
 #include "ecs/systems/movement.hpp"
 #include "ecs/systems/collisions.hpp"
+#include "ecs/systems/physics.hpp"
 
 #include <glm/glm.hpp>
 
@@ -49,12 +50,14 @@ void App::Run() {
     RenderSystem renderSystem(renderer);
     InputHandler inputHandlerSystem;
     MovementSystem movementSystem;
+    PhysicsSystem physicsSystem;
     Collisions collisions;
 
     systemManager->AddRenderSystem(&renderSystem);
     systemManager->AddUpdateSystem(&inputHandlerSystem);
-    systemManager->AddUpdateSystem(&movementSystem); // Order matters - input handler needs to be first
+    systemManager->AddUpdateSystem(&physicsSystem);
     systemManager->AddUpdateSystem(&collisions);
+    systemManager->AddUpdateSystem(&movementSystem); // Order matters - movement should go last
 
     state = AppState::Running;
 
@@ -120,6 +123,9 @@ void App::SetUpEntities() {
     paddlePhysics.coefficientOfFriction = 0.9f;
     entityManager->AddComponent<Physics2D>(paddle, paddlePhysics);
     entityManager->AddComponent<PlayerController>(paddle);
+    CollisionEdgeOfScreen edgeOfScreen;
+    edgeOfScreen.reflectionMultiplier = 0.f;
+    entityManager->AddComponent<CollisionEdgeOfScreen>(paddle, edgeOfScreen);
 
     // Create bll
     Entity ball = entityManager->CreateEntity();
