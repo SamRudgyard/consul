@@ -3,7 +3,7 @@
 #include "SDL3/SDL.h"
 
 #include "../components/physics_2d.hpp"
-#include "../components/player_controller.hpp"
+#include "../components/tags.hpp"
 
 void InputHandler::Update(float deltaTime) {
     vec2 direction = vec2(0.f, 0.f);
@@ -20,7 +20,7 @@ void InputHandler::Update(float deltaTime) {
         direction = direction/length;
     }
 
-    entityManager->ForEach<Physics2D, PlayerController>([&](Physics2D& physics, PlayerController& playerController) {
+    entityManager->ForEach<Physics2D, PlayerTag>([&](Physics2D& physics, PlayerTag& tag) {
         physics.acceleration = physics.oneMass*direction;
     });
 }

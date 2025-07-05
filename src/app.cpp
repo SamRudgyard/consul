@@ -9,7 +9,7 @@
 #include "ecs/components/transform_2d.hpp"
 #include "ecs/components/physics_2d.hpp"
 #include "ecs/components/rectangle.hpp"
-#include "ecs/components/player_controller.hpp"
+#include "ecs/components/tags.hpp"
 
 #include "ecs/systems/render_system.hpp"
 #include "ecs/systems/input_handler.hpp"
@@ -122,7 +122,7 @@ void App::SetUpEntities() {
     paddlePhysics.oneMass = 500.f;
     paddlePhysics.coefficientOfFriction = 0.9f;
     entityManager->AddComponent<Physics2D>(paddle, paddlePhysics);
-    entityManager->AddComponent<PlayerController>(paddle);
+    entityManager->AddComponent<PlayerTag>(paddle);
     CollisionEdgeOfScreen edgeOfScreen;
     edgeOfScreen.reflectionMultiplier = 0.f;
     entityManager->AddComponent<CollisionEdgeOfScreen>(paddle, edgeOfScreen);
