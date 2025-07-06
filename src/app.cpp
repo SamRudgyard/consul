@@ -44,7 +44,7 @@ void App::Init(const char* title, int x, int y, int width, int height, Uint32 fl
 }
 
 void App::Run() {
-    state = AppState::Loading;
+    appManager->state = AppState::Loading;
 
     SetUpEntities();
 
@@ -56,17 +56,17 @@ void App::Run() {
     ComputerSystem computerSystem;
 
     systemManager->AddRenderSystem(&renderSystem);
-    systemManager->AddUpdateSystem(&inputHandlerSystem);
-    systemManager->AddUpdateSystem(&computerSystem);
-    systemManager->AddUpdateSystem(&physicsSystem);
-    systemManager->AddUpdateSystem(&collisions);
-    systemManager->AddUpdateSystem(&movementSystem); // Order matters - movement should go last
-
-    state = AppState::Running;
+    systemManager->AddPauseUpdateSystem(&inputHandlerSystem);
+    systemManager->AddRunUpdateSystem(&computerSystem);
+    systemManager->AddRunUpdateSystem(&physicsSystem);
+    systemManager->AddRunUpdateSystem(&collisions);
+    systemManager->AddRunUpdateSystem(&movementSystem); // Order matters - movement should go last
 
     const float oneTargetFPS = 1.f/targetFPS;
 
-    while (state != AppState::Quitting) {
+    appManager->state = AppState::Paused;
+
+    while (appManager->state != AppState::Quitting) {
         timer.Tick();
         deltaTime += timer.timeElapsedSecs;
         if (isless(deltaTime, oneTargetFPS)) continue;
@@ -77,10 +77,10 @@ void App::Run() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT)
-                state = AppState::Quitting;
+                appManager->state = AppState::Quitting;
         }
 
-        switch (state) {
+        switch (appManager->state) {
             case AppState::Loading:
                 // TODO: Load assets
                 break;
@@ -88,12 +88,10 @@ void App::Run() {
                 // TODO: Menu
                 break;
             case AppState::Paused:
-                systemManager->Render();
+                systemManager->PauseUpdate(deltaTime);
                 break;
             case AppState::Running:
-                systemManager->Update(deltaTime);
-                systemManager->Render();
-
+                systemManager->RunUpdate(deltaTime);
                 break;
             case AppState::GameOver:
                 // TODO: Game over
@@ -101,13 +99,13 @@ void App::Run() {
             default:
                 break;
         }
+        systemManager->Render();
         SDL_RenderPresent(renderer);
         deltaTime = 0.f;
     }
 }
 
 void App::SetUpEntities() {
-    
     // Create paddle
     Entity paddle = entityManager->CreateEntity();
     Transform2D paddleTransform;

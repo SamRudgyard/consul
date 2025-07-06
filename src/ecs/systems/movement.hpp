@@ -5,7 +5,7 @@
 #include "../entity_manager.hpp"
 #include "../component_manager.hpp"
 
-class MovementSystem : public IUpdateSystem {
+class MovementSystem : public IRunUpdateSystem {
 private:
     EntityManager* entityManager;
     ComponentManager* componentManager;

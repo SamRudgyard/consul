@@ -9,7 +9,7 @@
 
 using namespace glm;
 
-class Collisions : public IUpdateSystem {
+class Collisions : public IRunUpdateSystem{
 private:
     EntityManager* entityManager;
     ComponentManager* componentManager;
