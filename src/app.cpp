@@ -16,6 +16,7 @@
 #include "ecs/systems/movement.hpp"
 #include "ecs/systems/collisions.hpp"
 #include "ecs/systems/physics.hpp"
+#include "ecs/systems/computer.hpp"
 
 #include <glm/glm.hpp>
 
@@ -52,9 +53,11 @@ void App::Run() {
     MovementSystem movementSystem;
     PhysicsSystem physicsSystem;
     Collisions collisions;
+    ComputerSystem computerSystem;
 
     systemManager->AddRenderSystem(&renderSystem);
     systemManager->AddUpdateSystem(&inputHandlerSystem);
+    systemManager->AddUpdateSystem(&computerSystem);
     systemManager->AddUpdateSystem(&physicsSystem);
     systemManager->AddUpdateSystem(&collisions);
     systemManager->AddUpdateSystem(&movementSystem); // Order matters - movement should go last
@@ -127,7 +130,7 @@ void App::SetUpEntities() {
     edgeOfScreen.reflectionMultiplier = 0.f;
     entityManager->AddComponent<CollisionEdgeOfScreen>(paddle, edgeOfScreen);
 
-    // Create bll
+    // Create ball
     Entity ball = entityManager->CreateEntity();
     Transform2D balltransform;
     balltransform.position = vec2(width/2.f, height/2.f);
@@ -142,7 +145,27 @@ void App::SetUpEntities() {
     ballPhysics.velocity = vec2(-250.f, 100.f);
     entityManager->AddComponent<Physics2D>(ball, ballPhysics);
     entityManager->AddComponent<CollisionEdgeOfScreen>(ball);
+    entityManager->AddComponent<BallTag>(ball);
+
+    // Create computer
+    Entity computer = entityManager->CreateEntity();
+    Transform2D computerTransform;
+    computerTransform.position = vec2(width - 10.f, height/2.f);
+    entityManager->AddComponent<Transform2D>(computer, computerTransform);
+    Rectangle computerRect;
+    computerRect.colour = vec4(0.f, 255.f, 0.f, 255.f);
+    computerRect.width = 20.f;
+    computerRect.height = 100.f;
+    computerRect.isCentred = true;
+    entityManager->AddComponent<Rectangle>(computer, computerRect);
+    Physics2D computerPhysics;
+    computerPhysics.oneMass = 500.f;
+    computerPhysics.coefficientOfFriction = 0.9f;
+    entityManager->AddComponent<Physics2D>(computer, computerPhysics);
+    entityManager->AddComponent<ComputerTag>(computer);
+    entityManager->AddComponent<CollisionEdgeOfScreen>(computer);
 
     entityManager->AddComponent<RectCollider>(ball, RectCollider(vec2(20.f, 20.f)));
     entityManager->AddComponent<RectCollider>(paddle, RectCollider(vec2(20.f, 100.f)));
+    entityManager->AddComponent<RectCollider>(computer, RectCollider(vec2(20.f, 100.f)));
 }
