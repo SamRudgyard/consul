@@ -5,7 +5,7 @@
 #include "../entity_manager.hpp"
 #include "../component_manager.hpp"
 
-class PhysicsSystem : public IUpdateSystem {
+class PhysicsSystem : public IRunUpdateSystem {
 private:
     EntityManager* entityManager;
     ComponentManager* componentManager;

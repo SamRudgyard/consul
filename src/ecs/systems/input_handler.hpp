@@ -9,7 +9,7 @@
 
 using namespace glm;
 
-class InputHandler : public IUpdateSystem {
+class InputHandler : public IPauseUpdateSystem {
 private:
     EntityManager* entityManager;
     ComponentManager* componentManager;

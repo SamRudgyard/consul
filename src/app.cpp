@@ -56,11 +56,11 @@ void App::Run() {
     ComputerSystem computerSystem;
 
     systemManager->AddRenderSystem(&renderSystem);
-    systemManager->AddUpdateSystem(&inputHandlerSystem);
-    systemManager->AddUpdateSystem(&computerSystem);
-    systemManager->AddUpdateSystem(&physicsSystem);
-    systemManager->AddUpdateSystem(&collisions);
-    systemManager->AddUpdateSystem(&movementSystem); // Order matters - movement should go last
+    systemManager->AddPauseUpdateSystem(&inputHandlerSystem);
+    systemManager->AddRunUpdateSystem(&computerSystem);
+    systemManager->AddRunUpdateSystem(&physicsSystem);
+    systemManager->AddRunUpdateSystem(&collisions);
+    systemManager->AddRunUpdateSystem(&movementSystem); // Order matters - movement should go last
 
     state = AppState::Running;
 
@@ -88,12 +88,10 @@ void App::Run() {
                 // TODO: Menu
                 break;
             case AppState::Paused:
-                systemManager->Render();
+                systemManager->PauseUpdate(deltaTime);
                 break;
             case AppState::Running:
-                systemManager->Update(deltaTime);
-                systemManager->Render();
-
+                systemManager->RunUpdate(deltaTime);
                 break;
             case AppState::GameOver:
                 // TODO: Game over
@@ -101,13 +99,13 @@ void App::Run() {
             default:
                 break;
         }
+        systemManager->Render();
         SDL_RenderPresent(renderer);
         deltaTime = 0.f;
     }
 }
 
 void App::SetUpEntities() {
-    
     // Create paddle
     Entity paddle = entityManager->CreateEntity();
     Transform2D paddleTransform;
