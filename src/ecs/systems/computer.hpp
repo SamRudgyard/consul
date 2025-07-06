@@ -5,7 +5,7 @@
 #include "../entity_manager.hpp"
 #include "../component_manager.hpp"
 
-class ComputerSystem : public IUpdateSystem {
+class ComputerSystem : public IRunUpdateSystem{
 private:
     EntityManager* entityManager;
     ComponentManager* componentManager;

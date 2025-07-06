@@ -2,7 +2,12 @@
 
 #include "entity_manager.hpp"
 
-class IUpdateSystem {
+class IRunUpdateSystem {
+public:
+    virtual void Update(float deltaTime) = 0;
+};
+
+class IPauseUpdateSystem {
 public:
     virtual void Update(float deltaTime) = 0;
 };
@@ -16,7 +21,8 @@ class SystemManager {
 private:
     static SystemManager* instance;
 
-    vector<IUpdateSystem*> updateSystems;
+    vector<IRunUpdateSystem*> runUpdateSystems;
+    vector<IPauseUpdateSystem*> pauseUpdateSystems;
     vector<IRenderSystem*> renderSystems;
 protected:
     SystemManager() = default;
@@ -30,13 +36,26 @@ public:
         return instance;
     }
 
-    void AddUpdateSystem(IUpdateSystem* system) { updateSystems.push_back(system); }
+    void AddRunUpdateSystem(IRunUpdateSystem* system) { runUpdateSystems.push_back(system); }
+    void AddPauseUpdateSystem(IPauseUpdateSystem* system) { pauseUpdateSystems.push_back(system); }
     void AddRenderSystem(IRenderSystem* system) { renderSystems.push_back(system); }
-    void Update(float deltaTime) {
-        for (auto system : updateSystems) {
+    
+    void RunUpdate(float deltaTime) {
+        for (auto system : pauseUpdateSystems) {
+            system->Update(deltaTime);
+        }
+
+        for (auto system : runUpdateSystems) {
             system->Update(deltaTime);
         }
     }
+
+    void PauseUpdate(float deltaTime) {
+        for (auto system : pauseUpdateSystems) {
+            system->Update(deltaTime);
+        }
+    }
+
     void Render() {
         for (auto system : renderSystems) {
             system->Render();
