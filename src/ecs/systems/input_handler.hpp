@@ -19,4 +19,6 @@ private:
 public:
     InputHandler() : entityManager(EntityManager::GetInstance()), componentManager(ComponentManager::GetInstance()), appManager(AppManager::GetInstance()) {};
     void Update(float deltaTime) override;
+    void DetectPlayerMovement();
+    void DetectTogglePause();
 };
