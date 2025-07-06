@@ -44,7 +44,7 @@ void App::Init(const char* title, int x, int y, int width, int height, Uint32 fl
 }
 
 void App::Run() {
-    state = AppState::Loading;
+    appManager->state = AppState::Loading;
 
     SetUpEntities();
 
@@ -62,11 +62,11 @@ void App::Run() {
     systemManager->AddRunUpdateSystem(&collisions);
     systemManager->AddRunUpdateSystem(&movementSystem); // Order matters - movement should go last
 
-    state = AppState::Running;
-
     const float oneTargetFPS = 1.f/targetFPS;
 
-    while (state != AppState::Quitting) {
+    appManager->state = AppState::Paused;
+
+    while (appManager->state != AppState::Quitting) {
         timer.Tick();
         deltaTime += timer.timeElapsedSecs;
         if (isless(deltaTime, oneTargetFPS)) continue;
@@ -77,10 +77,10 @@ void App::Run() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT)
-                state = AppState::Quitting;
+                appManager->state = AppState::Quitting;
         }
 
-        switch (state) {
+        switch (appManager->state) {
             case AppState::Loading:
                 // TODO: Load assets
                 break;
