@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(GameEngine)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # set the output directory for built objects.
 # This makes sure that the dynamic library goes into the build directory automatically.
@@ -50,30 +50,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
 # Add GLM library
 add_subdirectory(submodules/glm EXCLUDE_FROM_ALL)
 
-set(SDL_SHARED ON)
-
-# Configure SDL by calling its CMake file.
-# we use EXCLUDE_FROM_ALL so that its install targets and configs don't
-# pollute upwards into our configuration.
-add_subdirectory(submodules/SDL EXCLUDE_FROM_ALL)
-
-# If you don't want SDL_ttf, then remove this section.
-set(SDLTTF_VENDORED ON) # tell SDL_ttf to build its own dependencies
-add_subdirectory(submodules/SDL_ttf EXCLUDE_FROM_ALL)	
-
-# SDL_image (used for loading various image formats)
-set(SDLIMAGE_VENDORED ON)
-set(SDLIMAGE_AVIF OFF)	# disable formats we don't use to make the build faster and smaller.
-set(SDLIMAGE_BMP OFF)
-set(SDLIMAGE_JPEG OFF)
-set(SDLIMAGE_WEBP OFF)
-add_subdirectory(submodules/SDL_image EXCLUDE_FROM_ALL)
-
 # Link SDL to our executable. This also makes its include directory available to us. 
-target_link_libraries(${PROJECT_NAME} PUBLIC 
-	SDL3_ttf::SDL3_ttf      # remove if you are not using SDL_ttf
-	SDL3_image::SDL3_image	# remove if you are not using SDL_image
-    SDL3::SDL3              # If using satelite libraries, SDL must be the last item in the list. 
+target_link_libraries(${PROJECT_NAME} PUBLIC
     glm::glm                # GLM library
 )
 
