@@ -28,20 +28,20 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
         height = mode->height;
     }
 
-    GLFWwindow* window = glfwCreateWindow(width, height, title, monitor, nullptr);
+    Window::handle = glfwCreateWindow(width, height, title, monitor, nullptr);
 
-    if (!window) {
+    if (!Window::handle) {
         glfwTerminate();
         Error("[ENGINE] Failed to create GLFW window");
     }
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(Window::handle);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) Error("[ENGINE] Failed to initialize GLAD");
-    glfwSetKeyCallback(window, Keyboard::KeyCallback);
-    glfwSetWindowSizeCallback(window, Window::WindowSizeCallback);
+    glfwSetKeyCallback(Window::handle, Keyboard::KeyCallback);
+    glfwSetWindowSizeCallback(Window::handle, Window::WindowSizeCallback);
     // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Initialise OpenGL with our default settings
@@ -64,7 +64,6 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
 
     Time::frameCount = 0;
     Window::shouldClose = false;
-    Window::handle = window;
 }
 
 bool App::shouldClose()
