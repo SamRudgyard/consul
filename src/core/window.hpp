@@ -1,6 +1,16 @@
 #pragma once
 
 #include "glm/glm.hpp"
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
+
+enum WindowFlags
+{
+    WINDOW_RESIZABLE = 1 << 0,
+    WINDOW_FULLSCREEN = 1 << 1,
+    WINDOW_HIDDEN = 1 << 2,
+    WINDOW_HIGH_DPI = 1 << 3
+};
 
 class Window
 {
@@ -22,5 +32,10 @@ public:
     static glm::vec2 screenSize;
     static glm::vec2 screenSizeLastFrame;
 
+    static GLFWwindow* handle;
+
     static void ToggleFullscreen();
+    static void SetupViewport(unsigned int width, unsigned int height);
+    static glm::vec2 GetWindowScaleDPI();
+    static void WindowSizeCallback(GLFWwindow* window, int width, int height);
 };
