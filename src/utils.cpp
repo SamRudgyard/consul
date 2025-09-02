@@ -8,7 +8,7 @@ void Error_(const std::string& message, const char* file, int line)
 
 void Log_(const std::string& message)
 {
-    std::cout << TEXT_GREEN << "[LOG] " << message << TEXT_RESET << std::endl;
+    std::cout << TEXT_GREEN << "[LOG] " << TEXT_RESET << message << std::endl;
 }
 
 void LogOnDebug_(const std::string& message)
