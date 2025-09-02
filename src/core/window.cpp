@@ -29,7 +29,7 @@ void Window::SetupViewport(unsigned int width, unsigned int height)
 
     glm::vec2 scale = { 1.0f, 1.0f };
 #ifdef __APPLE__
-    glfwGetWindowContentScale(window, &scale.x, &scale.y);
+    glfwGetWindowContentScale(Window::handle, &scale.x, &scale.y);
 #endif
     glViewport(0, 0, width*scale.x, height*scale.y);        // Adjust viewport for high DPI displays
     glOrtho(0.f, width, height, 0.f, 0.f, 1.f);             // Set orthographic projection
