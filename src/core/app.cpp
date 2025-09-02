@@ -1,7 +1,5 @@
 #include "app.hpp"
 
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
 #include "utils.hpp"
 
 App::App(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
@@ -29,14 +27,22 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
         width = mode->width;
         height = mode->height;
     }
+
     GLFWwindow* window = glfwCreateWindow(width, height, title, monitor, nullptr);
+
+    if (!window) {
+        glfwTerminate();
+        Error("[ENGINE] Failed to create GLFW window");
+    }
+
     glfwMakeContextCurrent(window);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) Error("[ENGINE] Failed to initialize GLAD");
     glfwSetKeyCallback(window, Keyboard::KeyCallback);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetWindowSizeCallback(window, Window::WindowSizeCallback);
+    // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Initialise OpenGL with our default settings
     // --------------------
@@ -51,17 +57,14 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                   // Set clear colour to black
     glClearDepth(1.0f);                                     // Set clear depth to farthest possible depth when glClear(GL_DEPTH_BUFFER_BIT) is called
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);     // Clear colour and depth buffers
-    glm::vec2 scale = { 1.0f, 1.0f };
-#ifdef __APPLE__
-    glfwGetWindowContentScale(window, &scale.x, &scale.y);
-#endif
-    glViewport(0, 0, width*scale.x, height*scale.y);        // Adjust viewport for high DPI displays
-    glOrtho(0.f, width, height, 0.f, 0.f, 1.f);             // Set orthographic projection
+   
+    Window::SetupViewport(width, height);
 
     Log("[ENGINE] OpenGL initialised successfully");
 
     Time::frameCount = 0;
     Window::shouldClose = false;
+    Window::handle = window;
 }
 
 bool App::shouldClose()

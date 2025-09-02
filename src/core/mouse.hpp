@@ -7,9 +7,9 @@
 class Mouse
 {
 public:
-    static glm::vec2 position;
-    static glm::vec2 positionLastFrame;
-    static glm::vec2 scroll;
-    static bool buttons[MAX_MOUSE_BUTTONS];
-    static bool buttonsLastFrame[MAX_MOUSE_BUTTONS];
+    glm::vec2 position;
+    glm::vec2 positionLastFrame;
+    glm::vec2 scroll;
+    bool buttons[MAX_MOUSE_BUTTONS];
+    bool buttonsLastFrame[MAX_MOUSE_BUTTONS];
 };

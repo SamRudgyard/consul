@@ -3,6 +3,8 @@
 #include "utils.hpp"
 #include "glad/glad.h"
 
+std::map<std::string, Shader> ShaderManager::shaders = std::map<std::string, Shader>();
+
 Shader ShaderManager::LoadShader(const char* vertexPath, const char* fragmentPath, const char* referenceName)
 {
     if (!vertexPath) Error("[ShaderManager::LoadShader] Vertex shader path is null");

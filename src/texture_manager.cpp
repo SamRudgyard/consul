@@ -1,14 +1,13 @@
 #include "texture_manager.hpp"
 
-#ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#endif
 #include "stb_image.h"
 
 #include "glad/glad.h"
 
 #include "utils.hpp"
 
+std::map<std::string, std::shared_ptr<Texture>> TextureManager::textures;
 
 std::shared_ptr<Texture> TextureManager::LoadTexture(const char* filePath, const char* referenceName, bool requiresAlphaChannel)
 {
