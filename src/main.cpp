@@ -3,7 +3,7 @@
 int main(int argc, char **argv) {
     App app("Game", 800, 600, false);
 
-    app.VSync(false);
+    app.VSync(true);
 
     while (app.Run()) {
         
