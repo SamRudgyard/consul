@@ -37,6 +37,8 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
 
     glfwMakeContextCurrent(Window::handle);
 
+    glfwSwapInterval(Window::vsyncEnabled ? 1 : 0);
+
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) Error("[ENGINE] Failed to initialize GLAD");
@@ -64,6 +66,10 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
 
     Time::frameCount = 0;
     Window::shouldClose = false;
+}
+void App::VSync(bool enabled)
+{
+    Window::SetVSync(enabled);
 }
 
 bool App::Run()

@@ -16,4 +16,5 @@ public:
 
     bool Run();
     void Close();
+    void VSync(bool enabled);
 };

@@ -14,6 +14,7 @@ glm::vec2 Window::prevPosition = {0, 0};
 int Window::screen = 0;
 int Window::prevScreen = 0;
 bool Window::shouldClose = false;
+bool Window::vsyncEnabled = true;
 
 void Window::ToggleFullscreen()
 {
@@ -74,4 +75,12 @@ bool Window::ShouldClose()
     }
 
     return Window::shouldClose;
+}
+
+void Window::SetVSync(bool enabled)
+{
+    if (vsyncEnabled == enabled) return;
+    
+    vsyncEnabled = enabled;
+    glfwSwapInterval(enabled ? 1 : 0);
 }
