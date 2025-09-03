@@ -1,5 +1,8 @@
 #include "window.hpp"
 
+#include "time.hpp"
+#include "utils.hpp"
+
 GLFWwindow* Window::handle = nullptr;
 bool Window::isFullscreen = false;
 unsigned int Window::width = 800;
@@ -58,4 +61,17 @@ void Window::WindowSizeCallback(GLFWwindow* window, int width, int height)
         Window::width = (unsigned int)(width*scale.x);
         Window::height = (unsigned int)(height*scale.y);
     }
+}
+
+bool Window::ShouldClose()
+{
+    Window::shouldClose = glfwWindowShouldClose(Window::handle);
+
+    if (Time::frameCount > 1000000)
+    {
+        Log("[ENGINE] Frame count exceeded 1000000");
+        Window::shouldClose = true;
+    }
+
+    return Window::shouldClose;
 }

@@ -66,9 +66,26 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
     Window::shouldClose = false;
 }
 
-bool App::shouldClose()
+bool App::Run()
 {
-    bool shouldClose = false;
-    // TODO: logic to check if app should close
-    return shouldClose;
+    Time::NewFrame();
+
+    glfwPollEvents();
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    Window::SwapBuffers();
+
+    return !Window::ShouldClose();
+}
+
+void App::Close()
+{
+    Log("[ENGINE] Shutting down Game Engine...");
+
+    glfwDestroyWindow(Window::handle);
+    glfwTerminate();
+
+    Log("[ENGINE] Shutdown complete.");
 }

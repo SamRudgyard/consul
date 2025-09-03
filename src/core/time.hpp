@@ -9,4 +9,7 @@ public:
     static double frameTime;
     static double targetFrameTime;
     static int frameCount;
+
+    static void NewFrame();
+    static void SetTargetFPS(unsigned int fps);
 };
