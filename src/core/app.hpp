@@ -14,8 +14,6 @@ public:
     App(const char* title, unsigned int width, unsigned int height, bool isFullscreen = false);
     ~App() = default;
 
-    void Run() {};
-
-private:
-    bool shouldClose();
+    bool Run();
+    void Close();
 };

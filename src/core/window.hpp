@@ -38,4 +38,6 @@ public:
     static void SetupViewport(unsigned int width, unsigned int height);
     static glm::vec2 GetWindowScaleDPI();
     static void WindowSizeCallback(GLFWwindow* window, int width, int height);
+    static bool ShouldClose();
+    static void SwapBuffers() { glfwSwapBuffers(handle); };
 };

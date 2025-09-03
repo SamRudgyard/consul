@@ -2,7 +2,12 @@
 
 int main(int argc, char **argv) {
     App app("Game", 800, 600, false);
-    // app.Run();
+
+    while (app.Run()) {
+        
+    }
+
+    app.Close();
 
     return 0;
 }
