@@ -18,7 +18,7 @@ void Time::NewFrame()
     frameTime += deltaTime;
     frameCount++;
 
-    Log("[Time::NewFrame] Frame " + std::to_string(frameCount) + ": " + std::to_string(int(deltaTime*1000)) + " ms (Total time: " + std::to_string(int(currentTime)) + " s)");
+    LogOnDebug("[Time::NewFrame] Frame " + std::to_string(frameCount) + ": " + std::to_string(int(deltaTime*1000)) + " ms (Total time: " + std::to_string(int(currentTime)) + " s)");
 }
 
 void Time::SetTargetFPS(unsigned int fps)
