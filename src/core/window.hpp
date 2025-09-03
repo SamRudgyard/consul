@@ -23,6 +23,8 @@ public:
     static bool shouldClose;
     static bool resizedLastFrame;
 
+    static bool vsyncEnabled;
+
     static int screen;
     static int prevScreen;
 
@@ -40,4 +42,5 @@ public:
     static void WindowSizeCallback(GLFWwindow* window, int width, int height);
     static bool ShouldClose();
     static void SwapBuffers() { glfwSwapBuffers(handle); };
+    static void SetVSync(bool enabled);
 };
