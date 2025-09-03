@@ -13,7 +13,7 @@ void Log_(const std::string& message)
 
 void LogOnDebug_(const std::string& message)
 {
-    #ifdef DEBUG
+    #ifndef NDEBUG
     std::cout << TEXT_BLUE << "[DEBUG] " << TEXT_RESET << message << std::endl;
     #endif
 }
