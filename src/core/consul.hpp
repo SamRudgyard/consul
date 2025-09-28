@@ -8,11 +8,11 @@
 #include "time.hpp"
 #include "keyboard.hpp"
 
-class App
+class Consul
 {
 public:
-    App(const char* title, unsigned int width, unsigned int height, bool isFullscreen = false);
-    ~App() = default;
+    Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen = false);
+    ~Consul() = default;
 
     bool Run();
     void Close();

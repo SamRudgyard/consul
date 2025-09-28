@@ -1,15 +1,15 @@
-#include "core/app.hpp"
+#include "core/consul.hpp"
 
 int main(int argc, char **argv) {
-    App app("Game", 800, 600, false);
+    Consul consul("Game", 800, 600, false);
 
-    app.VSync(true);
+    consul.VSync(true);
 
-    while (app.Run()) {
-        
+    while (consul.Run()) {
+
     }
 
-    app.Close();
+    consul.Close();
 
     return 0;
 }

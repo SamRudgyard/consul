@@ -1,10 +1,10 @@
-#include "app.hpp"
+#include "consul.hpp"
 
 #include "utils.hpp"
 
-App::App(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
+Consul::Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
 {
-    Log("[ENGINE] Initialising Game Engine...");
+    Log("[Consul] Initialising Game Engine...");
 
     Window::title = title;
     Window::width = width;
@@ -32,7 +32,7 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
 
     if (!Window::handle) {
         glfwTerminate();
-        Error("[ENGINE] Failed to create GLFW window");
+        Error("[Consul] Failed to create GLFW window");
     }
 
     glfwMakeContextCurrent(Window::handle);
@@ -41,7 +41,7 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) Error("[ENGINE] Failed to initialize GLAD");
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) Error("[Consul] Failed to initialize GLAD");
     glfwSetKeyCallback(Window::handle, Keyboard::KeyCallback);
     glfwSetWindowSizeCallback(Window::handle, Window::WindowSizeCallback);
     // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -62,23 +62,23 @@ App::App(const char* title, unsigned int width, unsigned int height, bool isFull
    
     Window::SetupViewport(width, height);
 
-    Log("[ENGINE] OpenGL initialised successfully");
+    Log("[Consul] OpenGL initialised successfully");
 
     Time::frameCount = 0;
     Window::shouldClose = false;
 }
-void App::VSync(bool enabled)
+void Consul::VSync(bool enabled)
 {
     Window::SetVSync(enabled);
 }
 
-bool App::Run()
+bool Consul::Run()
 {
     Time::NewFrame();
 
     glfwPollEvents();
 
-    glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     Window::SwapBuffers();
@@ -86,12 +86,12 @@ bool App::Run()
     return !Window::ShouldClose();
 }
 
-void App::Close()
+void Consul::Close()
 {
-    Log("[ENGINE] Shutting down Game Engine...");
+    Log("[Consul] Shutting down Game Engine...");
 
     glfwDestroyWindow(Window::handle);
     glfwTerminate();
 
-    Log("[ENGINE] Shutdown complete.");
+    Log("[Consul] Shutdown complete.");
 }

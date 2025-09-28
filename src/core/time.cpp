@@ -23,9 +23,9 @@ void Time::NewFrame()
 
 void Time::SetTargetFPS(unsigned int fps)
 {
-    if (fps < 1) Error("[ENGINE] Invalid target FPS: " + std::to_string(fps));
+    if (fps < 1) Error("[Consul] Invalid target FPS: " + std::to_string(fps));
 
     targetFrameTime = double(1.0/fps);
 
-    Log("[ENGINE] Target FPS set to " + std::to_string(fps) + " (" + std::to_string(int(targetFrameTime)*1000) + " ms per frame)");
+    Log("[Consul] Target FPS set to " + std::to_string(fps) + " (" + std::to_string(int(targetFrameTime)*1000) + " ms per frame)");
 }
