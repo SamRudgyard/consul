@@ -23,8 +23,8 @@ include_directories(submodules/glad/include/
                     submodules/glfw/include/
                     submodules/glm/
                     submodules/stb/
-                    submodules/assimp/include/
-                    submodules/assimp/build/include/)
+                    submodules/imgui/
+                    submodules/imgui/backends/)
 
 # Set bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/bin)
@@ -46,7 +46,16 @@ file(GLOB_RECURSE HPP_HEADERS "${SRC_DIR}/*.hpp")
 file(GLOB_RECURSE INC_HEADERS "${INC_DIR}/*.h")
 
 # Find required dependency files
-file(GLOB DEP_SOURCES submodules/glad/src/glad.c)
+file(GLOB DEP_SOURCES
+    submodules/glad/src/glad.c
+    submodules/imgui/imgui.cpp
+    submodules/imgui/imgui_demo.cpp
+    submodules/imgui/imgui_draw.cpp
+    submodules/imgui/imgui_tables.cpp
+    submodules/imgui/imgui_widgets.cpp
+    submodules/imgui/backends/imgui_impl_opengl3.cpp
+    submodules/imgui/backends/imgui_impl_glfw.cpp
+)
 
 # Add all source files to the project
 include_directories(${SRC_DIR})
@@ -58,4 +67,4 @@ add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${C_SOURCES} ${DEP_SOURCES} ${HPP_
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
 
-target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} ${GLAD_LIBRARIES} assimp)
+target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} ${GLAD_LIBRARIES})
