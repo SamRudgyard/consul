@@ -4,6 +4,7 @@
 #include "utils.hpp"
 
 GLFWwindow* Window::handle = nullptr;
+// ImGuiIO* Window::io = nullptr;
 bool Window::isFullscreen = false;
 unsigned int Window::width = 800;
 unsigned int Window::height = 600;

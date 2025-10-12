@@ -1,5 +1,7 @@
 #include "consul.hpp"
-
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 #include "utils.hpp"
 
 Consul::Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
@@ -64,6 +66,19 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     Log("[Consul] OpenGL initialised successfully");
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // IF using Docking Branch
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(Window::handle, true);     // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+    ImGui_ImplOpenGL3_Init();
+
+    Log("[Consul] ImGui initialised successfully");
+
     Time::frameCount = 0;
     Window::shouldClose = false;
 }
@@ -78,8 +93,19 @@ bool Consul::Run()
 
     glfwPollEvents();
 
+    // Start the ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    ImGui::ShowDemoWindow(); // Show demo window!
+
+    ImGui::Render();
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // ImGui::UpdatePlatformWindows();
 
     Window::SwapBuffers();
 
@@ -92,6 +118,14 @@ void Consul::Close()
 
     glfwDestroyWindow(Window::handle);
     glfwTerminate();
+
+    Log ("[Consul] GLFW terminated.");
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    Log("[Consul] ImGui terminated.");
 
     Log("[Consul] Shutdown complete.");
 }
