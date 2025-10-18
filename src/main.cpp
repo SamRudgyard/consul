@@ -1,7 +1,7 @@
 #include "core/consul.hpp"
 
 int main(int argc, char **argv) {
-    Consul consul("Game", 800, 400, false);
+    Consul consul("Game", false);
 
     consul.VSync(true);
 
