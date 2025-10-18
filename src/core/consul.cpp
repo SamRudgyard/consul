@@ -69,6 +69,8 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = NULL; // Disable saving .ini file
+    io.LogFilename = NULL; // Disable logging to file
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // IF using Docking Branch
