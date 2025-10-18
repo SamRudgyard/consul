@@ -1,0 +1,116 @@
+#include "console.hpp"
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "utils.hpp"
+
+Console::Console()
+{
+    ClearLog();
+    Log("---- CONSUL ----");
+}
+
+Console::~Console()
+{
+    ClearLog();
+}
+
+void Console::Log(const char* message)
+{
+    items.push_back(message);
+}
+
+void Console::Error(const char* message)
+{
+    items.push_back(std::string("[ERROR] ") + message);
+}
+
+void Console::Warn(const char* message)
+{
+    items.push_back(std::string("[WARNING] ") + message);
+}
+
+void Console::Info(const char* message)
+{
+    items.push_back(std::string("[INFO] ") + message);
+}
+
+void Console::Draw(const char* title, bool* open)
+{
+    ImGui::SetNextWindowSize({500, 300}, ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin(title, open))
+    {
+        ImGui::End();
+        return;
+    }
+
+    if (ImGui::BeginPopupContextItem())
+    {
+        if (ImGui::MenuItem("Close"))
+        {
+            *open = false;
+        }
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("Options"))
+    {
+        ImGui::Checkbox("Auto-scroll", &autoScroll);
+        ImGui::EndPopup();
+    }
+    ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_O, ImGuiInputFlags_Tooltip);
+    if (ImGui::Button("Options"))
+    {
+        ImGui::OpenPopup("Options");
+    }
+
+    if (ImGui::BeginPopupContextWindow())
+    {
+        if (ImGui::Selectable("Clear")) ClearLog();
+        ImGui::EndPopup();
+    }
+
+    const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+    if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_HorizontalScrollbar))
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
+
+        for (std::string item : items)
+        {
+            ImVec4 colour;
+            bool hasColour = false;
+            if (IsSubstring(item, "[ERROR]"))
+            {
+                colour = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+                hasColour = true;
+            }
+            else if (IsSubstring(item, "[WARNING]"))
+            {
+                colour = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
+                hasColour = true;
+            }
+            else if (IsSubstring(item, "[INFO]"))
+            {
+                colour = ImVec4(0.4f, 0.4f, 1.0f, 1.0f);
+                hasColour = true;
+            }
+            if (hasColour) ImGui::PushStyleColor(ImGuiCol_Text, colour);
+            ImGui::TextUnformatted(item.c_str());
+            if (hasColour) ImGui::PopStyleColor();
+        }
+
+        if (scrollToBottom || (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
+        {
+            ImGui::SetScrollHereY(1.0f);
+        }
+        scrollToBottom = false;
+
+        ImGui::PopStyleVar();
+    }
+
+    ImGui::EndChild();
+    ImGui::Separator();
+
+    ImGui::End();
+}

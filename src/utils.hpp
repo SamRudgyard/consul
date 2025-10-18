@@ -1,10 +1,8 @@
 #pragma once
 
 #include <iostream>
-
-using namespace std;
-
-namespace utils {
+#include <fstream>
+#include <sstream>
 
 enum ColourCode {
     FG_RED      = 31,
@@ -28,7 +26,7 @@ class Modifier {
     ColourCode colour;
 public:
     Modifier(ColourCode code) : colour(code) {}
-    friend ostream& operator<<(ostream& os, const Modifier& modifier) {
+    friend std::ostream& operator<<(std::ostream& os, const Modifier& modifier) {
         return os << "\033[" << modifier.colour << "m";
     }
 };
@@ -42,10 +40,19 @@ public:
 #define TEXT_CYAN       Modifier(FG_CYAN)
 #define TEXT_WHITE      Modifier(FG_WHITE)
 
-void Error_(const string& message, const char* file, int line);
-#define Error(message) utils::Error_(message, __FILE__, __LINE__)
+// void Error_(const std::string& message, const char* file, int line);
+// #define Error(message) Error_(message, __FILE__, __LINE__)
 
-void Log_(const string& message);
-#define Log(message) utils::Log_(message)
+// void Log_(const std::string& message);
+// #define Log(message) Log_(message)
 
-} // namespace utils
+// void LogOnDebug_(const std::string& message);
+// #define LogOnDebug(message) LogOnDebug_(message)
+
+bool DoesFileExist(const char* filePath);
+
+char* ReadFile(const char* filePath);
+
+void UnloadFileText(char* text);
+
+bool IsSubstring(const std::string& str, const std::string& substr);
