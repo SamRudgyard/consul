@@ -107,6 +107,11 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     Window::shouldClose = false;
 }
 
+Consul::~Consul()
+{
+    Terminate();
+}
+
 void Consul::VSync(bool enabled)
 {
     Window::SetVSync(enabled);
@@ -138,7 +143,7 @@ bool Consul::Run()
     return !Window::ShouldClose();
 }
 
-void Consul::Close()
+void Consul::Terminate()
 {
     console.Log("[Consul] Shutting down Game Engine...");
 

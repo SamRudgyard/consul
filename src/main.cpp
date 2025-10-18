@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
 
     }
 
-    consul.Close();
+    consul.Terminate();
 
     return 0;
 }
