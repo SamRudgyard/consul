@@ -40,17 +40,19 @@ public:
 #define TEXT_CYAN       Modifier(FG_CYAN)
 #define TEXT_WHITE      Modifier(FG_WHITE)
 
-void Error_(const std::string& message, const char* file, int line);
-#define Error(message) Error_(message, __FILE__, __LINE__)
+// void Error_(const std::string& message, const char* file, int line);
+// #define Error(message) Error_(message, __FILE__, __LINE__)
 
-void Log_(const std::string& message);
-#define Log(message) Log_(message)
+// void Log_(const std::string& message);
+// #define Log(message) Log_(message)
 
-void LogOnDebug_(const std::string& message);
-#define LogOnDebug(message) LogOnDebug_(message)
+// void LogOnDebug_(const std::string& message);
+// #define LogOnDebug(message) LogOnDebug_(message)
 
 bool DoesFileExist(const char* filePath);
 
 char* ReadFile(const char* filePath);
 
 void UnloadFileText(char* text);
+
+bool IsSubstring(const std::string& str, const std::string& substr);
