@@ -6,7 +6,7 @@
 
 Consul::Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
 {
-    Log("[Consul] Initialising Game Engine...");
+    console.Log("[Consul] Initialising Game Engine...");
 
     Window::title = title;
     Window::width = width;
@@ -20,7 +20,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-    glfwWindowHint(GLFW_RESIZABLE, false);
+    glfwWindowHint(GLFW_RESIZABLE, true);
 
     GLFWmonitor* monitor = nullptr;
     if (isFullscreen) {
@@ -34,7 +34,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     if (!Window::handle) {
         glfwTerminate();
-        Error("[Consul] Failed to create GLFW window");
+        console.Error("[Consul] Failed to create GLFW window");
     }
 
     glfwMakeContextCurrent(Window::handle);
@@ -43,7 +43,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) Error("[Consul] Failed to initialize GLAD");
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) console.Error("[Consul] Failed to initialize GLAD");
     glfwSetKeyCallback(Window::handle, Keyboard::KeyCallback);
     glfwSetWindowSizeCallback(Window::handle, Window::WindowSizeCallback);
     // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -64,7 +64,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
    
     Window::SetupViewport(width, height);
 
-    Log("[Consul] OpenGL initialised successfully");
+    console.Log("[Consul] OpenGL initialised successfully");
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -77,7 +77,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     ImGui_ImplGlfw_InitForOpenGL(Window::handle, true);     // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
 
-    Log("[Consul] ImGui initialised successfully");
+    console.Log("[Consul] ImGui initialised successfully");
 
     Time::frameCount = 0;
     Window::shouldClose = false;
@@ -97,7 +97,8 @@ bool Consul::Run()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    ImGui::ShowDemoWindow(); // Show demo window!
+
+    console.Draw("Console");
 
     ImGui::Render();
 
@@ -114,18 +115,18 @@ bool Consul::Run()
 
 void Consul::Close()
 {
-    Log("[Consul] Shutting down Game Engine...");
+    console.Log("[Consul] Shutting down Game Engine...");
 
     glfwDestroyWindow(Window::handle);
     glfwTerminate();
 
-    Log ("[Consul] GLFW terminated.");
+    console.Log("[Consul] GLFW terminated.");
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    Log("[Consul] ImGui terminated.");
+    console.Log("[Consul] ImGui terminated.");
 
-    Log("[Consul] Shutdown complete.");
+    console.Log("[Consul] Shutdown complete.");
 }

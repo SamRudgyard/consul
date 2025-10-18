@@ -8,6 +8,8 @@
 #include "time.hpp"
 #include "keyboard.hpp"
 
+#include "console/console.hpp"
+
 class Consul
 {
 public:
@@ -17,4 +19,7 @@ public:
     bool Run();
     void Close();
     void VSync(bool enabled);
+
+private:
+    Console console;
 };

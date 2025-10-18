@@ -71,7 +71,7 @@ bool Window::ShouldClose()
 
     if (Time::frameCount > 1000000)
     {
-        Log("[Consul] Frame count exceeded 1000000");
+        // Log("[Consul] Frame count exceeded 1000000");
         Window::shouldClose = true;
     }
 

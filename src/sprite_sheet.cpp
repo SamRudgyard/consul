@@ -20,7 +20,7 @@ SpriteSheet::SpriteSheet(const char* filePath, int spriteWidth, int spriteHeight
         }
     }
 
-    LogOnDebug("[SpriteSheet::SpriteSheet] Loaded sprite sheet from file '" + std::string(filePath) + "' with " + std::to_string(sprites.size()) + " sprites.");
+    // LogOnDebug("[SpriteSheet::SpriteSheet] Loaded sprite sheet from file '" + std::string(filePath) + "' with " + std::to_string(sprites.size()) + " sprites.");
 }
 
 SpriteSheet::~SpriteSheet()
@@ -31,7 +31,7 @@ SpriteSheet::~SpriteSheet()
 Sprite SpriteSheet::GetSprite(int index) const
 {
     if (index < 0 || index >= sprites.size()) {
-        Error("[SpriteSheet::GetSprite] Invalid sprite index: " + std::to_string(index));
+        // Error("[SpriteSheet::GetSprite] Invalid sprite index: " + std::to_string(index));
         return Sprite();
     }
 

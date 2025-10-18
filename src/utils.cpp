@@ -1,22 +1,22 @@
 #include "utils.hpp"
 
-void Error_(const std::string& message, const char* file, int line)
-{
-    std::cout << TEXT_RED << "[ERROR] " << TEXT_YELLOW << message << TEXT_RESET << " | " << file << " (" << line << ")" << std::endl;
-    throw std::exception();
-}
+// void Error_(const std::string& message, const char* file, int line)
+// {
+//     std::cout << TEXT_RED << "[ERROR] " << TEXT_YELLOW << message << TEXT_RESET << " | " << file << " (" << line << ")" << std::endl;
+//     throw std::exception();
+// }
 
-void Log_(const std::string& message)
-{
-    std::cout << TEXT_GREEN << "[LOG] " << TEXT_RESET << message << std::endl;
-}
+// void Log_(const std::string& message)
+// {
+//     std::cout << TEXT_GREEN << "[LOG] " << TEXT_RESET << message << std::endl;
+// }
 
-void LogOnDebug_(const std::string& message)
-{
-    #ifndef NDEBUG
-    std::cout << TEXT_BLUE << "[DEBUG] " << TEXT_RESET << message << std::endl;
-    #endif
-}
+// void LogOnDebug_(const std::string& message)
+// {
+//     #ifndef NDEBUG
+//     std::cout << TEXT_BLUE << "[DEBUG] " << TEXT_RESET << message << std::endl;
+//     #endif
+// }
 
 bool DoesFileExist(const char* filePath)
 {
@@ -36,13 +36,13 @@ bool DoesFileExist(const char* filePath)
  */
 char* ReadFile(const char* filePath)
 {
-    if (!filePath) Error("[ReadFile] Provided file path is null");
+    // if (!filePath) Error("[ReadFile] Provided file path is null");
 
-    if (!DoesFileExist(filePath)) Error("[ReadFile] File does not exist: '" + std::string(filePath) + "'");
+    // if (!DoesFileExist(filePath)) Error("[ReadFile] File does not exist: '" + std::string(filePath) + "'");
 
     // Read the file contents
     std::ifstream file(filePath);
-    if (!file) Error("[ReadFile] File could not be read: '" + std::string(filePath) + "'");
+    // if (!file) Error("[ReadFile] File could not be read: '" + std::string(filePath) + "'");
 
     // Get the file size
     file.seekg(0, std::ios::end);
@@ -51,7 +51,7 @@ char* ReadFile(const char* filePath)
 
     // Allocate memory for the file contents
     char* text = new char[size + 1];
-    if (!text) Error("[ReadFile] Memory allocation failed for file: '" + std::string(filePath) + "'");
+    // if (!text) Error("[ReadFile] Memory allocation failed for file: '" + std::string(filePath) + "'");
 
    // Read the file contents into the allocated memory
    file.read(text, size);
@@ -59,7 +59,7 @@ char* ReadFile(const char* filePath)
 
    file.close();
 
-    LogOnDebug("[ReadFile] Successfully read file: '" + std::string(filePath) + "'");
+    // LogOnDebug("[ReadFile] Successfully read file: '" + std::string(filePath) + "'");
 
    return text;
 }
@@ -71,9 +71,13 @@ char* ReadFile(const char* filePath)
  */
 void UnloadFileText(char* text) {
     if (!text) {
-        LogOnDebug("[UnloadFile] Unnecessary call to unload text");
+        // LogOnDebug("[UnloadFile] Unnecessary call to unload text");
         return;
     }
 
     delete[] text;
+}
+
+bool IsSubstring(const std::string& str, const std::string& substr) {
+    return str.find(substr) != std::string::npos;
 }
