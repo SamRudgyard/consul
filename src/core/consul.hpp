@@ -14,10 +14,11 @@ class Consul
 {
 public:
     Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen = false);
-    ~Consul() = default;
+    Consul(const char* title, bool isFullscreen = false);
+    ~Consul();
 
     bool Run();
-    void Close();
+    void Terminate();
     void VSync(bool enabled);
 
 private:

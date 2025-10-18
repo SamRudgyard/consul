@@ -4,16 +4,19 @@
 #include "imgui_impl_opengl3.h"
 #include "utils.hpp"
 
+Consul::Consul(const char* title, bool isFullscreen)
+    : Consul(title, 0, 0, isFullscreen)
+{
+}
+
 Consul::Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
 {
-    console.Log("[Consul] Initialising Game Engine...");
+    console.Log("[Consul] Initialising Consul...");
 
-    Window::title = title;
-    Window::width = width;
-    Window::height = height;
-    Window::isFullscreen = isFullscreen;
-
-    glfwInit();
+    if (!glfwInit()) {
+        console.Error("[Consul] Failed to initialize GLFW");
+        return;
+    }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -22,19 +25,37 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 #endif
     glfwWindowHint(GLFW_RESIZABLE, true);
 
-    GLFWmonitor* monitor = nullptr;
+    GLFWmonitor* primaryMonitor = nullptr;
     if (isFullscreen) {
-        monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        console.Log("[Consul] Creating fullscreen window...");
+        primaryMonitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
         width = mode->width;
         height = mode->height;
     }
 
-    Window::handle = glfwCreateWindow(width, height, title, monitor, nullptr);
+    bool maximise = !isFullscreen && (width == 0 || height == 0);
+
+    Window::title = title;
+    Window::width = maximise ? 1280 : width;
+    Window::height = maximise ? 720 : height;
+    Window::isFullscreen = isFullscreen;
+    Window::handle = glfwCreateWindow(Window::width, Window::height, title, primaryMonitor, nullptr);
+
+    if (maximise) {
+        console.Log("[Consul] Creating maximised window...");
+        glfwMaximizeWindow(Window::handle);
+
+        int framebufferWidth, framebufferHeight;
+        glfwGetFramebufferSize(Window::handle, &framebufferWidth, &framebufferHeight);
+        Window::width = static_cast<unsigned int>(framebufferWidth);
+        Window::height = static_cast<unsigned int>(framebufferHeight);
+    }
 
     if (!Window::handle) {
         glfwTerminate();
         console.Error("[Consul] Failed to create GLFW window");
+        return;
     }
 
     glfwMakeContextCurrent(Window::handle);
@@ -50,6 +71,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     // Initialise OpenGL with our default settings
     // --------------------
+    glEnable(GL_DEPTH_TEST);                                // Enable depth testing
     glDepthFunc(GL_LESS);                                   // Type of depth testing to apply
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      // Colour blending, determines how pixel colours are combined
     glEnable(GL_BLEND);                                     // Enable colour blending (required for transparencies)
@@ -61,8 +83,8 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                   // Set clear colour to black
     glClearDepth(1.0f);                                     // Set clear depth to farthest possible depth when glClear(GL_DEPTH_BUFFER_BIT) is called
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);     // Clear colour and depth buffers
-   
-    Window::SetupViewport(width, height);
+
+    Window::SetupViewport(Window::width, Window::height);
 
     console.Log("[Consul] OpenGL initialised successfully");
 
@@ -84,6 +106,12 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     Time::frameCount = 0;
     Window::shouldClose = false;
 }
+
+Consul::~Consul()
+{
+    Terminate();
+}
+
 void Consul::VSync(bool enabled)
 {
     Window::SetVSync(enabled);
@@ -115,7 +143,7 @@ bool Consul::Run()
     return !Window::ShouldClose();
 }
 
-void Consul::Close()
+void Consul::Terminate()
 {
     console.Log("[Consul] Shutting down Game Engine...");
 

@@ -1,7 +1,7 @@
 #include "core/consul.hpp"
 
 int main(int argc, char **argv) {
-    Consul consul("Game", 800, 400, false);
+    Consul consul("Game", false);
 
     consul.VSync(true);
 
@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
 
     }
 
-    consul.Close();
+    consul.Terminate();
 
     return 0;
 }
