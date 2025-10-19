@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "core/window.hpp"
 #include "utils.hpp"
 
 Console* Console::instance = nullptr;
@@ -41,7 +42,10 @@ void Console::Info(const std::string& message)
 
 void Console::Draw(const char* title, bool* open)
 {
-    ImGui::SetNextWindowSize({500, 300}, ImGuiCond_FirstUseEver);
+    unsigned int consoleWidth = (int)(0.2f * Window::width);
+    unsigned int consoleHeight = (int)(0.3f * Window::height);
+    ImGui::SetNextWindowSize({(float)consoleWidth, (float)consoleHeight}, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos({(float)(Window::width - consoleWidth), (float)(Window::height - consoleHeight)}, ImGuiCond_FirstUseEver);
     if (!ImGui::Begin(title, open))
     {
         ImGui::End();
