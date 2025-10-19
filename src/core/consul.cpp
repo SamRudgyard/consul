@@ -11,6 +11,10 @@ Consul::Consul(const char* title, bool isFullscreen)
 
 Consul::Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
 {
+    // Prepare console
+    console.ClearLog();
+    console.Log("---- CONSUL ----");
+
     console.Log("[Consul] Initialising Consul...");
 
     if (!glfwInit()) {

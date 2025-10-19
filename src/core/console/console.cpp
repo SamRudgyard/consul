@@ -3,42 +3,48 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "core/window.hpp"
 #include "utils.hpp"
-
-Console::Console()
-{
-    ClearLog();
-    Log("---- CONSUL ----");
-}
 
 Console::~Console()
 {
     ClearLog();
 }
 
-void Console::Log(const char* message)
+void Console::Log(const std::string& message)
 {
     items.push_back(message);
 }
 
-void Console::Error(const char* message)
+void Console::LogOnDebug(const std::string& message)
 {
-    items.push_back(std::string("[ERROR] ") + message);
+#ifndef NDEBUG
+    items.push_back("[DEBUG] " + message);
+#endif
 }
 
-void Console::Warn(const char* message)
+void Console::Error(const std::string& message)
 {
-    items.push_back(std::string("[WARNING] ") + message);
+    items.push_back("[ERROR] " + message);
+    throw std::runtime_error(message);
 }
 
-void Console::Info(const char* message)
+void Console::Warn(const std::string& message)
 {
-    items.push_back(std::string("[INFO] ") + message);
+    items.push_back("[WARNING] " + message);
+}
+
+void Console::Info(const std::string& message)
+{
+    items.push_back("[INFO] " + message);
 }
 
 void Console::Draw(const char* title, bool* open)
 {
-    ImGui::SetNextWindowSize({500, 300}, ImGuiCond_FirstUseEver);
+    unsigned int consoleWidth = (int)(0.2f * Window::width);
+    unsigned int consoleHeight = (int)(0.3f * Window::height);
+    ImGui::SetNextWindowSize({(float)consoleWidth, (float)consoleHeight}, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos({(float)(Window::width - consoleWidth), (float)(Window::height - consoleHeight)}, ImGuiCond_FirstUseEver);
     if (!ImGui::Begin(title, open))
     {
         ImGui::End();

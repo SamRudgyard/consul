@@ -1,5 +1,6 @@
 #include "shader.hpp"
 
+#include "core/console/console.hpp"
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -29,6 +30,8 @@ Shader& Shader::Use()
  */
 void Shader::Compile(const char* vertexSource, const char* fragmentSource)
 {
+    Console& console = Console::Get();
+
     // Create shaders
     unsigned int vertex, fragment;
     vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -43,10 +46,10 @@ void Shader::Compile(const char* vertexSource, const char* fragmentSource)
     glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        // Error("[Shader::Compile] Vertex shader compilation failed: " + std::string(infoLog));
+        console.Error("[Shader::Compile] Vertex shader compilation failed: " + std::string(infoLog));
     }
 
-    // LogOnDebug("[Shader::Compile] Vertex shader successfully compiled");
+    console.LogOnDebug("[Shader::Compile] Vertex shader successfully compiled");
 
     // Compile fragment shader
     glShaderSource(fragment, 1, &fragmentSource, NULL);
@@ -55,10 +58,10 @@ void Shader::Compile(const char* vertexSource, const char* fragmentSource)
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-        // Error("[Shader::Compile] Fragment shader compilation failed: " + std::string(infoLog));
+        console.Error("[Shader::Compile] Fragment shader compilation failed: " + std::string(infoLog));
     }
 
-    // LogOnDebug("[Shader::Compile] Fragment shader successfully compiled");
+    console.LogOnDebug("[Shader::Compile] Fragment shader successfully compiled");
 
     // Create shader program and link shaders
     id = glCreateProgram();
@@ -69,16 +72,16 @@ void Shader::Compile(const char* vertexSource, const char* fragmentSource)
     glGetProgramiv(id, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(id, 512, NULL, infoLog);
-        // Error("[Shader::Compile] Shader program linking failed: " + std::string(infoLog));
+        console.Error("[Shader::Compile] Shader program linking failed: " + std::string(infoLog));
     }
 
-    // LogOnDebug("[Shader::Compile] Shader program successfully linked");
+    console.LogOnDebug("[Shader::Compile] Shader program successfully linked");
 
     // Delete the shaders as they're linked into our program now and no longer necessary
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 
-    // LogOnDebug("[Shader::Compile] Shader program compiled and linked successfully (ID: " + std::to_string(id) + ")");
+    console.LogOnDebug("[Shader::Compile] Shader program compiled and linked successfully (ID: " + std::to_string(id) + ")");
 }
 
 void Shader::SetUniformFloat(const char* name, float value)

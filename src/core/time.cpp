@@ -1,5 +1,6 @@
 #include "time.hpp"
 
+#include "core/console/console.hpp"
 #include "GLFW/glfw3.h"
 #include "utils.hpp"
 
@@ -18,14 +19,19 @@ void Time::NewFrame()
     frameTime += deltaTime;
     frameCount++;
 
-    // LogOnDebug("[Time::NewFrame] Frame " + std::to_string(frameCount) + ": " + std::to_string(int(deltaTime*1000)) + " ms (Total time: " + std::to_string(int(currentTime)) + " s)");
+    Console::Get().LogOnDebug("[Time::NewFrame] Frame " + std::to_string(frameCount) + ": " + std::to_string(int(deltaTime*1000)) + " ms (Total time: " + std::to_string(int(currentTime)) + " s)");
 }
 
 void Time::SetTargetFPS(unsigned int fps)
 {
-    // if (fps < 1) Error("[Consul] Invalid target FPS: " + std::to_string(fps));
+    Console& console = Console::Get();
+
+    if (fps < 1) {
+        console.Error("[Consul] Invalid target FPS: " + std::to_string(fps));
+        return;
+    }
 
     targetFrameTime = double(1.0/fps);
 
-    // Log("[Consul] Target FPS set to " + std::to_string(fps) + " (" + std::to_string(int(targetFrameTime)*1000) + " ms per frame)");
+    console.LogOnDebug("[Consul] Target FPS set to " + std::to_string(fps) + " (" + std::to_string(int(targetFrameTime*1000)) + " ms per frame)");
 }
