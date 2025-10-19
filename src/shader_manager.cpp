@@ -34,7 +34,6 @@ Shader ShaderManager::GetShader(const char* referenceName)
 {
     if (shaders.find(referenceName) == shaders.end()) {
         Console::Get()->Error("[ShaderManager::GetShader] Shader with name '" + std::string(referenceName) + "' is not loaded");
-        return Shader();
     }
 
     return shaders[referenceName];

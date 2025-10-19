@@ -48,7 +48,6 @@ std::shared_ptr<Texture> TextureManager::GetTexture(const char* referenceName)
 {
     if (textures.find(referenceName) == textures.end()) {
         Console::Get()->Error("[TextureManager::GetTexture] Texture with name '" + std::string(referenceName) + "' is not loaded");
-        return nullptr;
     }
 
     return textures[referenceName];
