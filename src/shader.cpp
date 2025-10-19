@@ -25,10 +25,10 @@ Shader& Shader::Use()
  * checks for compilation errors, and then links them into a shader program. On success, the shader
  * program is stored in the member variable 'id'. The individual shader objects are deleted after linking.
  *
- * @param vertexSource C-string containing the GLSL source code for the vertex shader.
- * @param fragmentSource C-string containing the GLSL source code for the fragment shader.
+ * @param vertexSource String containing the GLSL source code for the vertex shader.
+ * @param fragmentSource String containing the GLSL source code for the fragment shader.
  */
-void Shader::Compile(const char* vertexSource, const char* fragmentSource)
+void Shader::Compile(const std::string& vertexSource, const std::string& fragmentSource)
 {
     Console& console = Console::Get();
 
@@ -38,7 +38,8 @@ void Shader::Compile(const char* vertexSource, const char* fragmentSource)
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
 
     // Compile vertex shader
-    glShaderSource(vertex, 1, &vertexSource, NULL);
+    const char* vertexCString = vertexSource.c_str();
+    glShaderSource(vertex, 1, &vertexCString, NULL);
     glCompileShader(vertex);
     // Check for compilation errors
     int success;
@@ -52,7 +53,8 @@ void Shader::Compile(const char* vertexSource, const char* fragmentSource)
     console.LogOnDebug("[Shader::Compile] Vertex shader successfully compiled");
 
     // Compile fragment shader
-    glShaderSource(fragment, 1, &fragmentSource, NULL);
+    const char* fragmentCString = fragmentSource.c_str();
+    glShaderSource(fragment, 1, &fragmentCString, NULL);
     glCompileShader(fragment);
     // Check for compilation errors
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);

@@ -42,7 +42,7 @@ public:
 
 bool DoesFileExist(const char* filePath);
 
-char* ReadFile(const char* filePath);
+const std::string ReadFile(const char* filePath);
 
 void UnloadFileText(char* text);
 

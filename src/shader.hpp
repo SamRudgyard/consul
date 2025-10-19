@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glm/glm.hpp"
+#include <string>
 
 class Shader
 {
@@ -9,7 +10,7 @@ public:
 
     Shader& Use();
 
-    void Compile(const char* vertexSource, const char* fragmentSource);
+    void Compile(const std::string& vertexSource, const std::string& fragmentSource);
 
     void SetUniformFloat(const char* name, float value);
     void SetUniformVector2f(const char* name, const float x, const float y);

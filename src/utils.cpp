@@ -15,37 +15,25 @@ bool DoesFileExist(const char* filePath)
  * and returns a pointer to a character array containing the file data.
  *
  * @param filePath The path to the file to be read.
- * @return A pointer to a character array containing the file contents,
- *         or nullptr on failure.
+ * @return A string containing the file contents.
  */
-char* ReadFile(const char* filePath)
+const std::string ReadFile(const char* filePath)
 {
-    // if (!filePath) Error("[ReadFile] Provided file path is null");
+    if (!filePath) Console::Get().Error("[ReadFile] Provided file path is null");
 
-    // if (!DoesFileExist(filePath)) Error("[ReadFile] File does not exist: '" + std::string(filePath) + "'");
+    if (!DoesFileExist(filePath)) Console::Get().Error("[ReadFile] File does not exist: '" + std::string(filePath) + "'");
 
     // Read the file contents
-    std::ifstream file(filePath);
-    // if (!file) Error("[ReadFile] File could not be read: '" + std::string(filePath) + "'");
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file) Console::Get().Error("[ReadFile] File could not be read: '" + std::string(filePath) + "'");
 
-    // Get the file size
-    file.seekg(0, std::ios::end);
-    std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // Allocate memory for the file contents
-    char* text = new char[size + 1];
-    // if (!text) Error("[ReadFile] Memory allocation failed for file: '" + std::string(filePath) + "'");
-
-   // Read the file contents into the allocated memory
-   file.read(text, size);
-   text[size] = '\0';  // Null-terminate the C-string, making it safe for external use
-
-   file.close();
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string contents = buffer.str();
 
     Console::Get().LogOnDebug("[ReadFile] Successfully read file: '" + std::string(filePath) + "'");
 
-   return text;
+    return contents;
 }
 
 /**
