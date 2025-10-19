@@ -11,10 +11,14 @@ Consul::Consul(const char* title, bool isFullscreen)
 
 Consul::Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
 {
-    console.Log("[Consul] Initialising Consul...");
+    // Prepare console
+    console->ClearLog();
+    console->Log("---- CONSUL ----");
+
+    console->Log("[Consul] Initialising Consul...");
 
     if (!glfwInit()) {
-        console.Error("[Consul] Failed to initialize GLFW");
+        console->Error("[Consul] Failed to initialize GLFW");
         return;
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -27,7 +31,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     GLFWmonitor* primaryMonitor = nullptr;
     if (isFullscreen) {
-        console.Log("[Consul] Creating fullscreen window...");
+        console->Log("[Consul] Creating fullscreen window...");
         primaryMonitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
         width = mode->width;
@@ -43,7 +47,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     Window::handle = glfwCreateWindow(Window::width, Window::height, title, primaryMonitor, nullptr);
 
     if (maximise) {
-        console.Log("[Consul] Creating maximised window...");
+        console->Log("[Consul] Creating maximised window...");
         glfwMaximizeWindow(Window::handle);
 
         int framebufferWidth, framebufferHeight;
@@ -54,7 +58,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     if (!Window::handle) {
         glfwTerminate();
-        console.Error("[Consul] Failed to create GLFW window");
+        console->Error("[Consul] Failed to create GLFW window");
         return;
     }
 
@@ -64,7 +68,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) console.Error("[Consul] Failed to initialize GLAD");
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) console->Error("[Consul] Failed to initialize GLAD");
     glfwSetKeyCallback(Window::handle, Keyboard::KeyCallback);
     glfwSetWindowSizeCallback(Window::handle, Window::WindowSizeCallback);
     // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -86,7 +90,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     Window::SetupViewport(Window::width, Window::height);
 
-    console.Log("[Consul] OpenGL initialised successfully");
+    console->Log("[Consul] OpenGL initialised successfully");
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -101,7 +105,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     ImGui_ImplGlfw_InitForOpenGL(Window::handle, true);     // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
 
-    console.Log("[Consul] ImGui initialised successfully");
+    console->Log("[Consul] ImGui initialised successfully");
 
     Time::frameCount = 0;
     Window::shouldClose = false;
@@ -128,7 +132,7 @@ bool Consul::Run()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    console.Draw("Console");
+    console->Draw("Console");
 
     ImGui::Render();
 
@@ -145,18 +149,18 @@ bool Consul::Run()
 
 void Consul::Terminate()
 {
-    console.Log("[Consul] Shutting down Game Engine...");
+    console->Log("[Consul] Shutting down Game Engine...");
 
     glfwDestroyWindow(Window::handle);
     glfwTerminate();
 
-    console.Log("[Consul] GLFW terminated.");
+    console->Log("[Consul] GLFW terminated.");
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    console.Log("[Consul] ImGui terminated.");
+    console->Log("[Consul] ImGui terminated.");
 
-    console.Log("[Consul] Shutdown complete.");
+    console->Log("[Consul] Shutdown complete.");
 }

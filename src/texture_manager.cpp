@@ -5,18 +5,21 @@
 
 #include "glad/glad.h"
 
+#include "core/console/console.hpp"
 #include "utils.hpp"
 
 std::map<std::string, std::shared_ptr<Texture>> TextureManager::textures;
 
 std::shared_ptr<Texture> TextureManager::LoadTexture(const char* filePath, const char* referenceName, bool requiresAlphaChannel)
 {
-    // if (!filePath) Error("[TextureManager::LoadTexture] Texture file path is null");
+    Console* console = Console::Get();
+
+    if (!filePath) console->Error("[TextureManager::LoadTexture] Texture file path is null");
 
     // Check if name is already present
-    // if (textures.find(referenceName) != textures.end()) LogOnDebug("[TextureManager::LoadTexture] Texture with name '" + std::string(referenceName) + "' is already loaded, will overwrite.");
+    if (textures.find(referenceName) != textures.end()) console->LogOnDebug("[TextureManager::LoadTexture] Texture with name '" + std::string(referenceName) + "' is already loaded, will overwrite.");
 
-    // if (!DoesFileExist(filePath)) Error("[TextureManager::LoadTexture] Texture file does not exist: '" + std::string(filePath) + "'");
+    if (!DoesFileExist(filePath)) console->Error("[TextureManager::LoadTexture] Texture file does not exist: '" + std::string(filePath) + "'");
 
     auto texture = std::make_shared<Texture>();
 
@@ -35,7 +38,7 @@ std::shared_ptr<Texture> TextureManager::LoadTexture(const char* filePath, const
 
     textures[referenceName] = texture;
 
-    // LogOnDebug("[TextureManager::LoadTexture] Loaded texture from file '" + std::string(filePath) + "' (ID: " + std::to_string(texture->id) + ", Size: " + std::to_string(width) + "x" + std::to_string(height) + ")");
+    console->LogOnDebug("[TextureManager::LoadTexture] Loaded texture from file '" + std::string(filePath) + "' (ID: " + std::to_string(texture->id) + ", Size: " + std::to_string(width) + "x" + std::to_string(height) + ")");
 
     return textures[referenceName];
 }
@@ -44,7 +47,7 @@ std::shared_ptr<Texture> TextureManager::LoadTexture(const char* filePath, const
 std::shared_ptr<Texture> TextureManager::GetTexture(const char* referenceName)
 {
     if (textures.find(referenceName) == textures.end()) {
-        // Error("[TextureManager::GetTexture] Texture with name '" + std::string(referenceName) + "' is not loaded");
+        Console::Get()->Error("[TextureManager::GetTexture] Texture with name '" + std::string(referenceName) + "' is not loaded");
         return nullptr;
     }
 
@@ -65,7 +68,7 @@ void TextureManager::UnloadTexture(std::shared_ptr<Texture> texture)
         }
     }
 
-    // LogOnDebug("[TextureManager::UnloadTexture] Unloaded texture with ID " + std::to_string(texture->id));
+    Console::Get()->LogOnDebug("[TextureManager::UnloadTexture] Unloaded texture with ID " + std::to_string(texture->id));
 }
 
 
@@ -77,5 +80,5 @@ void TextureManager::Clear()
         }
     }
     textures.clear();
-    // LogOnDebug("[TextureManager::Clear] Cleared all textures from memory");
+    Console::Get()->LogOnDebug("[TextureManager::Clear] Cleared all textures from memory");
 }

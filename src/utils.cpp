@@ -1,22 +1,6 @@
 #include "utils.hpp"
 
-// void Error_(const std::string& message, const char* file, int line)
-// {
-//     std::cout << TEXT_RED << "[ERROR] " << TEXT_YELLOW << message << TEXT_RESET << " | " << file << " (" << line << ")" << std::endl;
-//     throw std::exception();
-// }
-
-// void Log_(const std::string& message)
-// {
-//     std::cout << TEXT_GREEN << "[LOG] " << TEXT_RESET << message << std::endl;
-// }
-
-// void LogOnDebug_(const std::string& message)
-// {
-//     #ifndef NDEBUG
-//     std::cout << TEXT_BLUE << "[DEBUG] " << TEXT_RESET << message << std::endl;
-//     #endif
-// }
+#include "core/console/console.hpp"
 
 bool DoesFileExist(const char* filePath)
 {
@@ -59,7 +43,7 @@ char* ReadFile(const char* filePath)
 
    file.close();
 
-    // LogOnDebug("[ReadFile] Successfully read file: '" + std::string(filePath) + "'");
+    Console::Get()->LogOnDebug("[ReadFile] Successfully read file: '" + std::string(filePath) + "'");
 
    return text;
 }
@@ -71,7 +55,7 @@ char* ReadFile(const char* filePath)
  */
 void UnloadFileText(char* text) {
     if (!text) {
-        // LogOnDebug("[UnloadFile] Unnecessary call to unload text");
+        Console::Get()->LogOnDebug("[UnloadFile] Unnecessary call to unload text");
         return;
     }
 

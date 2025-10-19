@@ -5,35 +5,38 @@
 #include "imgui_impl_opengl3.h"
 #include "utils.hpp"
 
-Console::Console()
-{
-    ClearLog();
-    Log("---- CONSUL ----");
-}
+Console* Console::instance = nullptr;
 
 Console::~Console()
 {
     ClearLog();
 }
 
-void Console::Log(const char* message)
+void Console::Log(const std::string& message)
 {
     items.push_back(message);
 }
 
-void Console::Error(const char* message)
+void Console::LogOnDebug(const std::string& message)
 {
-    items.push_back(std::string("[ERROR] ") + message);
+#ifndef NDEBUG
+    items.push_back("[DEBUG] " + message);
+#endif
 }
 
-void Console::Warn(const char* message)
+void Console::Error(const std::string& message)
 {
-    items.push_back(std::string("[WARNING] ") + message);
+    items.push_back("[ERROR] " + message);
 }
 
-void Console::Info(const char* message)
+void Console::Warn(const std::string& message)
 {
-    items.push_back(std::string("[INFO] ") + message);
+    items.push_back("[WARNING] " + message);
+}
+
+void Console::Info(const std::string& message)
+{
+    items.push_back("[INFO] " + message);
 }
 
 void Console::Draw(const char* title, bool* open)

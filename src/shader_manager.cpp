@@ -1,5 +1,6 @@
 #include "shader_manager.hpp"
 
+#include "core/console/console.hpp"
 #include "utils.hpp"
 #include "glad/glad.h"
 
@@ -7,11 +8,13 @@ std::map<std::string, Shader> ShaderManager::shaders = std::map<std::string, Sha
 
 Shader ShaderManager::LoadShader(const char* vertexPath, const char* fragmentPath, const char* referenceName)
 {
-    // if (!vertexPath) Error("[ShaderManager::LoadShader] Vertex shader path is null");
-    // if (!fragmentPath) Error("[ShaderManager::LoadShader] Fragment shader path is null");
+    Console* console = Console::Get();
+
+    if (!vertexPath) console->Error("[ShaderManager::LoadShader] Vertex shader path is null");
+    if (!fragmentPath) console->Error("[ShaderManager::LoadShader] Fragment shader path is null");
 
     // Check if name is already present
-    // if (shaders.find(referenceName) != shaders.end()) LogOnDebug("[ShaderManager::LoadShader] Shader with name '" + std::string(referenceName) + "' is already loaded, will overwrite.");
+    if (shaders.find(referenceName) != shaders.end()) console->LogOnDebug("[ShaderManager::LoadShader] Shader with name '" + std::string(referenceName) + "' is already loaded, will overwrite.");
 
     char* vShaderText = ReadFile(vertexPath);
     char* fShaderText = ReadFile(fragmentPath);
@@ -30,7 +33,7 @@ Shader ShaderManager::LoadShader(const char* vertexPath, const char* fragmentPat
 Shader ShaderManager::GetShader(const char* referenceName)
 {
     if (shaders.find(referenceName) == shaders.end()) {
-        // Error("[ShaderManager::GetShader] Shader with name '" + std::string(referenceName) + "' is not loaded");
+        Console::Get()->Error("[ShaderManager::GetShader] Shader with name '" + std::string(referenceName) + "' is not loaded");
         return Shader();
     }
 
@@ -50,7 +53,7 @@ void ShaderManager::UnloadShader(Shader shader)
         }
     }
 
-    // LogOnDebug("[ShaderManager::UnloadShader] Unloaded shader program with ID " + std::to_string(shader.id));
+    Console::Get()->LogOnDebug("[ShaderManager::UnloadShader] Unloaded shader program with ID " + std::to_string(shader.id));
 }
 
 void ShaderManager::Clear()
@@ -59,5 +62,5 @@ void ShaderManager::Clear()
         glDeleteProgram(pair.second.id);
     }
     shaders.clear();
-    // LogOnDebug("[ShaderManager::Clear] Cleared all shaders from memory");
+    Console::Get()->LogOnDebug("[ShaderManager::Clear] Cleared all shaders from memory");
 }
