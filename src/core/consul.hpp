@@ -21,5 +21,5 @@ public:
     void VSync(bool enabled);
 
 private:
-    Console* console = Console::Get();
+    Console& console = Console::Get();
 };

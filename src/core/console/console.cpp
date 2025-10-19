@@ -6,8 +6,6 @@
 #include "core/window.hpp"
 #include "utils.hpp"
 
-Console* Console::instance = nullptr;
-
 Console::~Console()
 {
     ClearLog();
