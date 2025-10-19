@@ -26,9 +26,12 @@ void Time::SetTargetFPS(unsigned int fps)
 {
     Console* console = Console::Get();
 
-    if (fps < 1) console->Error("[Consul] Invalid target FPS: " + std::to_string(fps));
+    if (fps < 1) {
+        console->Error("[Consul] Invalid target FPS: " + std::to_string(fps));
+        return;
+    }
 
     targetFrameTime = double(1.0/fps);
 
-    console->LogOnDebug("[Consul] Target FPS set to " + std::to_string(fps) + " (" + std::to_string(int(targetFrameTime)*1000) + " ms per frame)");
+    console->LogOnDebug("[Consul] Target FPS set to " + std::to_string(fps) + " (" + std::to_string(int(targetFrameTime*1000)) + " ms per frame)");
 }
