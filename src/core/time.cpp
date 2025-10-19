@@ -28,7 +28,6 @@ void Time::SetTargetFPS(unsigned int fps)
 
     if (fps < 1) {
         console.Error("[Consul] Invalid target FPS: " + std::to_string(fps));
-        return;
     }
 
     targetFrameTime = double(1.0/fps);
