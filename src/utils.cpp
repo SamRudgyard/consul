@@ -43,7 +43,7 @@ char* ReadFile(const char* filePath)
 
    file.close();
 
-    Console::Get()->LogOnDebug("[ReadFile] Successfully read file: '" + std::string(filePath) + "'");
+    Console::Get().LogOnDebug("[ReadFile] Successfully read file: '" + std::string(filePath) + "'");
 
    return text;
 }
@@ -55,7 +55,7 @@ char* ReadFile(const char* filePath)
  */
 void UnloadFileText(char* text) {
     if (!text) {
-        Console::Get()->LogOnDebug("[UnloadFile] Unnecessary call to unload text");
+        Console::Get().LogOnDebug("[UnloadFile] Unnecessary call to unload text");
         return;
     }
 

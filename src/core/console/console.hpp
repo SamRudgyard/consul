@@ -9,10 +9,8 @@ public:
     Console(const Console&) = delete;
     Console& operator=(const Console&) = delete;
 
-    static Console* Get() {
-        if (!instance) {
-            instance = new Console();
-        }
+    static Console& Get() {
+        static Console instance;
         return instance;
     }
 
