@@ -1,7 +1,7 @@
 #include "sprite_sheet.hpp"
 
 #include "core/console/console.hpp"
-#include "texture_manager.hpp"
+#include "core/models/texture_manager.hpp"
 #include "utils.hpp"
 
 SpriteSheet::SpriteSheet(const char* filePath, int spriteWidth, int spriteHeight, bool requiresAlphaChannel)

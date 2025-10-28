@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "texture.hpp"
+#include "core/models/texture.hpp"
 #include "sprite.hpp"
 
 class SpriteSheet
