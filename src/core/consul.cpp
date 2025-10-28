@@ -125,8 +125,6 @@ bool Consul::Run()
 {
     Time::NewFrame();
 
-    glfwPollEvents();
-
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -141,8 +139,6 @@ bool Consul::Run()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // ImGui::UpdatePlatformWindows();
-
-    Window::SwapBuffers();
 
     return !Window::ShouldClose();
 }
