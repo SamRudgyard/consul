@@ -12,6 +12,7 @@ public:
 
     void Compile(const std::string& vertexSource, const std::string& fragmentSource);
 
+    void SetUniformInt(const char* name, int value);
     void SetUniformFloat(const char* name, float value);
     void SetUniformVector2f(const char* name, const float x, const float y);
     void SetUniformVector2f(const char* name, const glm::vec2& value);

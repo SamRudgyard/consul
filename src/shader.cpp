@@ -96,6 +96,11 @@ void Shader::Compile(const std::string& vertexSource, const std::string& fragmen
     console.LogOnDebug("[Shader::Compile] Shader program compiled and linked successfully (ID: " + std::to_string(id) + ")");
 }
 
+void Shader::SetUniformInt(const char* name, int value)
+{
+    glUniform1i(glGetUniformLocation(id, name), value);
+}
+
 void Shader::SetUniformFloat(const char* name, float value)
 {
     glUniform1f(glGetUniformLocation(id, name), value);
