@@ -13,29 +13,43 @@ Console::~Console()
 
 void Console::Log(const std::string& message)
 {
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
     items.push_back(message);
 }
 
 void Console::LogOnDebug(const std::string& message)
 {
 #ifndef NDEBUG
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
     items.push_back("[DEBUG] " + message);
 #endif
 }
 
 void Console::Error(const std::string& message)
 {
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
     items.push_back("[ERROR] " + message);
-    throw std::runtime_error(message);
 }
 
 void Console::Warn(const std::string& message)
 {
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
     items.push_back("[WARNING] " + message);
 }
 
 void Console::Info(const std::string& message)
 {
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
     items.push_back("[INFO] " + message);
 }
 

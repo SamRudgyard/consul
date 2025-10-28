@@ -73,21 +73,29 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     glfwSetWindowSizeCallback(Window::handle, Window::WindowSizeCallback);
     // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    const GLubyte* version = glGetString(GL_VERSION);
+    if (!version) {
+        Console::Get().Error("[Consul] [OpenGL] Failed to retrieve OpenGL version");
+    } else {
+        Console::Get().Log("[Consul] [OpenGL] Found OpenGL version " + std::string(reinterpret_cast<const char*>(version)));
+    }
+
     // Initialise OpenGL with our default settings
     // --------------------
     glEnable(GL_DEPTH_TEST);                                // Enable depth testing
     glDepthFunc(GL_LESS);                                   // Type of depth testing to apply
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      // Colour blending, determines how pixel colours are combined
     glEnable(GL_BLEND);                                     // Enable colour blending (required for transparencies)
-    glCullFace(GL_BACK);                                    // Cull back faces
-    glFrontFace(GL_CCW);                                    // Front faces are counter clockwise
-    glEnable(GL_CULL_FACE);                                 // Enable backface culling
+    // glCullFace(GL_BACK);                                    // Cull back faces
+    // glFrontFace(GL_CCW);                                    // Front faces are counter clockwise
+    // glEnable(GL_CULL_FACE);                                 // Enable backface culling
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);                 // Enable seamless cubemap texture
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                   // Set clear colour to black
     glClearDepth(1.0f);                                     // Set clear depth to farthest possible depth when glClear(GL_DEPTH_BUFFER_BIT) is called
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);     // Clear colour and depth buffers
 
+    checkOpenGLErrors("[Consul] [OpenGL] Error during OpenGL initialisation");
     Window::SetupViewport(Window::width, Window::height);
 
     console.Log("[Consul] OpenGL initialised successfully");
@@ -125,8 +133,6 @@ bool Consul::Run()
 {
     Time::NewFrame();
 
-    glfwPollEvents();
-
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -141,8 +147,6 @@ bool Consul::Run()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // ImGui::UpdatePlatformWindows();
-
-    Window::SwapBuffers();
 
     return !Window::ShouldClose();
 }

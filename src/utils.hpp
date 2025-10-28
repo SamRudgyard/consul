@@ -42,8 +42,10 @@ public:
 
 bool DoesFileExist(const char* filePath);
 
-char* ReadFile(const char* filePath);
+const std::string ReadFile(const char* filePath);
 
 void UnloadFileText(char* text);
 
 bool IsSubstring(const std::string& str, const std::string& substr);
+
+void checkOpenGLErrors(const std::string& msgOnError);

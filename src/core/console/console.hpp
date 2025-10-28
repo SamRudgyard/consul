@@ -1,7 +1,9 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <deque>
+
+#define MAX_CONSOLE_SIZE 10
 
 class Console
 {
@@ -32,6 +34,6 @@ private:
     bool redirectOutput;
     bool autoScroll = true;
     bool scrollToBottom = false;
-    std::vector<std::string> items;
+    std::deque<std::string> items;
 
 };

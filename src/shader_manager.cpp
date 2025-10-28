@@ -6,7 +6,7 @@
 
 std::map<std::string, Shader> ShaderManager::shaders = std::map<std::string, Shader>();
 
-Shader ShaderManager::LoadShader(const char* vertexPath, const char* fragmentPath, const char* referenceName)
+Shader& ShaderManager::LoadShader(const char* vertexPath, const char* fragmentPath, const char* referenceName)
 {
     Console& console = Console::Get();
 
@@ -16,21 +16,18 @@ Shader ShaderManager::LoadShader(const char* vertexPath, const char* fragmentPat
     // Check if name is already present
     if (shaders.find(referenceName) != shaders.end()) console.LogOnDebug("[ShaderManager::LoadShader] Shader with name '" + std::string(referenceName) + "' is already loaded, will overwrite.");
 
-    char* vShaderText = ReadFile(vertexPath);
-    char* fShaderText = ReadFile(fragmentPath);
+    const std::string vShaderText = ReadFile(vertexPath);
+    const std::string fShaderText = ReadFile(fragmentPath);
 
     Shader shader;
     shader.Compile(vShaderText, fShaderText);
-
-    UnloadFileText(vShaderText);
-    UnloadFileText(fShaderText);
 
     shaders[referenceName] = shader;
 
     return shaders[referenceName];
 }
 
-Shader ShaderManager::GetShader(const char* referenceName)
+Shader& ShaderManager::GetShader(const char* referenceName)
 {
     if (shaders.find(referenceName) == shaders.end()) {
         Console::Get().Error("[ShaderManager::GetShader] Shader with name '" + std::string(referenceName) + "' is not loaded");
@@ -39,9 +36,10 @@ Shader ShaderManager::GetShader(const char* referenceName)
     return shaders[referenceName];
 }
 
-void ShaderManager::UnloadShader(Shader shader)
+void ShaderManager::UnloadShader(Shader& shader)
 {
     glDeleteProgram(shader.id);
+    checkOpenGLErrors("[ShaderManager::UnloadShader] Error deleting shader program");
 
     // Remove from map
     // Note: This requires that the shader was loaded with a reference name
@@ -60,6 +58,8 @@ void ShaderManager::Clear()
     for (auto& pair : shaders) {
         glDeleteProgram(pair.second.id);
     }
+    checkOpenGLErrors("[ShaderManager::Clear] Error clearing shader programs");
+
     shaders.clear();
     Console::Get().LogOnDebug("[ShaderManager::Clear] Cleared all shaders from memory");
 }
