@@ -86,9 +86,9 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     glDepthFunc(GL_LESS);                                   // Type of depth testing to apply
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      // Colour blending, determines how pixel colours are combined
     glEnable(GL_BLEND);                                     // Enable colour blending (required for transparencies)
-    glCullFace(GL_BACK);                                    // Cull back faces
-    glFrontFace(GL_CCW);                                    // Front faces are counter clockwise
-    glEnable(GL_CULL_FACE);                                 // Enable backface culling
+    // glCullFace(GL_BACK);                                    // Cull back faces
+    // glFrontFace(GL_CCW);                                    // Front faces are counter clockwise
+    // glEnable(GL_CULL_FACE);                                 // Enable backface culling
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);                 // Enable seamless cubemap texture
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                   // Set clear colour to black
