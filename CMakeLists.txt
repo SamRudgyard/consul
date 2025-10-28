@@ -19,7 +19,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
 
-include_directories(submodules/glad/include/
+include_directories(submodules/assimp/include/
+                    submodules/glad/include/
                     submodules/glfw/include/
                     submodules/glm/
                     submodules/stb/
