@@ -29,18 +29,22 @@ Shader& Shader::Use()
  * @param fragmentSource String containing the GLSL source code for the fragment shader.
  */
 void Shader::Compile(const std::string& vertexSource, const std::string& fragmentSource)
-{
+{   
     Console& console = Console::Get();
 
     // Create shaders
     unsigned int vertex, fragment;
     vertex = glCreateShader(GL_VERTEX_SHADER);
+    checkOpenGLErrors("[Shader::Compile] Error creating vertex shader");
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    checkOpenGLErrors("[Shader::Compile] Error creating fragment shader");
 
     // Compile vertex shader
     const char* vertexCString = vertexSource.c_str();
     glShaderSource(vertex, 1, &vertexCString, NULL);
+    checkOpenGLErrors("[Shader::Compile] Error setting vertex shader source");
     glCompileShader(vertex);
+    checkOpenGLErrors("[Shader::Compile] Error compiling vertex shader");
     // Check for compilation errors
     int success;
     char infoLog[512];
@@ -55,7 +59,9 @@ void Shader::Compile(const std::string& vertexSource, const std::string& fragmen
     // Compile fragment shader
     const char* fragmentCString = fragmentSource.c_str();
     glShaderSource(fragment, 1, &fragmentCString, NULL);
+    checkOpenGLErrors("[Shader::Compile] Error setting fragment shader source");
     glCompileShader(fragment);
+    checkOpenGLErrors("[Shader::Compile] Error compiling fragment shader");
     // Check for compilation errors
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
     if (!success) {
@@ -67,9 +73,12 @@ void Shader::Compile(const std::string& vertexSource, const std::string& fragmen
 
     // Create shader program and link shaders
     id = glCreateProgram();
+    checkOpenGLErrors("[Shader::Compile] Error creating shader program");
     glAttachShader(id, vertex);
     glAttachShader(id, fragment);
+    checkOpenGLErrors("[Shader::Compile] Error attaching shaders to program");
     glLinkProgram(id);
+    checkOpenGLErrors("[Shader::Compile] Error linking shader program");
     // Check for linking errors
     glGetProgramiv(id, GL_LINK_STATUS, &success);
     if (!success) {
@@ -82,6 +91,7 @@ void Shader::Compile(const std::string& vertexSource, const std::string& fragmen
     // Delete the shaders as they're linked into our program now and no longer necessary
     glDeleteShader(vertex);
     glDeleteShader(fragment);
+    checkOpenGLErrors("[Shader::Compile] Error deleting shaders");
 
     console.LogOnDebug("[Shader::Compile] Shader program compiled and linked successfully (ID: " + std::to_string(id) + ")");
 }

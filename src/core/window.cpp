@@ -1,5 +1,6 @@
 #include "window.hpp"
 
+#include "console/console.hpp"
 #include "time.hpp"
 #include "utils.hpp"
 
@@ -37,7 +38,8 @@ void Window::SetupViewport(unsigned int width, unsigned int height)
     glfwGetWindowContentScale(Window::handle, &scale.x, &scale.y);
 #endif
     glViewport(0, 0, width*scale.x, height*scale.y);        // Adjust viewport for high DPI displays
-    glOrtho(0.f, width, height, 0.f, 0.f, 1.f);             // Set orthographic projection
+    // glOrtho(0.f, width, height, 0.f, 0.f, 1.f);             // Set orthographic projection
+    checkOpenGLErrors("[Window::SetupViewport] Error setting up viewport");
 }
 
 glm::vec2 Window::GetWindowScaleDPI()

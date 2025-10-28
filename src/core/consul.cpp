@@ -73,6 +73,13 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     glfwSetWindowSizeCallback(Window::handle, Window::WindowSizeCallback);
     // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    const GLubyte* version = glGetString(GL_VERSION);
+    if (!version) {
+        Console::Get().Error("[Consul] [OpenGL] Failed to retrieve OpenGL version");
+    } else {
+        Console::Get().Log("[Consul] [OpenGL] Found OpenGL version " + std::string(reinterpret_cast<const char*>(version)));
+    }
+
     // Initialise OpenGL with our default settings
     // --------------------
     glEnable(GL_DEPTH_TEST);                                // Enable depth testing
@@ -88,6 +95,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     glClearDepth(1.0f);                                     // Set clear depth to farthest possible depth when glClear(GL_DEPTH_BUFFER_BIT) is called
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);     // Clear colour and depth buffers
 
+    checkOpenGLErrors("[Consul] [OpenGL] Error during OpenGL initialisation");
     Window::SetupViewport(Window::width, Window::height);
 
     console.Log("[Consul] OpenGL initialised successfully");

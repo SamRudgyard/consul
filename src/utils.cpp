@@ -1,5 +1,6 @@
 #include "utils.hpp"
 
+#include "glad/glad.h"
 #include "core/console/console.hpp"
 
 bool DoesFileExist(const char* filePath)
@@ -52,4 +53,39 @@ void UnloadFileText(char* text) {
 
 bool IsSubstring(const std::string& str, const std::string& substr) {
     return str.find(substr) != std::string::npos;
+}
+
+void checkOpenGLErrors(const std::string& msgOnError) {
+    GLenum error = glGetError();
+    if (error == GL_NO_ERROR) return;
+
+    Console& console = Console::Get();
+
+    std::string errorStr;
+
+    switch (error) {
+        case GL_INVALID_ENUM:
+            errorStr = "GL_INVALID_ENUM";
+            break;
+        case GL_INVALID_VALUE:
+            errorStr = "GL_INVALID_VALUE";
+            break;
+        case GL_INVALID_OPERATION:
+            errorStr = "GL_INVALID_OPERATION";
+            break;
+        case GL_STACK_OVERFLOW:
+            errorStr = "GL_STACK_OVERFLOW";
+            break;
+        case GL_STACK_UNDERFLOW:
+            errorStr = "GL_STACK_UNDERFLOW";
+            break;
+        case GL_OUT_OF_MEMORY:
+            errorStr = "GL_OUT_OF_MEMORY";
+            break;
+        default:
+            console.Error(msgOnError + ": Unknown OpenGL error code " + std::to_string(error));
+            break;
+    }
+
+    console.Error(msgOnError + ": " + errorStr);
 }
