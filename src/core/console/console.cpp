@@ -35,6 +35,8 @@ void Console::Error(const std::string& message)
         items.pop_front();
     }
     items.push_back("[ERROR] " + message);
+
+    throw std::runtime_error(message);
 }
 
 void Console::Warn(const std::string& message)

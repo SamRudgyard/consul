@@ -39,7 +39,7 @@ void Window::SetupViewport(unsigned int width, unsigned int height)
 #endif
     glViewport(0, 0, width*scale.x, height*scale.y);        // Adjust viewport for high DPI displays
     // glOrtho(0.f, width, height, 0.f, 0.f, 1.f);             // Set orthographic projection
-    checkOpenGLErrors("[Window::SetupViewport] Error setting up viewport");
+    glCheckError();
 }
 
 glm::vec2 Window::GetWindowScaleDPI()

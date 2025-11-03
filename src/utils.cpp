@@ -55,37 +55,20 @@ bool IsSubstring(const std::string& str, const std::string& substr) {
     return str.find(substr) != std::string::npos;
 }
 
-void checkOpenGLErrors(const std::string& msgOnError) {
-    GLenum error = glGetError();
-    if (error == GL_NO_ERROR) return;
-
+void glCheckError_(const char* file, int line) {
     Console& console = Console::Get();
-
-    std::string errorStr;
-
-    switch (error) {
-        case GL_INVALID_ENUM:
-            errorStr = "GL_INVALID_ENUM";
-            break;
-        case GL_INVALID_VALUE:
-            errorStr = "GL_INVALID_VALUE";
-            break;
-        case GL_INVALID_OPERATION:
-            errorStr = "GL_INVALID_OPERATION";
-            break;
-        case GL_STACK_OVERFLOW:
-            errorStr = "GL_STACK_OVERFLOW";
-            break;
-        case GL_STACK_UNDERFLOW:
-            errorStr = "GL_STACK_UNDERFLOW";
-            break;
-        case GL_OUT_OF_MEMORY:
-            errorStr = "GL_OUT_OF_MEMORY";
-            break;
-        default:
-            console.Error(msgOnError + ": Unknown OpenGL error code " + std::to_string(error));
-            break;
+    
+    GLenum errorCode;
+    while ((errorCode = glGetError()) != GL_NO_ERROR) {
+        std::string error;
+        switch (errorCode) {
+            case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+            case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+            case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+            case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+            default:                               error = "UNKNOWN_ERROR"; break;
+        }
+        console.Error("[OpenGL] " + error + " at " + std::string(file) + " (line " + std::to_string(line) + ")");
     }
-
-    console.Error(msgOnError + ": " + errorStr);
 }

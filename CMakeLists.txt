@@ -4,7 +4,14 @@ project(Consul)
 
 set(CMAKE_CXX_STANDARD 17)
 
+option(GLFW_BUILD_DOCS OFF)
 add_subdirectory(submodules/glfw)
+
+option(ASSIMP_BUILD_TESTS OFF)
+option(ASSIMP_INSTALL OFF)
+option(ASSIMP_WARNINGS_AS_ERRORS OFF)
+
+add_subdirectory(submodules/assimp)
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
@@ -20,6 +27,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 include_directories(submodules/assimp/include/
+                    submodules/assimp/build/include/
                     submodules/glad/include/
                     submodules/glfw/include/
                     submodules/glm/
@@ -68,4 +76,4 @@ add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${C_SOURCES} ${DEP_SOURCES} ${HPP_
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
 
-target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} ${GLAD_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} ${GLAD_LIBRARIES} assimp)

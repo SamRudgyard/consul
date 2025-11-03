@@ -48,4 +48,5 @@ void UnloadFileText(char* text);
 
 bool IsSubstring(const std::string& str, const std::string& substr);
 
-void checkOpenGLErrors(const std::string& msgOnError);
+void glCheckError_(const char* file, int line);
+#define glCheckError() glCheckError_(__FILE__, __LINE__)

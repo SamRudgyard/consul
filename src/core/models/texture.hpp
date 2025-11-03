@@ -1,18 +1,35 @@
 #pragma once
 
-class Texture
-{
-public:
-    unsigned int id;
-    unsigned int width, height;
-    unsigned int internalFormat; // Format of texture object
-    unsigned int imageFormat; // Format of loaded image
-    unsigned int wrapS; // Texture wrapping mode for S axis (x axis)
-    unsigned int wrapT; // Texture wrapping mode for T axis (y axis)
-    unsigned int minFilter; // Texture filter for minification
-    unsigned int magFilter; // Texture filter for magnification
+#include "glad/glad.h"
 
-    Texture();
-    void Generate(unsigned int width, unsigned int height, unsigned char* data);
-    void Bind() const;
+#include <map>
+#include <string>
+
+enum TextureType {
+    DIFFUSE,
+    SPECULAR
+};
+
+class Texture {
+    public:
+        std::string path;
+        GLuint id;
+        TextureType type;
+        GLuint unit;
+        
+        Texture(const char* image, TextureType textureType, GLuint slot);
+
+        const char* GetTextureTypeAsString() const { return textureTypeToString.at(type); }
+
+        void SetTextureUnit(unsigned int shaderID, const char* uniform, GLuint unit) const;
+        void Bind() const;
+        void Unbind() const;
+        void Delete() const;
+
+    private:
+        // Textures will be named "diffuse0", "diffuse1", "specular0", "specular1", etc.
+        std::map <TextureType, const char*> textureTypeToString = {
+            {TextureType::DIFFUSE, "diffuse"},
+            {TextureType::SPECULAR, "specular"}
+        };
 };

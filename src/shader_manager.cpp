@@ -39,7 +39,7 @@ Shader& ShaderManager::GetShader(const char* referenceName)
 void ShaderManager::UnloadShader(Shader& shader)
 {
     glDeleteProgram(shader.id);
-    checkOpenGLErrors("[ShaderManager::UnloadShader] Error deleting shader program");
+    glCheckError();
 
     // Remove from map
     // Note: This requires that the shader was loaded with a reference name
@@ -58,7 +58,7 @@ void ShaderManager::Clear()
     for (auto& pair : shaders) {
         glDeleteProgram(pair.second.id);
     }
-    checkOpenGLErrors("[ShaderManager::Clear] Error clearing shader programs");
+    glCheckError();
 
     shaders.clear();
     Console::Get().LogOnDebug("[ShaderManager::Clear] Cleared all shaders from memory");
