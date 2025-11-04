@@ -1,32 +1,74 @@
 #pragma once
 
-#include "glm/glm.hpp"
+#include "nlohmann/json.hpp"
 #include "core/models/mesh.hpp"
-#include "core/models/texture.hpp"
-#include "core/camera/camera.hpp"
-#include <string>
-#include <vector>
+#include "glad/glad.h"
+#include "glm/glm.hpp"
 
-class aiNode;
-class aiScene;
-class aiMesh;
-class aiMaterial;
+#include <vector>
+#include <string>
+
+using json = nlohmann::json;
+
 class Shader;
+class Camera;
+class Texture;
 
 class Model
 {
 public:
-    Model(const std::string& filePath, glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f)) : scale(scale) { loadModel(filePath); }
-    Model(std::vector<Mesh> meshes, std::vector<Texture> textures) : meshes(std::move(meshes)), loadedTextures(std::move(textures)) {}
-    void Draw(Shader& shader, Camera& camera) const;
-private:
-    std::vector<Mesh> meshes;
-    std::vector<Texture> loadedTextures;
-    std::string directory;
-    glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+	// Loads in a model from a file and stores tha information in 'data', 'JSON', and 'file'
+	Model(const char* file);
 
-    void loadModel(const std::string& filePath);
-    void processNode(aiNode* node, const aiScene* scene);
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-    std::vector<Texture> loadMaterialTextures(aiMaterial* mat, TextureType type);
+	void Draw
+	(
+		Shader& shader,
+		Camera& camera,
+		glm::vec3 translation = glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
+		glm::vec3 scale = glm::vec3(0.1f, 0.1f, 0.1f)
+	);
+
+private:
+	// Variables for easy access
+	const char* file;
+	std::vector<unsigned char> data;
+	json JSON;
+
+	// All the meshes and transformations
+	std::vector<Mesh> meshes;
+	std::vector<glm::vec3> translationsMeshes;
+	std::vector<glm::quat> rotationsMeshes;
+	std::vector<glm::vec3> scalesMeshes;
+	std::vector<glm::mat4> matricesMeshes;
+
+	// Prevents textures from being loaded twice
+	std::vector<std::string> loadedTexName;
+	std::vector<Texture> loadedTex;
+
+	// Loads a single mesh by its index
+	void loadMesh(unsigned int indMesh);
+
+	// Traverses a node recursively, so it essentially traverses all connected nodes
+	void traverseNode(unsigned int nextNode, glm::mat4 matrix = glm::mat4(1.0f));
+
+	// Gets the binary data from a file
+	std::vector<unsigned char> getData();
+	// Interprets the binary data into floats, indices, and textures
+	std::vector<float> getFloats(json accessor);
+	std::vector<GLuint> getIndices(json accessor);
+	std::vector<Texture> getTextures();
+
+	// Assembles all the floats into vertices
+	std::vector<Vertex> assembleVertices
+	(
+		std::vector<glm::vec3> positions, 
+		std::vector<glm::vec3> normals, 
+		std::vector<glm::vec2> texUVs
+	);
+
+	// Helps with the assembly from above by grouping floats
+	std::vector<glm::vec2> groupFloatsVec2(std::vector<float> floatVec);
+	std::vector<glm::vec3> groupFloatsVec3(std::vector<float> floatVec);
+	std::vector<glm::vec4> groupFloatsVec4(std::vector<float> floatVec);
 };

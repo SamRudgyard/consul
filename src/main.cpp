@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 
     Shader& shader = ShaderManager::LoadShader("shaders/basic.vs", "shaders/basic.fs", "basicShader");
 
-    Model model("assets/shiba/scene.gltf", glm::vec3(0.1f, 0.1f, 0.1f));
+    Model model("assets/shiba/scene.gltf");
 
     while (consul.Run()) {
         model.Draw(shader, camera);

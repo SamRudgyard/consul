@@ -39,7 +39,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     glCheckError();
 }
 
-void Mesh::Draw(Shader& shader, Camera& camera) const
+void Mesh::Draw(Shader& shader, Camera& camera, glm::mat4 matrix) const
 {
     shader.Use();
     glBindVertexArray(vao);
@@ -66,7 +66,6 @@ void Mesh::Draw(Shader& shader, Camera& camera) const
 
     camera.Matrix(shader, "camMatrix");
 
-    glm::mat4 matrix = glm::mat4(1.0f);
     glm::vec3 translation = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);

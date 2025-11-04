@@ -2,13 +2,13 @@
 
 #include "glm/glm.hpp"
 #include "core/camera/camera.hpp"
+#include "core/models/texture.hpp"
 
 #include <string>
 #include <vector>
 #include <iostream>
 
 class Shader;
-class Texture;
 
 struct Vertex {
     glm::vec3 position;
@@ -30,5 +30,5 @@ class Mesh {
         Mesh() {};
         Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 
-        void Draw(Shader& shader, Camera& camera) const;
+        void Draw(Shader& shader, Camera& camera, glm::mat4 matrix = glm::mat4(1.0f)) const;
 };
