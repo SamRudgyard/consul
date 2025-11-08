@@ -1,6 +1,6 @@
 #pragma once
 
-#include "texture.hpp"
+#include "core/models/texture.hpp"
 #include "glm/glm.hpp"
 
 class Sprite
