@@ -213,14 +213,14 @@ std::vector<Texture> Model::loadTextures()
             {
                 Texture diffuseTexture = Texture((fileDirectory + uri).c_str(), TextureType::DIFFUSE, (GLuint)loadedTextureFiles.size());
                 loadedTextures.push_back(diffuseTexture);
+                loadedTextureFiles.push_back(uri);
             }
             else if (uri.find("metallicRoughness") != std::string::npos)
             {
                 Texture specularTexture = Texture((fileDirectory + uri).c_str(), TextureType::SPECULAR, (GLuint)loadedTextureFiles.size());
                 loadedTextures.push_back(specularTexture);
+                loadedTextureFiles.push_back(uri);
             }
-
-            loadedTextureFiles.push_back(uri);
         }
         else
         {
@@ -260,7 +260,7 @@ std::vector<Vertex> Model::assembleVertices
 std::vector<glm::vec2> Model::toVec2(std::vector<float> floatVec)
 {
 	if (floatVec.size() % 2 != 0) {
-        Console::Get().Error("[Model::toVec2] Float vector size is not a multiple of 2: '" + std::string(file) + "'");
+        Console::Get().Error("[Model::toVec2] Float vector size is not a multiple of 2: '" + file + "'");
     }
 
 	const unsigned int floatsPerVector = 2;
@@ -280,7 +280,7 @@ std::vector<glm::vec2> Model::toVec2(std::vector<float> floatVec)
 std::vector<glm::vec3> Model::toVec3(std::vector<float> floatVec)
 {
     if (floatVec.size() % 3 != 0) {
-        Console::Get().Error("[Model::toVec3] Float vector size is not a multiple of 3: '" + std::string(file) + "'");
+        Console::Get().Error("[Model::toVec3] Float vector size is not a multiple of 3: '" + file + "'");
     }
 
 	const unsigned int floatsPerVector = 3;
@@ -300,7 +300,7 @@ std::vector<glm::vec3> Model::toVec3(std::vector<float> floatVec)
 std::vector<glm::vec4> Model::toVec4(std::vector<float> floatVec)
 {
 	if (floatVec.size() % 4 != 0) {
-        Console::Get().Error("[Model::toVec4] Float vector size is not a multiple of 4: '" + std::string(file) + "'");
+        Console::Get().Error("[Model::toVec4] Float vector size is not a multiple of 4: '" + file + "'");
     }
 
 	const unsigned int floatsPerVector = 4;
