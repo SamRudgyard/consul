@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.24)
 project(Consul)
 
 # Prefer the NEW behavior for FetchContent extraction timestamps
@@ -53,10 +53,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glad)
 
 # The glad repo doesn't always create a CMake target usable by consumers; create one:
-add_library(glad_lib STATIC ${glad_SOURCE_DIR}/src/glad.c)
-target_include_directories(glad_lib PUBLIC ${glad_SOURCE_DIR}/include)
+add_library(glad STATIC ${glad_SOURCE_DIR}/src/glad.c)
+target_include_directories(glad PUBLIC ${glad_SOURCE_DIR}/include)
 if(NOT WIN32)
-  target_link_libraries(glad_lib PUBLIC ${CMAKE_DL_LIBS})
+  target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
 endif()
 
 # ImGui
@@ -78,10 +78,10 @@ set(IMGUI_SRC
   ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
 )
 
-add_library(imgui_lib STATIC ${IMGUI_SRC})
-target_include_directories(imgui_lib PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
+add_library(imgui STATIC ${IMGUI_SRC})
+target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
 # imgui backends require linking to glfw; use the glfw target from FetchContent
-target_link_libraries(imgui_lib PUBLIC glfw)
+target_link_libraries(imgui PUBLIC glfw)
 
 # --- end FetchContent block ---
 
@@ -89,7 +89,6 @@ target_link_libraries(imgui_lib PUBLIC glfw)
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     if(NOT WIN32)
         set(GLAD_LIBRARIES dl)
     endif()
@@ -100,7 +99,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # Set bin directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/$<CONFIG>)
 
 # Set source directory
 set(SRC_DIR src)
@@ -112,24 +111,18 @@ file(GLOB_RECURSE C_SOURCES "${SRC_DIR}/*.c")
 # Recursively find all header files
 file(GLOB_RECURSE HPP_HEADERS "${SRC_DIR}/*.hpp")
 
-# Find all header files in include directorys
-file(GLOB_RECURSE INC_HEADERS "${INC_DIR}/*.h")
-
 # Add all source files to the project
 include_directories(${SRC_DIR})
 
-# Add all header files to the project
-include_directories(${INC_DIR})
-
-add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${C_SOURCES} ${HPP_HEADERS} ${H_HEADERS} ${INC_HEADERS})
+add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${C_SOURCES} ${HPP_HEADERS} ${H_HEADERS})
 
 # Link the library targets created above:
 target_link_libraries(${PROJECT_NAME}
   PRIVATE
-    glfw        # glfw target from FetchContent
-    glad_lib    # our local static target that compiles glad.c
-    imgui_lib   # imgui static lib built above
-    glm::glm    # header-only glm target (if available)
+    glfw
+    glad
+    imgui
+    glm::glm
     nlohmann_json::nlohmann_json
 )
 
