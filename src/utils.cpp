@@ -37,6 +37,22 @@ const std::string ReadFile(const char* filePath)
     return contents;
 }
 
+/*
+ * @brief Gets the file extension from a file path.
+ *
+ * @param filePath The path to the file.
+ * @return The file extension, or an empty string if none exists.
+ */
+const std::string GetFileExtension(const char* filePath) {
+    std::string pathStr(filePath);
+    size_t dotPos = pathStr.find_last_of('.');
+    if (dotPos == std::string::npos || dotPos == pathStr.length() - 1) {
+        Console::Get().LogOnDebug("[GetFileExtension] No file extension found in path: '" + std::string(filePath) + "'");
+        return "";
+    }
+    return pathStr.substr(dotPos);
+}
+
 /**
  * @brief Frees memory previously allocated for a text buffer.
  *

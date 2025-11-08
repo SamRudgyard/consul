@@ -44,6 +44,8 @@ bool DoesFileExist(const char* filePath);
 
 const std::string ReadFile(const char* filePath);
 
+const std::string GetFileExtension(const char* filePath);
+
 void UnloadFileText(char* text);
 
 bool IsSubstring(const std::string& str, const std::string& substr);
