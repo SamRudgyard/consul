@@ -1,24 +1,95 @@
-cmake_minimum_required(VERSION 3.10)
-
+cmake_minimum_required(VERSION 3.24)
 project(Consul)
+
+# Prefer the NEW behavior for FetchContent extraction timestamps
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 
 include(FetchContent)
 
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+# json already present in your file; keep that
+FetchContent_Declare(
+  json
+  URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+)
 FetchContent_MakeAvailable(json)
 
-option(GLFW_BUILD_DOCS OFF)
-add_subdirectory(submodules/glfw)
+# GLFW
+FetchContent_Declare(
+  glfw
+  GIT_REPOSITORY https://github.com/glfw/glfw.git
+  GIT_TAG 3.3.8
+)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(glfw)
+
+# GLM (header only)
+FetchContent_Declare(
+  glm
+  GIT_REPOSITORY https://github.com/g-truc/glm.git
+  GIT_TAG 1.0.2
+)
+FetchContent_MakeAvailable(glm)
+
+# STB (header-only)
+FetchContent_Declare(
+  stb
+  GIT_REPOSITORY https://github.com/nothings/stb.git
+  GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+
+# GLAD - fetch and create a small target from the single-source generator output
+FetchContent_Declare(
+  glad
+  GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+  GIT_TAG c
+)
+FetchContent_MakeAvailable(glad)
+
+# The glad repo doesn't always create a CMake target usable by consumers; create one:
+add_library(glad STATIC ${glad_SOURCE_DIR}/src/glad.c)
+target_include_directories(glad PUBLIC ${glad_SOURCE_DIR}/include)
+if(NOT WIN32)
+  target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
+endif()
+
+# ImGui
+FetchContent_Declare(
+  imgui
+  GIT_REPOSITORY https://github.com/ocornut/imgui.git
+  GIT_TAG v1.92.4
+)
+FetchContent_MakeAvailable(imgui)
+
+# Build ImGui as a static lib from the sources we need
+set(IMGUI_SRC
+  ${imgui_SOURCE_DIR}/imgui.cpp
+  ${imgui_SOURCE_DIR}/imgui_demo.cpp
+  ${imgui_SOURCE_DIR}/imgui_draw.cpp
+  ${imgui_SOURCE_DIR}/imgui_tables.cpp
+  ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+)
+
+add_library(imgui STATIC ${IMGUI_SRC})
+target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
+# imgui backends require linking to glfw; use the glfw target from FetchContent
+target_link_libraries(imgui PUBLIC glfw)
+
+# --- end FetchContent block ---
 
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     if(NOT WIN32)
-        set(GLAD_LIBRARIES dl)
     endif()
 endif()
 
@@ -26,18 +97,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
 
-include_directories(submodules/glad/include/
-                    submodules/glfw/include/
-                    submodules/glm/
-                    submodules/stb/
-                    submodules/imgui/
-                    submodules/imgui/backends/)
-
 # Set bin directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-
-# Set include directory
-set(INC_DIR include)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/$<CONFIG>)
 
 # Set source directory
 set(SRC_DIR src)
@@ -48,30 +109,22 @@ file(GLOB_RECURSE C_SOURCES "${SRC_DIR}/*.c")
 
 # Recursively find all header files
 file(GLOB_RECURSE HPP_HEADERS "${SRC_DIR}/*.hpp")
-
-# Find all header files in include directorys
-file(GLOB_RECURSE INC_HEADERS "${INC_DIR}/*.h")
-
-# Find required dependency files
-file(GLOB DEP_SOURCES
-    submodules/glad/src/glad.c
-    submodules/imgui/imgui.cpp
-    submodules/imgui/imgui_demo.cpp
-    submodules/imgui/imgui_draw.cpp
-    submodules/imgui/imgui_tables.cpp
-    submodules/imgui/imgui_widgets.cpp
-    submodules/imgui/backends/imgui_impl_opengl3.cpp
-    submodules/imgui/backends/imgui_impl_glfw.cpp
-)
+file(GLOB_RECURSE H_HEADERS "${SRC_DIR}/*.h")
 
 # Add all source files to the project
 include_directories(${SRC_DIR})
 
-# Add all header files to the project
-include_directories(${INC_DIR})
+add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${C_SOURCES} ${HPP_HEADERS} ${H_HEADERS})
 
-add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${C_SOURCES} ${DEP_SOURCES} ${HPP_HEADERS} ${H_HEADERS} ${INC_HEADERS})
+# Link the library targets created above:
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
+    glfw
+    glad
+    imgui
+    glm::glm
+    nlohmann_json::nlohmann_json
+)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
-
-target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} ${GLAD_LIBRARIES} nlohmann_json::nlohmann_json)
+# Ensure includes for stb header-only are available (stb uses headers directly)
+target_include_directories(${PROJECT_NAME} PRIVATE ${stb_SOURCE_DIR})
