@@ -21,8 +21,8 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
         console.Error("[Consul] Failed to initialize GLFW");
         return;
     }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -68,7 +68,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) console.Error("[Consul] Failed to initialize GLAD");
+    if (!gladLoaderLoadGL()) console.Error("[Consul] Failed to initialize GLAD");
     glfwSetKeyCallback(Window::handle, Keyboard::KeyCallback);
     glfwSetWindowSizeCallback(Window::handle, Window::WindowSizeCallback);
     // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);

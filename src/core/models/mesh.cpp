@@ -1,6 +1,6 @@
 #include "core/models/mesh.hpp"
 #include "core/console/console.hpp"
-#include "glad/glad.h"
+#include "glad/gl.h"
 #include "shader.hpp"
 #include "core/models/texture.hpp"
 #include "utils.hpp"
