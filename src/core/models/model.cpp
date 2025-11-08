@@ -239,7 +239,7 @@ std::vector<Vertex> Model::assembleVertices
 )
 {
 	std::vector<Vertex> vertices;
-	for (int i = 0; i < positions.size(); i++)
+	for (unsigned int i = 0; i < positions.size(); i++)
 	{
 		vertices.push_back
 		(
