@@ -63,7 +63,7 @@ endif()
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG docking
+  GIT_TAG v1.92.4
 )
 FetchContent_MakeAvailable(imgui)
 
