@@ -2,7 +2,9 @@
 #include "core/console/console.hpp"
 #include "utils.hpp"
 
+#ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
+#endif
 #include <stb_image.h>
 
 #include <fstream>
