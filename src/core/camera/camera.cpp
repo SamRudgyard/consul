@@ -17,9 +17,7 @@ void Camera::UpdateMatrix(float FOVdeg, float nearPlane, float farPlane) {
 
     // Use FoV angle from larger dimension, see https://stackoverflow.com/questions/26997631/limiting-fov-both-horizontally-and-vertically
     float tanFov = tan(0.5f*FOVdeg*DEG_TO_RAD);
-    float oneTanFov = 1.0f/tanFov;
     float aspRat = (float)width / (float)height;
-    float oneTanAspRat = 1.0f/(tanFov*aspRat);
 
     projection[0][0] = 1.0f / (aspRat * tanFov);
     projection[0][1] = 0.0f;
