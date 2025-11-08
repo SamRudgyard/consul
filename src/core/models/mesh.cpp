@@ -62,7 +62,9 @@ void Mesh::Draw(Shader& shader, Camera& camera, glm::mat4 transformationMatrix, 
         textures[i].SetTextureUnit(shader.id, (textures[i].GetTextureTypeAsString() + num).c_str());
     }
 
-    shader.SetUniformVector3f("camPos", camera.position.x, camera.position.y, camera.position.z);
+    shader.SetUniformVector3f("cameraPosition", camera.position.x, camera.position.y, camera.position.z);
+    shader.SetUniformVector3f("lightPosition", 0.0f, 0.0f, 20.0f);
+    shader.SetUniformVector3f("lightColour", 1.0f, 1.0f, 1.0f);
 
     camera.Matrix(shader, "camMatrix");
 

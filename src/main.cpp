@@ -12,10 +12,10 @@ int main(int argc, char **argv) {
 
     Shader& shader = ShaderManager::LoadShader("shaders/basic.vs", "shaders/basic.fs", "basicShader");
 
-    Model model("assets/survival_backpack/scene.gltf");
+    Model model("assets/shiba/scene.gltf");
 
     while (consul.Run()) {
-        model.Draw(shader, camera, glm::vec3(5.0f, 5.0f, 0.0f), glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.1f));
+        model.Draw(shader, camera, glm::vec3(0.0f), glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f));
 
         camera.HandleInputs(1/60.0f);
         camera.UpdateMatrix(45.0f, 0.1f, 100.0f);
