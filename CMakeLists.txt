@@ -1,6 +1,10 @@
-cmake_minimum_required(VERSION 3.14)
-
+cmake_minimum_required(VERSION 3.10)
 project(Consul)
+
+# Prefer the NEW behavior for FetchContent extraction timestamps
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 
