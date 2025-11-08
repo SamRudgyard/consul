@@ -68,7 +68,7 @@ void Camera::HandleInputs(float deltaTime) {
     if (glfwGetKey(Window::handle, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         speed = 10.0f;
     }
-    else if (glfwGetKey(Window::handle, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
+    else if (glfwGetKey(Window::handle, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
         speed = 5.0f;
     }
 
