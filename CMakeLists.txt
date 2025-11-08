@@ -110,6 +110,7 @@ file(GLOB_RECURSE C_SOURCES "${SRC_DIR}/*.c")
 
 # Recursively find all header files
 file(GLOB_RECURSE HPP_HEADERS "${SRC_DIR}/*.hpp")
+file(GLOB_RECURSE H_HEADERS "${SRC_DIR}/*.h")
 
 # Add all source files to the project
 include_directories(${SRC_DIR})
