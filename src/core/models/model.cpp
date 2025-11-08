@@ -33,7 +33,7 @@ void Model::Draw(Shader& shader, Camera& camera, glm::vec3 translation, glm::qua
 {
 	for (unsigned int im = 0; im < meshes.size(); im++)
 	{
-		meshes[im].Mesh::Draw(shader, camera, transformationMatrices[im]);
+		meshes[im].Draw(shader, camera, transformationMatrices[im], translation, rotation, scale);
 	}
 }
 
@@ -215,12 +215,12 @@ std::vector<Texture> Model::loadTextures()
                 loadedTextures.push_back(diffuseTexture);
                 loadedTextureFiles.push_back(uri);
             }
-            else if (uri.find("metallicRoughness") != std::string::npos)
-            {
-                Texture specularTexture = Texture((fileDirectory + uri).c_str(), TextureType::SPECULAR, (GLuint)loadedTextureFiles.size());
-                loadedTextures.push_back(specularTexture);
-                loadedTextureFiles.push_back(uri);
-            }
+            // else if (uri.find("metallicRoughness") != std::string::npos)
+            // {
+            //     Texture specularTexture = Texture((fileDirectory + uri).c_str(), TextureType::SPECULAR, (GLuint)loadedTextureFiles.size());
+            //     loadedTextures.push_back(specularTexture);
+            //     loadedTextureFiles.push_back(uri);
+            // }
         }
         else
         {

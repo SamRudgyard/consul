@@ -39,7 +39,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     glCheckError();
 }
 
-void Mesh::Draw(Shader& shader, Camera& camera, glm::mat4 matrix) const
+void Mesh::Draw(Shader& shader, Camera& camera, glm::mat4 transformationMatrix, glm::vec3 translation, glm::quat rotation, glm::vec3 scale) const
 {
     shader.Use();
     glBindVertexArray(vao);
@@ -58,32 +58,19 @@ void Mesh::Draw(Shader& shader, Camera& camera, glm::mat4 matrix) const
             Console::Get().Error("Unknown texture type '" + std::to_string(type) + "'");
         }
 
-        textures[i].SetTextureUnit(shader.id, (textures[i].GetTextureTypeAsString() + num).c_str(), i);
         textures[i].Bind();
+        textures[i].SetTextureUnit(shader.id, (textures[i].GetTextureTypeAsString() + num).c_str());
     }
 
     shader.SetUniformVector3f("camPos", camera.position.x, camera.position.y, camera.position.z);
 
     camera.Matrix(shader, "camMatrix");
 
-    glm::vec3 translation = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-    glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::mat4 s = glm::scale(glm::mat4(1.0f), scale);
+    glm::mat4 r = glm::mat4_cast(rotation);
+    glm::mat4 t = glm::translate(glm::mat4(1.0f), translation);
 
-    // Initialize matrices
-	glm::mat4 trans = glm::mat4(1.0f);
-	glm::mat4 rot = glm::mat4(1.0f);
-	glm::mat4 sca = glm::mat4(1.0f);
-
-	// Transform the matrices to their correct form
-	trans = glm::translate(trans, translation);
-	rot = glm::mat4_cast(rotation);
-	sca = glm::scale(sca, scale);
-
-    shader.SetUniformMatrix4f("translation", trans);
-    shader.SetUniformMatrix4f("rotation", rot);
-    shader.SetUniformMatrix4f("scale", sca);
-    shader.SetUniformMatrix4f("model", matrix);
+    shader.SetUniformMatrix4f("model", s*r*t*transformationMatrix);
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }

@@ -18,14 +18,14 @@
  * This function will check that the file exists and can be loaded. If not, an error message will be printed and the object will be in an invalid state.
  * The function will also generate mipmaps for the texture, and will bind the texture to the specified texture unit.
  */
-Texture::Texture(const char* image, TextureType textureType, GLuint unit) {
+Texture::Texture(const char* image, TextureType textureType, GLuint unit)
+    : path(image), type(textureType), unit(unit)
+{
     if (!DoesFileExist(image)) {
         Console::Get().Error("[Texture::Texture] Texture file does not exist: '" + std::string(image) + "'");
         return;
     }
-    
-    path = image;
-    type = textureType;
+
     int textureWidth, textureHeight, numColourChannels;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(image, &textureWidth, &textureHeight, &numColourChannels, 0);
@@ -35,11 +35,9 @@ Texture::Texture(const char* image, TextureType textureType, GLuint unit) {
     }
 
     glGenTextures(1, &id);
-    glActiveTexture(GL_TEXTURE0 + unit);
-    this->unit = unit;
-    glBindTexture(GL_TEXTURE_2D, id); // Bind the texture so we can adjust its parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Uses the texel nearest to the specified texture x coordinate
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Uses the texel nearest to the specified texture y coordinate
+    Bind();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Set texture wrapping to GL_REPEAT along the X axis
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Set texture wrapping to GL_REPEAT along the Y axis
     glCheckError();
@@ -49,10 +47,10 @@ Texture::Texture(const char* image, TextureType textureType, GLuint unit) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     }
     else if (numColourChannels == 3) { // RGB
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     }
     else if (numColourChannels == 1) { // Grayscale
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, textureWidth, textureHeight, 0, GL_RED, GL_UNSIGNED_BYTE, data);
     }
     else {
         Console::Get().Error("[Texture::Texture] Invalid number of colour channels (expected 1, 3, or 4, but got " + std::to_string(numColourChannels) + ")");
@@ -63,20 +61,19 @@ Texture::Texture(const char* image, TextureType textureType, GLuint unit) {
     glCheckError();
 
     stbi_image_free(data);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    Unbind();
     glCheckError();
 }
 
 /**
- * Sets the active texture unit for the specified uniform in the specified shader.
+ * Sets the texture's unit for the specified uniform in the specified shader.
  *
  * \param shaderID The ID of the shader program to set the texture unit for.
  * \param uniform The name of the uniform variable to set the texture unit for.
- * \param unit The texture unit to set.
  *
- * This function will set the specified uniform to the specified texture unit using glUniform1i. It will also check for any OpenGL errors using glCheckError.
+ * This function will set the specified uniform to the texture's unit using glUniform1i. It will also check for any OpenGL errors using glCheckError.
  */
-void Texture::SetTextureUnit(unsigned int shaderID, const char* uniform, GLuint unit) const {
+void Texture::SetTextureUnit(unsigned int shaderID, const char* uniform) const {
     GLuint textureUniformID = glGetUniformLocation(shaderID, uniform);
     glUseProgram(shaderID);
     glUniform1i(textureUniformID, unit);

@@ -11,14 +11,11 @@ out vec3 fragColour;
 out vec2 fragTexCoords;
 
 uniform mat4 model;
-uniform mat4 translation;
-uniform mat4 scale;
-uniform mat4 rotation;
 uniform mat4 camMatrix;
 
 void main()
 {
-    fragPosition = vec3(model * translation * rotation * scale * vec4(inputPosition, 1.0));
+    fragPosition = vec3(model * vec4(inputPosition, 1.0));
     fragNormal = inputNormal;
     fragColour = inputColour;
     fragTexCoords = mat2(1.0, 0.0, 0.0, -1.0)*inputTexCoords;

@@ -17,11 +17,11 @@ class Texture {
         TextureType type;
         GLuint unit;
         
-        Texture(const char* image, TextureType textureType, GLuint slot);
+        Texture(const char* image, TextureType textureType, GLuint unit);
 
         const char* GetTextureTypeAsString() const { return textureTypeToString.at(type); }
 
-        void SetTextureUnit(unsigned int shaderID, const char* uniform, GLuint unit) const;
+        void SetTextureUnit(unsigned int shaderID, const char* uniform) const;
         void Bind() const;
         void Unbind() const;
         void Delete() const;
