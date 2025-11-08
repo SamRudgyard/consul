@@ -222,12 +222,10 @@ std::vector<Texture> Model::loadTextures()
                 loadedTextureFiles.push_back(uri);
             }
         }
-        else
-        {
-            // Texture has already been loaded, so just reuse it
-            unsigned int iTexture = std::find(loadedTextureFiles.begin(), loadedTextureFiles.end(), uri) - loadedTextureFiles.begin();
-            textures.push_back(loadedTextures[iTexture]);
-        }
+        
+        // Texture has been loaded, now use it
+        unsigned int iTexture = std::find(loadedTextureFiles.begin(), loadedTextureFiles.end(), uri) - loadedTextureFiles.begin();
+        textures.push_back(loadedTextures[iTexture]);
 	}
 
 	return textures;
