@@ -197,38 +197,47 @@ std::vector<unsigned int> Model::readAccessorIndices(json accessor)
 
 std::vector<Texture> Model::loadTextures()
 {
-	std::vector<Texture> textures;
+    std::vector<Texture> textures;
+    const std::string fileDirectory = file.substr(0, file.find_last_of('/') + 1);
 
-	std::string fileDirectory = file.substr(0, file.find_last_of('/') + 1);
+    for (const auto& image : jsonContents["images"])
+    {
+        const std::string uri = image["uri"];
 
-	for (unsigned int iImage = 0; iImage < jsonContents["images"].size(); iImage++)
-	{
-		// Unique resource identifier of the texture, relative to the model file
-		std::string uri = jsonContents["images"][iImage]["uri"];
-
-        if (std::find(loadedTextureFiles.begin(), loadedTextureFiles.end(), uri) == loadedTextureFiles.end())
+        // Check if texture is already loaded
+        auto it = std::find(loadedTextureFiles.begin(), loadedTextureFiles.end(), uri);
+        if (it == loadedTextureFiles.end())
         {
-            // Texture has not been loaded yet, so load it
+            // Determine texture type based on URI naming convention
+            TextureType type;
             if (uri.find("baseColor") != std::string::npos)
-            {
-                Texture diffuseTexture = Texture((fileDirectory + uri).c_str(), TextureType::DIFFUSE, (GLuint)loadedTextureFiles.size());
-                loadedTextures.push_back(diffuseTexture);
-                loadedTextureFiles.push_back(uri);
-            }
+                type = TextureType::DIFFUSE;
             else if (uri.find("metallicRoughness") != std::string::npos)
+                type = TextureType::SPECULAR;
+            else
             {
-                Texture specularTexture = Texture((fileDirectory + uri).c_str(), TextureType::SPECULAR, (GLuint)loadedTextureFiles.size());
-                loadedTextures.push_back(specularTexture);
-                loadedTextureFiles.push_back(uri);
+                Console::Get().Warn("[Model::loadTextures] Unknown texture type for URI: '" + uri + "'");
+                continue;
             }
-        }
-        
-        // Texture has been loaded, now use it
-        unsigned int iTexture = std::find(loadedTextureFiles.begin(), loadedTextureFiles.end(), uri) - loadedTextureFiles.begin();
-        textures.push_back(loadedTextures[iTexture]);
-	}
 
-	return textures;
+            // Load the new texture
+            std::string texturePath = fileDirectory + uri;
+            Texture texture(texturePath.c_str(), type, static_cast<GLuint>(loadedTextureFiles.size()));
+            loadedTextures.push_back(texture);
+            loadedTextureFiles.push_back(uri);
+
+            // Use the newly loaded texture
+            textures.push_back(texture);
+        }
+        else
+        {
+            // Texture already loaded, reuse it
+            unsigned int textureIndex = std::distance(loadedTextureFiles.begin(), it);
+            textures.push_back(loadedTextures[textureIndex]);
+        }
+    }
+
+    return textures;
 }
 
 std::vector<Vertex> Model::assembleVertices
