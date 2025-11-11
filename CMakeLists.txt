@@ -48,12 +48,16 @@ FetchContent_MakeAvailable(stb)
 FetchContent_Declare(
   glad
   GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-  GIT_TAG v2.0.8
-  GIT_PROGRESS   TRUE
-  SOURCE_SUBDIR  cmake
+  GIT_TAG c
 )
 FetchContent_MakeAvailable(glad)
-glad_add_library(glad STATIC REPRODUCIBLE LOADER API gl:core=4.6)
+
+# The glad repo doesn't always create a CMake target usable by consumers; create one:
+add_library(glad STATIC ${glad_SOURCE_DIR}/src/glad.c)
+target_include_directories(glad PUBLIC ${glad_SOURCE_DIR}/include)
+if(NOT WIN32)
+  target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
+endif()
 
 # ImGui
 FetchContent_Declare(

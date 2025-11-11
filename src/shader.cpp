@@ -1,7 +1,7 @@
 #include "shader.hpp"
 
 #include "core/console/console.hpp"
-#include "glad/gl.h"
+#include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 

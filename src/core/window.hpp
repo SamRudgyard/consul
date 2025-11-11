@@ -1,7 +1,7 @@
 #pragma once
 
 #include "glm/glm.hpp"
-#include "glad/gl.h"
+#include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
 // #include "imgui.h"

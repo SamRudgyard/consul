@@ -1,6 +1,6 @@
 #include "core/camera/camera.hpp"
 #include "constants.hpp"
-#include "glad/gl.h"
+#include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "core/window.hpp"
 

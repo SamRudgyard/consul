@@ -25,7 +25,7 @@ void Console::LogOnDebug(const std::string& message)
     if (items.size() > MAX_CONSOLE_SIZE) {
         items.pop_front();
     }
-    // items.push_back("[DEBUG] " + message);
+    items.push_back("[DEBUG] " + message);
 #endif
 }
 

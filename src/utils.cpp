@@ -1,6 +1,6 @@
 #include "utils.hpp"
 
-#include "glad/gl.h"
+#include "glad/glad.h"
 #include "core/console/console.hpp"
 
 bool DoesFileExist(const char* filePath)

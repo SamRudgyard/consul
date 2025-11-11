@@ -2,7 +2,7 @@
 
 #include "core/console/console.hpp"
 #include "utils.hpp"
-#include "glad/gl.h"
+#include "glad/glad.h"
 
 std::map<std::string, Shader> ShaderManager::shaders = std::map<std::string, Shader>();
 

@@ -2,7 +2,7 @@
 
 #include "nlohmann/json.hpp"
 #include "core/models/mesh.hpp"
-#include "glad/gl.h"
+#include "glad/glad.h"
 #include "glm/glm.hpp"
 
 #include <vector>
