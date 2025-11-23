@@ -10,16 +10,6 @@
 #include <fstream>
 #include <iostream>
 
-/**
- * Constructor for a Texture object.
- *
- * \param image The path to the image file from which to load the texture.
- * \param textureType The type of texture to create (DIFFUSE or SPECULAR).
- * \param unit The texture unit on which to bind the texture. The texture unit is a number that allows multiple textures to be used at the same time.
- *
- * This function will check that the file exists and can be loaded. If not, an error message will be printed and the object will be in an invalid state.
- * The function will also generate mipmaps for the texture, and will bind the texture to the specified texture unit.
- */
 Texture::Texture(const char* image, TextureType textureType, GLuint unit)
     : path(image), type(textureType), unit(unit)
 {
@@ -67,14 +57,6 @@ Texture::Texture(const char* image, TextureType textureType, GLuint unit)
     glCheckError();
 }
 
-/**
- * Sets the texture's unit for the specified uniform in the specified shader.
- *
- * \param shaderID The ID of the shader program to set the texture unit for.
- * \param uniform The name of the uniform variable to set the texture unit for.
- *
- * This function will set the specified uniform to the texture's unit using glUniform1i. It will also check for any OpenGL errors using glCheckError.
- */
 void Texture::SetTextureUnit(unsigned int shaderID, const char* uniform) const {
     GLuint textureUniformID = glGetUniformLocation(shaderID, uniform);
     glUseProgram(shaderID);
@@ -82,32 +64,15 @@ void Texture::SetTextureUnit(unsigned int shaderID, const char* uniform) const {
     glCheckError();
 }
 
-/**
- * Binds the texture to the specified texture unit.
- *
- * This function will use glActiveTexture to set the active texture unit to the unit specified in the constructor, and then use glBindTexture to bind the texture to that unit.
- */
 void Texture::Bind() const {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
-/**
- * Unbinds the texture from the active texture unit.
- *
- * This function will reset the active texture unit to 0 (i.e. the default texture unit).
- * It is useful for unbinding a texture after it has been used for rendering.
- */
 void Texture::Unbind() const {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-/**
- * Deletes the texture and frees up the OpenGL resources it was using.
- *
- * This function will call glDeleteTextures to delete the texture and free up the OpenGL resources it was using.
- * It should be called when the texture is no longer needed in order to avoid memory leaks.
- */
 void Texture::Delete() const {
     glDeleteTextures(1, &id);
 }

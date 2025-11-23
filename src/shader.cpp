@@ -7,27 +7,12 @@
 
 #include "utils.hpp"
 
-/**
- * @brief the shader program for use in the current OpenGL context.
- *
- * @return Reference to the current Shader object.
- */
 Shader& Shader::Use()
 {
     glUseProgram(id);
     return *this;
 }
 
-/**
- * @brief Compiles and links a shader program from given vertex and fragment shader source code.
- *
- * This function creates vertex and fragment shader objects, compiles them from the provided source code,
- * checks for compilation errors, and then links them into a shader program. On success, the shader
- * program is stored in the member variable 'id'. The individual shader objects are deleted after linking.
- *
- * @param vertexSource String containing the GLSL source code for the vertex shader.
- * @param fragmentSource String containing the GLSL source code for the fragment shader.
- */
 void Shader::Compile(const std::string& vertexSource, const std::string& fragmentSource)
 {   
     Console& console = Console::Get();

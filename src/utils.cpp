@@ -9,15 +9,6 @@ bool DoesFileExist(const char* filePath)
     return file.good();
 }
 
-/**
- * @brief Reads the entire contents of a file into a dynamically allocated C-string.
- *
- * This function attempts to open the given file, reads its contents,
- * and returns a pointer to a character array containing the file data.
- *
- * @param filePath The path to the file to be read.
- * @return A string containing the file contents.
- */
 const std::string ReadFile(const char* filePath)
 {
     if (!filePath) Console::Get().Error("[ReadFile] Provided file path is null");
@@ -37,12 +28,6 @@ const std::string ReadFile(const char* filePath)
     return contents;
 }
 
-/*
- * @brief Gets the file extension from a file path.
- *
- * @param filePath The path to the file.
- * @return The file extension, or an empty string if none exists.
- */
 const std::string GetFileExtension(const char* filePath) {
     std::string pathStr(filePath);
     size_t dotPos = pathStr.find_last_of('.');
@@ -53,11 +38,6 @@ const std::string GetFileExtension(const char* filePath) {
     return pathStr.substr(dotPos);
 }
 
-/**
- * @brief Frees memory previously allocated for a text buffer.
- *
- * @param text Pointer to the text buffer to be freed.
- */
 void UnloadFileText(char* text) {
     if (!text) {
         Console::Get().LogOnDebug("[UnloadFile] Unnecessary call to unload text");
