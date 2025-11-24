@@ -8,10 +8,10 @@
 
 Console::~Console()
 {
-    ClearLog();
+    clearLog();
 }
 
-void Console::Log(const std::string& message)
+void Console::log(const std::string& message)
 {
     if (items.size() > MAX_CONSOLE_SIZE) {
         items.pop_front();
@@ -19,7 +19,7 @@ void Console::Log(const std::string& message)
     items.push_back(message);
 }
 
-void Console::LogOnDebug(const std::string& message)
+void Console::logOnDebug(const std::string& message)
 {
 #ifndef NDEBUG
     if (items.size() > MAX_CONSOLE_SIZE) {
@@ -29,7 +29,7 @@ void Console::LogOnDebug(const std::string& message)
 #endif
 }
 
-void Console::Error(const std::string& message)
+void Console::error(const std::string& message)
 {
     if (items.size() > MAX_CONSOLE_SIZE) {
         items.pop_front();
@@ -39,7 +39,7 @@ void Console::Error(const std::string& message)
     throw std::runtime_error(message);
 }
 
-void Console::Warn(const std::string& message)
+void Console::warn(const std::string& message)
 {
     if (items.size() > MAX_CONSOLE_SIZE) {
         items.pop_front();
@@ -47,7 +47,7 @@ void Console::Warn(const std::string& message)
     items.push_back("[WARNING] " + message);
 }
 
-void Console::Info(const std::string& message)
+void Console::info(const std::string& message)
 {
     if (items.size() > MAX_CONSOLE_SIZE) {
         items.pop_front();
@@ -55,7 +55,7 @@ void Console::Info(const std::string& message)
     items.push_back("[INFO] " + message);
 }
 
-void Console::Draw(const char* title, bool* open)
+void Console::draw(const char* title, bool* open)
 {
     unsigned int consoleWidth = (int)(0.2f * Window::width);
     unsigned int consoleHeight = (int)(0.3f * Window::height);
@@ -89,7 +89,7 @@ void Console::Draw(const char* title, bool* open)
 
     if (ImGui::BeginPopupContextWindow())
     {
-        if (ImGui::Selectable("Clear")) ClearLog();
+        if (ImGui::Selectable("Clear")) clearLog();
         ImGui::EndPopup();
     }
 
@@ -102,17 +102,17 @@ void Console::Draw(const char* title, bool* open)
         {
             ImVec4 colour;
             bool hasColour = false;
-            if (IsSubstring(item, "[ERROR]"))
+            if (isSubstring(item, "[ERROR]"))
             {
                 colour = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
                 hasColour = true;
             }
-            else if (IsSubstring(item, "[WARNING]"))
+            else if (isSubstring(item, "[WARNING]"))
             {
                 colour = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
                 hasColour = true;
             }
-            else if (IsSubstring(item, "[INFO]"))
+            else if (isSubstring(item, "[INFO]"))
             {
                 colour = ImVec4(0.4f, 0.4f, 1.0f, 1.0f);
                 hasColour = true;

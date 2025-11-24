@@ -6,37 +6,37 @@
 
 std::map<std::string, Shader> ShaderManager::shaders = std::map<std::string, Shader>();
 
-Shader& ShaderManager::LoadShader(const char* vertexPath, const char* fragmentPath, const char* referenceName)
+Shader& ShaderManager::loadShader(const char* vertexPath, const char* fragmentPath, const char* referenceName)
 {
-    Console& console = Console::Get();
+    Console& console = Console::get();
 
-    if (!vertexPath) console.Error("[ShaderManager::LoadShader] Vertex shader path is null");
-    if (!fragmentPath) console.Error("[ShaderManager::LoadShader] Fragment shader path is null");
+    if (!vertexPath) console.error("[ShaderManager::loadShader] Vertex shader path is null");
+    if (!fragmentPath) console.error("[ShaderManager::loadShader] Fragment shader path is null");
 
     // Check if name is already present
-    if (shaders.find(referenceName) != shaders.end()) console.LogOnDebug("[ShaderManager::LoadShader] Shader with name '" + std::string(referenceName) + "' is already loaded, will overwrite.");
+    if (shaders.find(referenceName) != shaders.end()) console.logOnDebug("[ShaderManager::loadShader] Shader with name '" + std::string(referenceName) + "' is already loaded, will overwrite.");
 
-    const std::string vShaderText = ReadFile(vertexPath);
-    const std::string fShaderText = ReadFile(fragmentPath);
+    const std::string vShaderText = readFile(vertexPath);
+    const std::string fShaderText = readFile(fragmentPath);
 
     Shader shader;
-    shader.Compile(vShaderText, fShaderText);
+    shader.compile(vShaderText, fShaderText);
 
     shaders[referenceName] = shader;
 
     return shaders[referenceName];
 }
 
-Shader& ShaderManager::GetShader(const char* referenceName)
+Shader& ShaderManager::getShader(const char* referenceName)
 {
     if (shaders.find(referenceName) == shaders.end()) {
-        Console::Get().Error("[ShaderManager::GetShader] Shader with name '" + std::string(referenceName) + "' is not loaded");
+        Console::get().error("[ShaderManager::getShader] Shader with name '" + std::string(referenceName) + "' is not loaded");
     }
 
     return shaders[referenceName];
 }
 
-void ShaderManager::UnloadShader(Shader& shader)
+void ShaderManager::unloadShader(Shader& shader)
 {
     glDeleteProgram(shader.id);
     glCheckError();
@@ -50,10 +50,10 @@ void ShaderManager::UnloadShader(Shader& shader)
         }
     }
 
-    Console::Get().LogOnDebug("[ShaderManager::UnloadShader] Unloaded shader program with ID " + std::to_string(shader.id));
+    Console::get().logOnDebug("[ShaderManager::unloadShader] Unloaded shader program with ID " + std::to_string(shader.id));
 }
 
-void ShaderManager::Clear()
+void ShaderManager::clear()
 {
     for (auto& pair : shaders) {
         glDeleteProgram(pair.second.id);
@@ -61,5 +61,5 @@ void ShaderManager::Clear()
     glCheckError();
 
     shaders.clear();
-    Console::Get().LogOnDebug("[ShaderManager::Clear] Cleared all shaders from memory");
+    Console::get().logOnDebug("[ShaderManager::clear] Cleared all shaders from memory");
 }

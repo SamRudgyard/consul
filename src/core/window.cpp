@@ -15,10 +15,10 @@ glm::vec2 Window::position = {0, 0};
 glm::vec2 Window::prevPosition = {0, 0};
 int Window::screen = 0;
 int Window::prevScreen = 0;
-bool Window::shouldClose = false;
+bool Window::toClose = false;
 bool Window::vsyncEnabled = true;
 
-void Window::ToggleFullscreen()
+void Window::toggleFullscreen()
 {
     if (!isFullscreen)
     {
@@ -28,7 +28,7 @@ void Window::ToggleFullscreen()
     }
 }
 
-void Window::SetupViewport(unsigned int width, unsigned int height)
+void Window::setupViewport(unsigned int width, unsigned int height)
 {
     Window::width = width;
     Window::height = height;
@@ -42,7 +42,7 @@ void Window::SetupViewport(unsigned int width, unsigned int height)
     glCheckError();
 }
 
-glm::vec2 Window::GetWindowScaleDPI()
+glm::vec2 Window::getWindowScaleDPI()
 {
     glm::vec2 scale = { 1.0f, 1.0f };
     glfwGetWindowContentScale(Window::handle, &scale.x, &scale.y);
@@ -50,9 +50,9 @@ glm::vec2 Window::GetWindowScaleDPI()
     return scale;
 }
 
-void Window::WindowSizeCallback(GLFWwindow* window, int width, int height)
+void Window::windowSizeCallback(GLFWwindow* window, int width, int height)
 {
-    SetupViewport(width, height);
+    setupViewport(width, height);
 
     Window::width = width;
     Window::height = height;
@@ -61,26 +61,26 @@ void Window::WindowSizeCallback(GLFWwindow* window, int width, int height)
 
     if (Window::flags & WINDOW_HIGH_DPI)
     {
-        glm::vec2 scale = GetWindowScaleDPI();
+        glm::vec2 scale = getWindowScaleDPI();
         Window::width = (unsigned int)(width*scale.x);
         Window::height = (unsigned int)(height*scale.y);
     }
 }
 
-bool Window::ShouldClose()
+bool Window::shouldClose()
 {
-    Window::shouldClose = glfwWindowShouldClose(Window::handle);
+    Window::toClose = glfwWindowShouldClose(Window::handle);
 
     if (Time::frameCount > 1000000)
     {
         // Log("[Consul] Frame count exceeded 1000000");
-        Window::shouldClose = true;
+        Window::toClose = true;
     }
 
-    return Window::shouldClose;
+    return Window::toClose;
 }
 
-void Window::SetVSync(bool enabled)
+void Window::setVSync(bool enabled)
 {
     if (vsyncEnabled == enabled) return;
     

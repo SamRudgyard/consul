@@ -31,29 +31,29 @@ class Texture {
          * Get the texture type as a string.
          * @returns String representation of the texture type.
          */
-        const char* GetTextureTypeAsString() const { return textureTypeToString.at(type); }
+        const char* getTextureTypeAsString() const { return textureTypeToString.at(type); }
 
         /**
          * Set sampler uniform in a shader program to this texture's unit.
          * @param shaderID ID of the shader program.
          * @param uniform  Name of the sampler uniform variable.
          */
-        void SetTextureUnit(unsigned int shaderID, const char* uniform) const;
+        void setTextureUnit(unsigned int shaderID, const char* uniform) const;
 
         /**
          * Bind this texture.
          */
-        void Bind() const;
+        void bind() const;
 
         /**
          * Unbind this texture so another can be bound.
          */
-        void Unbind() const;
+        void unbind() const;
 
         /**
-         * Delete the texture.
+         * Release the texture.
          */
-        void Delete() const;
+        void release() const;
 
     private:
         // Textures will be named "diffuse0", "diffuse1", "specular0", "specular1", etc.

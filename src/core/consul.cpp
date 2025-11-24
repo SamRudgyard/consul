@@ -12,13 +12,13 @@ Consul::Consul(const char* title, bool isFullscreen)
 Consul::Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
 {
     // Prepare console
-    console.ClearLog();
-    console.Log("---- CONSUL ----");
+    console.clearLog();
+    console.log("---- CONSUL ----");
 
-    console.Log("[Consul] Initialising Consul...");
+    console.log("[Consul] Initialising Consul...");
 
     if (!glfwInit()) {
-        console.Error("[Consul] Failed to initialize GLFW");
+        console.error("[Consul] Failed to initialize GLFW");
         return;
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -31,7 +31,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     GLFWmonitor* primaryMonitor = nullptr;
     if (isFullscreen) {
-        console.Log("[Consul] Creating fullscreen window...");
+        console.log("[Consul] Creating fullscreen window...");
         primaryMonitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
         width = mode->width;
@@ -47,7 +47,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     Window::handle = glfwCreateWindow(Window::width, Window::height, title, primaryMonitor, nullptr);
 
     if (maximise) {
-        console.Log("[Consul] Creating maximised window...");
+        console.log("[Consul] Creating maximised window...");
         glfwMaximizeWindow(Window::handle);
 
         int framebufferWidth, framebufferHeight;
@@ -58,7 +58,7 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     if (!Window::handle) {
         glfwTerminate();
-        console.Error("[Consul] Failed to create GLFW window");
+        console.error("[Consul] Failed to create GLFW window");
         return;
     }
 
@@ -68,16 +68,16 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) console.Error("[Consul] Failed to initialize GLAD");
-    glfwSetKeyCallback(Window::handle, Keyboard::KeyCallback);
-    glfwSetWindowSizeCallback(Window::handle, Window::WindowSizeCallback);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) console.error("[Consul] Failed to initialize GLAD");
+    glfwSetKeyCallback(Window::handle, Keyboard::keyCallback);
+    glfwSetWindowSizeCallback(Window::handle, Window::windowSizeCallback);
     // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     const GLubyte* version = glGetString(GL_VERSION);
     if (!version) {
-        Console::Get().Error("[Consul] [OpenGL] Failed to retrieve OpenGL version");
+        Console::get().error("[Consul] [OpenGL] Failed to retrieve OpenGL version");
     } else {
-        Console::Get().Log("[Consul] [OpenGL] Found OpenGL version " + std::string(reinterpret_cast<const char*>(version)));
+        Console::get().log("[Consul] [OpenGL] Found OpenGL version " + std::string(reinterpret_cast<const char*>(version)));
     }
 
     // Initialise OpenGL with our default settings
@@ -96,9 +96,9 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);     // Clear colour and depth buffers
 
     glCheckError();
-    Window::SetupViewport(Window::width, Window::height);
+    Window::setupViewport(Window::width, Window::height);
 
-    console.Log("[Consul] OpenGL initialised successfully");
+    console.log("[Consul] OpenGL initialised successfully");
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -112,32 +112,32 @@ Consul::Consul(const char* title, unsigned int width, unsigned int height, bool 
     ImGui_ImplGlfw_InitForOpenGL(Window::handle, true);     // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
 
-    console.Log("[Consul] ImGui initialised successfully");
+    console.log("[Consul] ImGui initialised successfully");
 
     Time::frameCount = 0;
-    Window::shouldClose = false;
+    Window::toClose = false;
 }
 
 Consul::~Consul()
 {
-    Terminate();
+    terminate();
 }
 
-void Consul::VSync(bool enabled)
+void Consul::setVSync(bool enabled)
 {
-    Window::SetVSync(enabled);
+    Window::setVSync(enabled);
 }
 
-bool Consul::Run()
+bool Consul::run()
 {
-    Time::NewFrame();
+    Time::newFrame();
 
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    console.Draw("Console");
+    console.draw("Console");
 
     ImGui::Render();
 
@@ -147,23 +147,23 @@ bool Consul::Run()
 
     // ImGui::UpdatePlatformWindows();
 
-    return !Window::ShouldClose();
+    return !Window::shouldClose();
 }
 
-void Consul::Terminate()
+void Consul::terminate()
 {
-    console.Log("[Consul] Shutting down Game Engine...");
+    console.log("[Consul] Shutting down Game Engine...");
 
     glfwDestroyWindow(Window::handle);
     glfwTerminate();
 
-    console.Log("[Consul] GLFW terminated.");
+    console.log("[Consul] GLFW terminated.");
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    console.Log("[Consul] ImGui terminated.");
+    console.log("[Consul] ImGui terminated.");
 
-    console.Log("[Consul] Shutdown complete.");
+    console.log("[Consul] Shutdown complete.");
 }

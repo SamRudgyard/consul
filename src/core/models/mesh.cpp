@@ -39,9 +39,9 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     glCheckError();
 }
 
-void Mesh::Draw(Shader& shader, Camera& camera, glm::mat4 transformationMatrix, glm::vec3 translation, glm::quat rotation, glm::vec3 scale) const
+void Mesh::draw(Shader& shader, Camera& camera, glm::mat4 transformationMatrix, glm::vec3 translation, glm::quat rotation, glm::vec3 scale) const
 {
-    shader.Use();
+    shader.use();
     glBindVertexArray(vao);
     glCheckError();
     unsigned int numOfDiffuseTextures = 0;
@@ -55,24 +55,24 @@ void Mesh::Draw(Shader& shader, Camera& camera, glm::mat4 transformationMatrix, 
             num = std::to_string(numOfSpecularTextures++);
         }
         else {
-            Console::Get().Error("Unknown texture type '" + std::to_string(type) + "'");
+            Console::get().error("[Mesh::draw] Unknown texture type '" + std::to_string(type) + "'");
         }
 
-        textures[i].Bind();
-        textures[i].SetTextureUnit(shader.id, (textures[i].GetTextureTypeAsString() + num).c_str());
+        textures[i].bind();
+        textures[i].setTextureUnit(shader.id, (textures[i].getTextureTypeAsString() + num).c_str());
     }
 
-    shader.SetUniformVector3f("cameraPosition", camera.position.x, camera.position.y, camera.position.z);
-    shader.SetUniformVector3f("lightPosition", 0.0f, 0.0f, 20.0f);
-    shader.SetUniformVector3f("lightColour", 1.0f, 1.0f, 1.0f);
+    shader.setUniformVector3f("cameraPosition", camera.position.x, camera.position.y, camera.position.z);
+    shader.setUniformVector3f("lightPosition", 0.0f, 0.0f, 20.0f);
+    shader.setUniformVector3f("lightColour", 1.0f, 1.0f, 1.0f);
 
-    camera.Matrix(shader, "camMatrix");
+    camera.useCameraMatrix(shader, "camMatrix");
 
     glm::mat4 s = glm::scale(glm::mat4(1.0f), scale);
     glm::mat4 r = glm::mat4_cast(rotation);
     glm::mat4 t = glm::translate(glm::mat4(1.0f), translation);
 
-    shader.SetUniformMatrix4f("model", s*r*t*transformationMatrix);
+    shader.setUniformMatrix4f("model", s*r*t*transformationMatrix);
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }

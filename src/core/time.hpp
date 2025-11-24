@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * Frame timing utilities. Call NewFrame() once per frame to update timing values.
+ * Frame timing utilities. Call newFrame() once per frame to update timing values.
  */
 class Time
 {
@@ -16,11 +16,11 @@ public:
     /**
      * Update timing values for a new frame (deltaTime, frameTime, frameCount).
      */
-    static void NewFrame();
+    static void newFrame();
 
     /**
      * Set the desired target FPS and compute the corresponding frame time (seconds).
      * @param fps Target frames per second.
      */
-    static void SetTargetFPS(unsigned int fps);
+    static void setTargetFPS(unsigned int fps);
 };

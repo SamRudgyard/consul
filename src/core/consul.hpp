@@ -35,19 +35,19 @@ public:
      * Begins a new frame of the Consul application.
      * @returns false when Consul requests termination; true otherwise.
      */
-    bool Run();
+    bool run();
 
     /**
      * Gracefully terminate the Consul application.
      */
-    void Terminate();
+    void terminate();
 
     /**
      * Enable or disable vertical sync (vsync), the synchronisation of the frame rate with the monitor's refresh rate.
      * @param enabled True to enable vsync, false to disable.
      */
-    void VSync(bool enabled);
+    void setVSync(bool enabled);
 
 private:
-    Console& console = Console::Get();
+    Console& console = Console::get();
 };

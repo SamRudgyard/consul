@@ -18,7 +18,7 @@ public:
      * Get the singleton Console instance.
      * @returns The single Console instance.
      */
-    static Console& Get() {
+    static Console& get() {
         static Console instance;
         return instance;
     }
@@ -26,38 +26,38 @@ public:
     /**
      * Clear all log items.
      */
-    void ClearLog() { items.clear(); };
+    void clearLog() { items.clear(); };
 
     /**
      * Appends a standard message to the log.
      */
-    void Log(const std::string& message);
+    void log(const std::string& message);
 
     /**
      * Appends a message to the log on non-release builds.
      */
-    void LogOnDebug(const std::string& message);
+    void logOnDebug(const std::string& message);
 
     /**
      * Appends an error message.
      * @throws `std::runtime_error` after logging.
      */
-    void Error(const std::string& message);
+    void error(const std::string& message);
     
     /**
      * Appends a warning message to the log.
      */
-    void Warn(const std::string& message);
+    void warn(const std::string& message);
 
     /**
      * Appends an info message to the log.
      */
-    void Info(const std::string& message);
+    void info(const std::string& message);
 
     /**
      * Draw the console's UI window.
      */
-    void Draw(const char* title, bool* open = nullptr);
+    void draw(const char* title, bool* open = nullptr);
 
 protected:
     Console() = default;

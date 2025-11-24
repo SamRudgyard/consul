@@ -3,7 +3,7 @@
 char Keyboard::keyboardState[MAX_KEYBOARD_KEYS] = {0};
 char Keyboard::keyboardStateLastFrame[MAX_KEYBOARD_KEYS] = {0};
 
-void Keyboard::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void Keyboard::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key < 0) return;
 

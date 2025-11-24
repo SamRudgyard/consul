@@ -14,7 +14,7 @@ public:
      * 
      * @returns Reference to this Shader object.
      */
-    Shader& Use();
+    Shader& use();
 
     /**
      * Compile and link a shader program from provided vertex/fragment GLSL sources.
@@ -22,7 +22,7 @@ public:
      * @param vertexSource   GLSL source code for the vertex shader.
      * @param fragmentSource GLSL source code for the fragment shader.
      */
-    void Compile(const std::string& vertexSource, const std::string& fragmentSource);
+    void compile(const std::string& vertexSource, const std::string& fragmentSource);
 
     /**
      * Set an integer uniform.
@@ -30,7 +30,7 @@ public:
      * @param name  Name of the uniform variable in the shader.
      * @param value Integer value to set.
      */
-    void SetUniformInt(const char* name, int value);
+    void setUniformInt(const char* name, int value);
 
     /**
      * Set a float uniform.
@@ -38,7 +38,7 @@ public:
      * @param name  Name of the uniform variable in the shader.
      * @param value Float value to set.
      */
-    void SetUniformFloat(const char* name, float value);
+    void setUniformFloat(const char* name, float value);
 
     /**
      * Set a vec2 uniform from components.
@@ -47,7 +47,7 @@ public:
      * @param x    X component of the vec2.
      * @param y    Y component of the vec2.
      */
-    void SetUniformVector2f(const char* name, const float x, const float y);
+    void setUniformVector2f(const char* name, const float x, const float y);
     
     /**
      * Set a vec2 uniform.
@@ -55,7 +55,7 @@ public:
      * @param name  Name of the uniform variable in the shader.
      * @param value vec2 value to set.
      */
-    void SetUniformVector2f(const char* name, const glm::vec2& value);
+    void setUniformVector2f(const char* name, const glm::vec2& value);
 
     /**
      * Set a vec3 uniform from components.
@@ -65,7 +65,7 @@ public:
      * @param y    Y component of the vec3.
      * @param z    Z component of the vec3.
      */
-    void SetUniformVector3f(const char* name, const float x, const float y, const float z);
+    void setUniformVector3f(const char* name, const float x, const float y, const float z);
 
     /**
      * Set a vec3 uniform.
@@ -73,7 +73,7 @@ public:
      * @param name  Name of the uniform variable in the shader.
      * @param value vec3 value to set.
      */
-    void SetUniformVector3f(const char* name, const glm::vec3& value);
+    void setUniformVector3f(const char* name, const glm::vec3& value);
 
     /**
      * Set a vec4 uniform from components.
@@ -84,7 +84,7 @@ public:
      * @param z    Z component of the vec4.
      * @param w    W component of the vec4.
      */
-    void SetUniformVector4f(const char* name, const float x, const float y, const float z, const float w);
+    void setUniformVector4f(const char* name, const float x, const float y, const float z, const float w);
 
     /**
      * Set a vec4 uniform.
@@ -92,7 +92,7 @@ public:
      * @param name  Name of the uniform variable in the shader.
      * @param value vec4 value to set.
      */
-    void SetUniformVector4f(const char* name, const glm::vec4& value);
+    void setUniformVector4f(const char* name, const glm::vec4& value);
 
     /**
      * Set a mat4 uniform.
@@ -100,5 +100,5 @@ public:
      * @param name   Name of the uniform variable in the shader.
      * @param matrix mat4 value to set.
      */
-    void SetUniformMatrix4f(const char* name, const glm::mat4& matrix);
+    void setUniformMatrix4f(const char* name, const glm::mat4& matrix);
 };

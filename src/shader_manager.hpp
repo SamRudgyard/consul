@@ -20,25 +20,25 @@ public:
      * @param referenceName  Reference name to cache the shader under.
      * @returns Reference to the loaded and compiled Shader object.
      */
-    static Shader& LoadShader(const char* vertexPath, const char* fragmentPath, const char* referenceName);
+    static Shader& loadShader(const char* vertexPath, const char* fragmentPath, const char* referenceName);
 
     /**
      * Retrieve a previously loaded shader by reference name.
      * @param referenceName Reference name of the shader.
      * @returns Reference to the Shader object.
      */
-    static Shader& GetShader(const char* referenceName);
+    static Shader& getShader(const char* referenceName);
 
     /**
      * Delete the GL program and remove it from the cache map.
      * @param shader Reference to the Shader object to unload.
      */
-    static void UnloadShader(Shader& shader);
+    static void unloadShader(Shader& shader);
 
     /**
      * Delete all GL programs and clear the cache.
      */
-    static void Clear();
+    static void clear();
 private:
     ShaderManager() {} // Private constructor as all methods are static
 

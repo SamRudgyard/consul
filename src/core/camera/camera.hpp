@@ -37,13 +37,13 @@ public:
      * @param nearPlane  Near clipping plane distance.
      * @param farPlane   Far clipping plane distance.
      */
-    void UpdateMatrix(float FOVdeg, float nearPlane, float farPlane);
+    void updateMatrix(float FOVdeg, float nearPlane, float farPlane);
     
     /**
      * Handle basic WASD + space/ctrl movement and RMB-look input.
      * @param deltaTime Time (s) since last frame.
      */
-    void HandleInputs(float deltaTime);
+    void handleInputs(float deltaTime);
 
     /**
      * Upload the cameraMatrix to the shader uniform (mat4).
@@ -51,5 +51,5 @@ public:
      * @param shader  Shader program to set the uniform in.
      * @param uniform Name of the uniform variable in the shader.
      */
-    void Matrix(Shader& shader, const char* uniform);
+    void useCameraMatrix(Shader& shader, const char* uniform);
 };

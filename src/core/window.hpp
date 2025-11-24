@@ -28,7 +28,7 @@ public:
     static unsigned int height;
     static unsigned int flags;
     static bool isFullscreen;
-    static bool shouldClose;
+    static bool toClose;
     static bool resizedLastFrame;
 
     static bool vsyncEnabled;
@@ -48,7 +48,7 @@ public:
     /**
      * Toggle between windowed and fullscreen (not yet fully implemented).
      */
-    static void ToggleFullscreen();
+    static void toggleFullscreen();
 
     /**
      * Set OpenGL viewport to the given size.
@@ -57,14 +57,14 @@ public:
      * @param width  New viewport width in pixels.
      * @param height New viewport height in pixels.
      */
-    static void SetupViewport(unsigned int width, unsigned int height);
+    static void setupViewport(unsigned int width, unsigned int height);
 
     /**
      * Get the DPI scale for the window.
      * 
      * @returns vec2 containing the DPI scale factors for X and Y axes.
      */
-    static glm::vec2 GetWindowScaleDPI();
+    static glm::vec2 getWindowScaleDPI();
 
     /**
      * Callback when the window is resized.
@@ -73,24 +73,24 @@ public:
      * @param width  New window width in pixels.
      * @param height New window height in pixels.
      */
-    static void WindowSizeCallback(GLFWwindow* window, int width, int height);
+    static void windowSizeCallback(GLFWwindow* window, int width, int height);
 
     /**
      * Whether the user and/or application has requested the window be closed.
      * 
      * @returns true if the window should close; false otherwise.
      */
-    static bool ShouldClose();
+    static bool shouldClose();
 
     /**
      * Swap the front/back buffers for the current window.
      */
-    static void SwapBuffers() { glfwSwapBuffers(handle); };
+    static void swapBuffers() { glfwSwapBuffers(handle); };
 
     /**
      * Enable or disable vertical sync (vsync).
      * 
      * @param enabled True to enable vsync; false to disable.
      */
-    static void SetVSync(bool enabled);
+    static void setVSync(bool enabled);
 };

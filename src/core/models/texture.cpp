@@ -13,8 +13,8 @@
 Texture::Texture(const char* image, TextureType textureType, GLuint unit)
     : path(image), type(textureType), unit(unit)
 {
-    if (!DoesFileExist(image)) {
-        Console::Get().Error("[Texture::Texture] Texture file does not exist: '" + std::string(image) + "'");
+    if (!doesFileExist(image)) {
+        Console::get().error("[Texture::Texture] Texture file does not exist: '" + std::string(image) + "'");
         return;
     }
 
@@ -22,12 +22,12 @@ Texture::Texture(const char* image, TextureType textureType, GLuint unit)
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(image, &textureWidth, &textureHeight, &numColourChannels, 0);
     if (!data) {
-        Console::Get().Error("[Texture::Texture] Texture file could not be loaded: '" + std::string(image) + "'");
+        Console::get().error("[Texture::Texture] Texture file could not be loaded: '" + std::string(image) + "'");
         return;
     }
 
     glGenTextures(1, &id);
-    Bind();
+    bind();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Set texture wrapping to GL_REPEAT along the X axis
@@ -45,7 +45,7 @@ Texture::Texture(const char* image, TextureType textureType, GLuint unit)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, textureWidth, textureHeight, 0, GL_RED, GL_UNSIGNED_BYTE, data);
     }
     else {
-        Console::Get().Error("[Texture::Texture] Invalid number of colour channels (expected 1, 3, or 4, but got " + std::to_string(numColourChannels) + ")");
+        Console::get().error("[Texture::Texture] Invalid number of colour channels (expected 1, 3, or 4, but got " + std::to_string(numColourChannels) + ")");
         return;
     }
 
@@ -53,26 +53,26 @@ Texture::Texture(const char* image, TextureType textureType, GLuint unit)
     glCheckError();
 
     stbi_image_free(data);
-    Unbind();
+    unbind();
     glCheckError();
 }
 
-void Texture::SetTextureUnit(unsigned int shaderID, const char* uniform) const {
+void Texture::setTextureUnit(unsigned int shaderID, const char* uniform) const {
     GLuint textureUniformID = glGetUniformLocation(shaderID, uniform);
     glUseProgram(shaderID);
     glUniform1i(textureUniformID, unit);
     glCheckError();
 }
 
-void Texture::Bind() const {
+void Texture::bind() const {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
-void Texture::Unbind() const {
+void Texture::unbind() const {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::Delete() const {
+void Texture::release() const {
     glDeleteTextures(1, &id);
 }

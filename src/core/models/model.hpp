@@ -31,7 +31,7 @@ public:
 	 * @param rotation    Additional rotation to apply.
 	 * @param scale       Additional scale to apply.
 	 */
-	void Draw
+	void draw
 	(
 		Shader& shader,
 		Camera& camera,
