@@ -93,7 +93,11 @@ private:
 	 * @param texUVs    Vertex texture coordinates.
 	 * @returns Vector of assembled Vertex structures.
 	 */
-	std::vector<Vertex> assembleVertices(std::vector<glm::vec3> positions, std::vector<glm::vec3> normals, std::vector<glm::vec2> texUVs);
+	std::vector<Vertex> assembleVertices(
+		std::vector<glm::vec3> positions,
+		std::vector<glm::vec3> normals,
+		std::vector<glm::vec2> texUVs
+	);
 
 	/**
 	 * Convert a float array to a vec2 array.
