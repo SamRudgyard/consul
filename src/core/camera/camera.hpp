@@ -23,8 +23,33 @@ public:
     float sensitivity = 100.0f;
     bool isFirstClick = true;
 
+    /**
+     * A perspective camera with given viewport width/height and world position.
+     * @param width    Viewport width in pixels.
+     * @param height   Viewport height in pixels.
+     * @param position World space position of the camera.
+     */
     Camera(int width, int height, glm::vec3 position);
-    void UpdateMatrix(float FOVdeg, float nearPlane, float farPlane);
-    void HandleInputs(float deltaTime);
-    void Matrix(Shader& shader, const char* uniform);
+
+    /**
+     * Recompute the camera matrix (projection * view) for the given perspective parameters.
+     * @param FOVdeg     Vertical field of view in degrees.
+     * @param nearPlane  Near clipping plane distance.
+     * @param farPlane   Far clipping plane distance.
+     */
+    void updateMatrix(float FOVdeg, float nearPlane, float farPlane);
+    
+    /**
+     * Handle basic WASD + space/ctrl movement and RMB-look input.
+     * @param deltaTime Time (s) since last frame.
+     */
+    void handleInputs(float deltaTime);
+
+    /**
+     * Upload the cameraMatrix to the shader uniform (mat4).
+     * 
+     * @param shader  Shader program to set the uniform in.
+     * @param uniform Name of the uniform variable in the shader.
+     */
+    void useCameraMatrix(Shader& shader, const char* uniform);
 };

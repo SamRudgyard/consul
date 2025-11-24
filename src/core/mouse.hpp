@@ -4,6 +4,7 @@
 
 #define MAX_MOUSE_BUTTONS 8
 
+/** Simple mouse state container with positions, scroll and buttons. */
 class Mouse
 {
 public:

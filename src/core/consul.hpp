@@ -12,14 +12,42 @@
 class Consul
 {
 public:
+    /**
+     * Initialise a Consul application, with the desired window size.
+     *
+     * @param title        Window title.
+     * @param width        Desired window width in pixels (0 to maximise when windowed).
+     * @param height       Desired window height in pixels (0 to maximise when windowed).
+     * @param isFullscreen Create the window in fullscreen mode when true.
+     */
     Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen = false);
+
+    /**
+     * Initialise a Consul application, either to maximised or fullscreen.
+     * @param title        Window title.
+     * @param isFullscreen Create the window in fullscreen mode, else maximised.
+     */
     Consul(const char* title, bool isFullscreen = false);
+
     ~Consul();
 
-    bool Run();
-    void Terminate();
-    void VSync(bool enabled);
+    /**
+     * Begins a new frame of the Consul application.
+     * @returns false when Consul requests termination; true otherwise.
+     */
+    bool run();
+
+    /**
+     * Gracefully terminate the Consul application.
+     */
+    void terminate();
+
+    /**
+     * Enable or disable vertical sync (vsync), the synchronisation of the frame rate with the monitor's refresh rate.
+     * @param enabled True to enable vsync, false to disable.
+     */
+    void setVSync(bool enabled);
 
 private:
-    Console& console = Console::Get();
+    Console& console = Console::get();
 };

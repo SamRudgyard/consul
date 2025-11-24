@@ -5,26 +5,59 @@
 
 #define MAX_CONSOLE_SIZE 10
 
+/**
+ * Minimal in-application console with a rolling log and an ImGui-based UI.
+ */
 class Console
 {
 public:
     Console(const Console&) = delete;
     Console& operator=(const Console&) = delete;
 
-    static Console& Get() {
+    /**
+     * Get the singleton Console instance.
+     * @returns The single Console instance.
+     */
+    static Console& get() {
         static Console instance;
         return instance;
     }
 
-    void ClearLog() { items.clear(); };
+    /**
+     * Clear all log items.
+     */
+    void clearLog() { items.clear(); };
 
-    void Log(const std::string& message);
-    void LogOnDebug(const std::string& message);
-    void Error(const std::string& message);
-    void Warn(const std::string& message);
-    void Info(const std::string& message);
+    /**
+     * Appends a standard message to the log.
+     */
+    void log(const std::string& message);
 
-    void Draw(const char* title, bool* open = nullptr);
+    /**
+     * Appends a message to the log on non-release builds.
+     */
+    void logOnDebug(const std::string& message);
+
+    /**
+     * Appends an error message.
+     * @throws `std::runtime_error` after logging.
+     */
+    void error(const std::string& message);
+    
+    /**
+     * Appends a warning message to the log.
+     */
+    void warn(const std::string& message);
+
+    /**
+     * Appends an info message to the log.
+     */
+    void info(const std::string& message);
+
+    /**
+     * Draw the console's UI window.
+     */
+    void draw(const char* title, bool* open = nullptr);
 
 protected:
     Console() = default;

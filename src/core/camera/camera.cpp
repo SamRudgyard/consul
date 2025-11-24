@@ -9,7 +9,7 @@ Camera::Camera(int width, int height, glm::vec3 position)
 {
 }
 
-void Camera::UpdateMatrix(float FOVdeg, float nearPlane, float farPlane) {
+void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
 
@@ -42,7 +42,7 @@ void Camera::UpdateMatrix(float FOVdeg, float nearPlane, float farPlane) {
     cameraMatrix = projection*view;
 }
 
-void Camera::HandleInputs(float deltaTime) {
+void Camera::handleInputs(float deltaTime) {
     if (glfwGetKey(Window::handle, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(Window::handle, true);
     }
@@ -103,7 +103,7 @@ void Camera::HandleInputs(float deltaTime) {
     }
 }
 
-void Camera::Matrix(Shader& shader, const char* uniform)
+void Camera::useCameraMatrix(Shader& shader, const char* uniform)
 {
 	// Exports camera matrix
 	glUniformMatrix4fv(glGetUniformLocation(shader.id, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));

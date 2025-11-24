@@ -3,6 +3,7 @@
 #include "core/models/texture.hpp"
 #include "glm/glm.hpp"
 
+/** Simple 2D sprite: position/size and an associated texture. */
 class Sprite
 {
 public:
