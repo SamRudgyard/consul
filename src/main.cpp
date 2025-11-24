@@ -24,7 +24,5 @@ int main(int argc, char **argv) {
         Window::swapBuffers();
     }
 
-    consul.terminate();
-
     return 0;
 }
