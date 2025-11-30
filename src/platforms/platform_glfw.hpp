@@ -11,6 +11,12 @@ public:
 
     void initialiseWindow() override;
 
+    bool shouldClose() override;
+
+    double getTime() override;
+
+    void terminate() override;
+
     static void onError(int error, const char* description);
     static void onWindowResized(GLFWwindow* window, int width, int height);
     static void onWindowPosChanged(GLFWwindow* window, int xpos, int ypos);

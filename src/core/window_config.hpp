@@ -16,6 +16,7 @@ struct WindowConfig
     bool isDecorated = true;        // Window has decorations (title bar, borders, etc.)
     bool isMinimised = false;       // Window is minimised
     bool isMaximised = false;       // Window is maximised
+    bool shouldClose = false;       // Window should be closed
     bool useVSync = true;           // VSync enabled
     bool isFocused = true;          // Focused on creation
     bool isFloating = false;        // Always on top

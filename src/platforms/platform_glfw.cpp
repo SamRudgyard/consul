@@ -2,11 +2,16 @@
 
 #include "core/console/console.hpp"
 #include "input/input_system.hpp"
+#include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
 #include <map>
 #include <stdexcept>
 #include <string>
+
+#ifndef NOMINMAX
+#define NOMINMAX // To prevent Windows.h defining min/max macros that conflict with std::min/std::max
+#endif
 
 void PlatformGLFW::initialiseWindow()
 {
@@ -48,6 +53,15 @@ void PlatformGLFW::initialiseWindow()
 #if defined(__APPLE__)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Required on macOS
 #endif
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) console.error("[GLFW] Failed to initialize GLAD");
+
+    const GLubyte* version = glGetString(GL_VERSION);
+    if (!version) {
+        Console::get().error("[OpenGL] Failed to retrieve OpenGL version");
+    } else {
+        Console::get().log("[OpenGL] Found OpenGL version " + std::string(reinterpret_cast<const char*>(version)));
+    }
 
     GLFWmonitor* primaryMonitor = nullptr;
     if (windowConfig->isFullscreen) {
@@ -136,6 +150,22 @@ void PlatformGLFW::initialiseWindow()
     glfwSetCursorEnterCallback(handle, onMouseEnterOrExitWindow);
 
     glfwSetInputMode(handle, GLFW_LOCK_KEY_MODS, GLFW_TRUE); // Ensure modifier key flags (i.e. caps lock) are passed to key callbacks
+}
+
+bool PlatformGLFW::shouldClose()
+{
+    return glfwWindowShouldClose(handle);
+}
+
+double PlatformGLFW::getTime()
+{
+    return glfwGetTime();
+}
+
+void PlatformGLFW::terminate()
+{
+    glfwDestroyWindow(handle);
+    glfwTerminate();
 }
 
 void PlatformGLFW::onError(int error, const char* description)
