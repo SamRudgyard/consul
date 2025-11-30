@@ -109,8 +109,8 @@ void PlatformGLFW::initialiseWindow()
     GLFWmonitor* currentMonitor = getCurrentMonitor();
     int monitorX, monitorY, monitorWidth, monitorHeight;
     glfwGetMonitorWorkarea(currentMonitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
-    int posX = std::min(monitorX + (monitorWidth - (int)windowConfig->windowSize.x) / 2, monitorX);
-    int posY = std::min(monitorY + (monitorHeight - (int)windowConfig->windowSize.y) / 2, monitorY);
+    int posX = std::max(monitorX + (monitorWidth - (int)windowConfig->windowSize.x) / 2, monitorX);
+    int posY = std::max(monitorY + (monitorHeight - (int)windowConfig->windowSize.y) / 2, monitorY);
 
     windowConfig->position = glm::vec2((float)posX, (float)posY);
 
