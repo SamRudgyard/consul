@@ -129,7 +129,7 @@ enum class KeyboardKey
 class KeyboardState
 {
 public:
-    void beginNewFrame()
+    void beginTick()
     {
         lastFrameState = currentState;
     }

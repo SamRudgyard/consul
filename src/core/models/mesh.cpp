@@ -4,7 +4,7 @@
 #include "shader.hpp"
 #include "core/models/texture.hpp"
 #include "utils.hpp"
-#include "core/camera/camera.hpp"
+#include "graphics/camera/camera.hpp"
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) {
     this->vertices = vertices;

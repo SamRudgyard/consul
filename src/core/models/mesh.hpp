@@ -1,7 +1,7 @@
 #pragma once
 
 #include "glm/glm.hpp"
-#include "core/camera/camera.hpp"
+#include "graphics/camera/camera.hpp"
 #include "core/models/texture.hpp"
 
 #include <string>

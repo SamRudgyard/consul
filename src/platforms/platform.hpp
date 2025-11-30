@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/window_config.hpp"
+#include "graphics/graphics.hpp"
 
 enum class PlatformType
 {
@@ -14,6 +15,12 @@ public:
     IPlatform(WindowConfig* config) : windowConfig(config) {}
 
     virtual void initialiseWindow() = 0;
+
+    virtual void loadGraphics(IGraphics* graphics) = 0;
+
+    virtual void pollEvents() = 0;
+
+    virtual void swapBuffers() = 0;
 
     virtual bool shouldClose() = 0;
 

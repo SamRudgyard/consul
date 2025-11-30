@@ -1,17 +1,16 @@
 #include "platform_glfw.hpp"
 
+#ifndef NOMINMAX
+#define NOMINMAX // To prevent Windows.h (a dependency of glad/glad.h) defining min/max macros that conflict with std::min/std::max
+#endif
+
 #include "core/console/console.hpp"
 #include "input/input_system.hpp"
-#include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
 #include <map>
 #include <stdexcept>
 #include <string>
-
-#ifndef NOMINMAX
-#define NOMINMAX // To prevent Windows.h defining min/max macros that conflict with std::min/std::max
-#endif
 
 void PlatformGLFW::initialiseWindow()
 {
@@ -53,15 +52,6 @@ void PlatformGLFW::initialiseWindow()
 #if defined(__APPLE__)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Required on macOS
 #endif
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) console.error("[GLFW] Failed to initialize GLAD");
-
-    const GLubyte* version = glGetString(GL_VERSION);
-    if (!version) {
-        Console::get().error("[OpenGL] Failed to retrieve OpenGL version");
-    } else {
-        Console::get().log("[OpenGL] Found OpenGL version " + std::string(reinterpret_cast<const char*>(version)));
-    }
 
     GLFWmonitor* primaryMonitor = nullptr;
     if (windowConfig->isFullscreen) {
@@ -116,8 +106,9 @@ void PlatformGLFW::initialiseWindow()
     }
 
     // Try to centre window
+    GLFWmonitor* currentMonitor = getCurrentMonitor();
     int monitorX, monitorY, monitorWidth, monitorHeight;
-    glfwGetMonitorWorkarea(primaryMonitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
+    glfwGetMonitorWorkarea(currentMonitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
     int posX = std::min(monitorX + (monitorWidth - (int)windowConfig->windowSize.x) / 2, monitorX);
     int posY = std::min(monitorY + (monitorHeight - (int)windowConfig->windowSize.y) / 2, monitorY);
 
@@ -152,6 +143,21 @@ void PlatformGLFW::initialiseWindow()
     glfwSetInputMode(handle, GLFW_LOCK_KEY_MODS, GLFW_TRUE); // Ensure modifier key flags (i.e. caps lock) are passed to key callbacks
 }
 
+void PlatformGLFW::loadGraphics(IGraphics* graphics)
+{
+    graphics->loadGraphics((void*)glfwGetProcAddress);
+}
+
+void PlatformGLFW::pollEvents()
+{
+    glfwPollEvents();
+}
+
+void PlatformGLFW::swapBuffers()
+{
+    glfwSwapBuffers(handle);
+}
+
 bool PlatformGLFW::shouldClose()
 {
     return glfwWindowShouldClose(handle);
@@ -170,7 +176,8 @@ void PlatformGLFW::terminate()
 
 void PlatformGLFW::onError(int error, const char* description)
 {
-    std::string errorMsg = "[GLFW] Error " + std::to_string(error) + ": " + std::string(description);
+    std::string errorCode = PlatformGLFW::getGLFWErrorCodeAsString(error);
+    std::string errorMsg = "[GLFW] Error " + errorCode + ": " + std::string(description);
     throw std::runtime_error(errorMsg);
 }
 
@@ -308,7 +315,7 @@ const char* PlatformGLFW::getGLFWErrorCodeAsString(int errorCode)
     }
 }
 
-const unsigned int PlatformGLFW::getCurrentMonitor() const
+const unsigned int PlatformGLFW::getCurrentMonitorNumber() const
 {
     int monitorCount;
     glfwGetMonitors(&monitorCount);
@@ -348,6 +355,19 @@ const unsigned int PlatformGLFW::getCurrentMonitor() const
             return im;
         }
     }
+
+    return 0; // Default to primary monitor
+}
+
+GLFWmonitor* PlatformGLFW::getCurrentMonitor() const
+{
+    int im = getCurrentMonitorNumber();
+    int monitorCount;
+    GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
+    if (im >= monitorCount) {
+        Console::get().error("[GLFW] Attempted to get monitor " + std::to_string(im) + " but only " + std::to_string(monitorCount) + " monitors detected");
+    }
+    return monitors[im];
 }
 
 void PlatformGLFW::toggleVSync(const bool enable)
@@ -364,13 +384,7 @@ void PlatformGLFW::toggleVSync(const bool enable)
 void PlatformGLFW::toggleFullscreen(const bool enable)
 {
     if (enable) {
-        int im = getCurrentMonitor();
-        int monitorCount;
-        GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
-        if (im >= monitorCount) {
-            Console::get().error("[GLFW] Attempted to get monitor " + std::to_string(im) + " but only " + std::to_string(monitorCount) + " monitors detected");
-        }
-        GLFWmonitor* currentMonitor = monitors[im];
+        GLFWmonitor* currentMonitor = getCurrentMonitor();
         glfwSetWindowMonitor(handle, currentMonitor, 0, 0, (int)windowConfig->windowSize.x, (int)windowConfig->windowSize.y, GLFW_DONT_CARE);
     } else {
         glfwSetWindowMonitor(handle, nullptr, (int)windowConfig->position.x, (int)windowConfig->position.y, (int)windowConfig->windowSize.x, (int)windowConfig->windowSize.y, GLFW_DONT_CARE);

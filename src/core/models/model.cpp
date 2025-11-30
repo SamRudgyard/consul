@@ -1,6 +1,6 @@
 #include "core/models/model.hpp"
 #include "shader.hpp"
-#include "core/camera/camera.hpp"
+#include "graphics/camera/camera.hpp"
 #include "core/models/texture.hpp"
 #include "core/console/console.hpp"
 #include "utils.hpp"

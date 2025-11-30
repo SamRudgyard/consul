@@ -22,10 +22,10 @@ public:
      * Begin a new frame for input state tracking.
      * Updates last frame states to current states.
      */
-    void beginFrame()
+    void beginTick()
     {   
-        keyboard.beginNewFrame();
-        mouse.beginNewFrame();
+        keyboard.beginTick();
+        mouse.beginTick();
     }
 
     void setExitKey(KeyboardKey key)

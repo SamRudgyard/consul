@@ -2,6 +2,7 @@
 
 #include "platform.hpp"
 
+struct GLFWmonitor;
 struct GLFWwindow;
 
 class PlatformGLFW : public IPlatform
@@ -10,6 +11,12 @@ public:
     PlatformGLFW(WindowConfig* config) : IPlatform(config) {}
 
     void initialiseWindow() override;
+
+    void loadGraphics(IGraphics* graphics) override;
+
+    void pollEvents() override;
+
+    void swapBuffers() override;
 
     bool shouldClose() override;
 
@@ -32,9 +39,10 @@ public:
 
 private:
     GLFWwindow* handle = nullptr;
-    const char* getGLFWErrorCodeAsString(int errorCode);
+    static const char* getGLFWErrorCodeAsString(int errorCode);
 
-    const unsigned int getCurrentMonitor() const;
+    const unsigned int getCurrentMonitorNumber() const;
+    GLFWmonitor* getCurrentMonitor() const;
     
     void toggleVSync(const bool enable);
     void toggleFullscreen(const bool enable);

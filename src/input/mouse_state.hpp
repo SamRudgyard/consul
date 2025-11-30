@@ -20,7 +20,7 @@ enum class MouseButton
 class MouseState
 {
 public:
-    void beginNewFrame()
+    void beginTick()
     {
         lastFrameState = currentState;
     }

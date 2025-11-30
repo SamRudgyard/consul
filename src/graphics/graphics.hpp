@@ -1,6 +1,5 @@
 #pragma once
 
-#include "glad/glad.h"
 #include "glm/vec4.hpp"
 
 enum class GraphicsAPI
@@ -12,5 +11,6 @@ enum class GraphicsAPI
 class IGraphics
 {
 public:
+    virtual void loadGraphics(void* loaderFunc) = 0;
     virtual void clearColour(const glm::vec4& colour) = 0;
 };

@@ -3,6 +3,7 @@
 #include "core/console/console.hpp"
 #include "platforms/platform.hpp"
 #include "graphics/renderer.hpp"
+#include "input/input_system.hpp"
 #include "window_config.hpp"
 #include "time.hpp"
 
@@ -14,17 +15,19 @@ public:
     WindowConfig windowConfig;
 
     /**
-     * Initialise a Consul application.
+     * Initialise a Consul application, using default window configuration.
      */
-    Consul();
+    Consul() { initialiseEngine(); };
 
     /**
      * Initialise a Consul application with the given window configuration.
      * @param config Window configuration settings.
      */
-    Consul(WindowConfig& config) : windowConfig(config) { Consul(); };
+    Consul(WindowConfig& config) : windowConfig(config) { initialiseEngine(); };
 
     ~Consul();
+
+    void initialiseEngine();
 
     /**
      * Begins a new frame of the Consul application.
@@ -39,9 +42,13 @@ public:
 
 private:
     Console& console = Console::get();
+    InputSystem& input = InputSystem::get();
     IPlatform* platform = nullptr;
     Renderer* renderer = nullptr;
 
     void initialiseWindow(PlatformType platformType);
-    void initialiseGraphics(GraphicsAPI gfxApi);
+    void initialiseRenderer(GraphicsAPI gfxApi);
+
+    void beginTick();
+    void endTick();
 };
