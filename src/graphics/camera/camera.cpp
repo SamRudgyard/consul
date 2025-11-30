@@ -1,5 +1,5 @@
-#include "core/camera/camera.hpp"
-#include "constants.hpp"
+#include "graphics/camera/camera.hpp"
+#include "maths/constants.hpp"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "core/window.hpp"
