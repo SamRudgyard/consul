@@ -25,39 +25,39 @@ public:
         lastFrameState = currentState;
     }
 
-    void setButtonDown(int buttonCode)
+    void setButtonDown(MouseButton button)
     {
-        currentState.set(buttonCode);
+        currentState.set((size_t)button);
     }
 
-    void setButtonUp(int buttonCode)
+    void setButtonUp(MouseButton button)
     {
-        currentState.reset(buttonCode);
+        currentState.reset((size_t)button);
     }
 
-    bool isButtonDown(int buttonCode) const
+    bool isButtonDown(MouseButton button) const
     {
-        return currentState.test(buttonCode);
+        return currentState.test((size_t)button);
     }
 
-    bool isButtonUp(int buttonCode) const
+    bool isButtonUp(MouseButton button) const
     {
-        return !currentState.test(buttonCode);
+        return !currentState.test((size_t)button);
     }
 
-    bool wasButtonDown(int buttonCode) const
+    bool wasButtonDown(MouseButton button) const
     {
-        return lastFrameState.test(buttonCode);
+        return lastFrameState.test((size_t)button);
     }
 
-    bool wasButtonUp(int buttonCode) const
+    bool wasButtonUp(MouseButton button) const
     {
-        return !lastFrameState.test(buttonCode);
+        return !lastFrameState.test((size_t)button);
     }
 
-    bool isButtonPressed(int buttonCode) const
+    bool isButtonPressed(MouseButton button) const
     {
-        return isButtonDown(buttonCode) && !wasButtonDown(buttonCode);
+        return isButtonDown(button) && !wasButtonDown(button);
     }
 
     glm::vec2 getMousePosition() const
@@ -85,9 +85,19 @@ public:
         return isInsideWindow;
     }
 
-    void setIsInsideWindow(bool inside)
+    void setIsInsideWindow(const bool inside)
     {
         isInsideWindow = inside;
+    }
+
+    void setMouseVisibility(const bool visible)
+    {
+        isVisible = visible;
+    }
+
+    bool getMouseVisibility() const
+    {
+        return isVisible;
     }
 
 private:
@@ -95,5 +105,6 @@ private:
     std::bitset<MAX_MOUSE_BUTTONS> lastFrameState;
     glm::vec2 position = glm::vec2(0.f, 0.f);
     glm::vec2 scrollOffset = glm::vec2(0.f, 0.f);
+    bool isVisible = true;
     bool isInsideWindow = true;
 };

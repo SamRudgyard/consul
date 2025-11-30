@@ -1,11 +1,9 @@
 #include "graphics/camera/camera.hpp"
 #include "maths/constants.hpp"
-#include "glad/glad.h"
-#include "glfw/glfw3.h"
-#include "core/window.hpp"
+#include "input/input_system.hpp"
 
-Camera::Camera(int width, int height, glm::vec3 position)
-    : width(width), height(height), position(position)
+Camera::Camera(glm::vec3 position)
+    : position(position)
 {
 }
 
@@ -16,8 +14,9 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
     view = glm::lookAt(position, position + orientation, up);
 
     // Use FoV angle from larger dimension, see https://stackoverflow.com/questions/26997631/limiting-fov-both-horizontally-and-vertically
+    WindowConfig* config = context->windowConfig;
     float tanFov = tan(0.5f*FOVdeg*DEG_TO_RAD);
-    float aspRat = (float)width / (float)height;
+    float aspRat = (float)config->windowSize.x / (float)config->windowSize.y;
 
     projection[0][0] = 1.0f / (aspRat * tanFov);
     projection[0][1] = 0.0f;
@@ -43,49 +42,49 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
 }
 
 void Camera::handleInputs(float deltaTime) {
-    if (glfwGetKey(Window::handle, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(Window::handle, true);
-    }
+    InputSystem* input = context->inputSystem;
 
-    if (glfwGetKey(Window::handle, GLFW_KEY_W) == GLFW_PRESS) {
+    if (input->isKeyDown(KeyboardKey::KEY_W)) {
         position += speed*orientation*deltaTime;
     }
-    if (glfwGetKey(Window::handle, GLFW_KEY_A) == GLFW_PRESS) {
+    if (input->isKeyDown(KeyboardKey::KEY_A)) {
         position -= speed*glm::normalize(glm::cross(orientation, up))*deltaTime;
     }
-    if (glfwGetKey(Window::handle, GLFW_KEY_S) == GLFW_PRESS) {
+    if (input->isKeyDown(KeyboardKey::KEY_S)) {
         position -= speed*orientation*deltaTime;
     }
-    if (glfwGetKey(Window::handle, GLFW_KEY_D) == GLFW_PRESS) {
+    if (input->isKeyDown(KeyboardKey::KEY_D)) {
         position += speed*glm::normalize(glm::cross(orientation, up))*deltaTime;
     }
-    if (glfwGetKey(Window::handle, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    if (input->isKeyDown(KeyboardKey::KEY_SPACE)) {
         position += speed*up*deltaTime;
     }
-    if (glfwGetKey(Window::handle, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+    if (input->isKeyDown(KeyboardKey::KEY_LEFT_CONTROL)) {
         position -= speed*up*deltaTime;
     }
-    if (glfwGetKey(Window::handle, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+    if (input->isKeyDown(KeyboardKey::KEY_LEFT_SHIFT)) {
         speed = 10.0f;
     }
-    else if (glfwGetKey(Window::handle, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
+    else if (!input->isKeyDown(KeyboardKey::KEY_LEFT_SHIFT)) {
         speed = 5.0f;
     }
 
     // Mouse controls
-    if (glfwGetMouseButton(Window::handle, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-        glfwSetInputMode(Window::handle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    if (input->isMouseButtonDown(MouseButton::BUTTON_RIGHT)) {
+        input->setMouseVisibility(false);
 
-        if (isFirstClick) {
-            glfwSetCursorPos(Window::handle, width/2, height/2);
-            isFirstClick = false;
+        WindowConfig* config = context->windowConfig;
+        float width = (float)config->windowSize.x;
+        float height = (float)config->windowSize.y;
+
+        if (input->isMouseButtonPressed(MouseButton::BUTTON_RIGHT)) {
+            
+            input->setMousePosition(glm::vec2(width/2, height/2));
         }
 
-        double mouseX, mouseY;
-        glfwGetCursorPos(Window::handle, &mouseX, &mouseY);
-
-        float rotationX = sensitivity*(float)(mouseY - height/2)/height;
-        float rotationY = sensitivity*(float)(mouseX - width/2)/width;
+        glm::vec2 mousePos = input->getMousePosition();
+        float rotationX = sensitivity*(float)(mousePos.y - height/2)/height;
+        float rotationY = sensitivity*(float)(mousePos.x - width/2)/width;
 
         glm::vec3 newOrientation = glm::rotate(orientation, glm::radians(-rotationX), glm::normalize(glm::cross(orientation, up)));
         if (!((glm::angle(newOrientation, up) <= glm::radians(5.0f)) || (glm::angle(newOrientation, -up) <= glm::radians(5.0f)))) {
@@ -95,16 +94,14 @@ void Camera::handleInputs(float deltaTime) {
         orientation = glm::rotate(orientation, glm::radians(-rotationY), up);
 
         // Set mouse position to the centre of the screen
-        glfwSetCursorPos(Window::handle, width/2, height/2);
-    }
-    else if (glfwGetMouseButton(Window::handle, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
-        glfwSetInputMode(Window::handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        isFirstClick = true;
+        input->setMousePosition(glm::vec2(width/2, height/2));
+    } else {
+        input->setMouseVisibility(true);
     }
 }
 
 void Camera::useCameraMatrix(Shader& shader, const char* uniform)
 {
 	// Exports camera matrix
-	glUniformMatrix4fv(glGetUniformLocation(shader.id, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
+	// glUniformMatrix4fv(glGetUniformLocation(shader.id, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
 }

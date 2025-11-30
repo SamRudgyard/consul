@@ -11,6 +11,7 @@
 #include "glm/gtx/vector_angle.hpp"
 
 #include "shader.hpp"
+#include "core/engine_context.hpp"
 
 class Camera {
 public:
@@ -18,18 +19,14 @@ public:
     glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 cameraMatrix = glm::mat4(1.0f);
-    int width, height;
     float speed = 0.1f;
     float sensitivity = 100.0f;
-    bool isFirstClick = true;
 
     /**
      * A perspective camera with given viewport width/height and world position.
-     * @param width    Viewport width in pixels.
-     * @param height   Viewport height in pixels.
      * @param position World space position of the camera.
      */
-    Camera(int width, int height, glm::vec3 position);
+    Camera(glm::vec3 position);
 
     /**
      * Recompute the camera matrix (projection * view) for the given perspective parameters.
@@ -52,4 +49,6 @@ public:
      * @param uniform Name of the uniform variable in the shader.
      */
     void useCameraMatrix(Shader& shader, const char* uniform);
+private:
+    EngineContext* context = EngineContext::get();
 };

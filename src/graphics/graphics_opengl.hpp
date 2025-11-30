@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef NOMINMAX
+#define NOMINMAX // To prevent Windows.h (a dependency of glad/glad.h) defining min/max macros that conflict with std::min/std::max
+#endif
+
 #include "graphics.hpp"
 #include "glad/glad.h"
 #include "utils.hpp"

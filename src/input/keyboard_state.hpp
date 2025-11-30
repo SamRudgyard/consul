@@ -134,34 +134,34 @@ public:
         lastFrameState = currentState;
     }
 
-    void setKeyDown(int keyCode)
+    void setKeyDown(KeyboardKey key)
     {
-        currentState.set(keyCode);
+        currentState.set((size_t)key);
     }
 
-    void setKeyUp(int keyCode)
+    void setKeyUp(KeyboardKey key)
     {
-        currentState.reset(keyCode);
+        currentState.reset((size_t)key);
     }
 
-    bool isKeyDown(int keyCode) const
+    bool isKeyDown(KeyboardKey key) const
     {
-        return currentState.test(keyCode);
+        return currentState.test((size_t)key);
     }
 
-    bool isKeyUp(int keyCode) const
+    bool isKeyUp(KeyboardKey key) const
     {
-        return !currentState.test(keyCode);
+        return !currentState.test((size_t)key);
     }
 
-    bool wasKeyDown(int keyCode) const
+    bool wasKeyDown(KeyboardKey key) const
     {
-        return lastFrameState.test(keyCode);
+        return lastFrameState.test((size_t)key);
     }
 
-    bool isKeyPressed(int keyCode) const
+    bool isKeyPressed(KeyboardKey key) const
     {
-        return isKeyDown(keyCode) && !wasKeyDown(keyCode);
+        return isKeyDown(key) && !wasKeyDown(key);
     }
 
     KeyboardKey getExitKey() const

@@ -23,7 +23,7 @@ void Consul::initialiseWindow(PlatformType platformType)
 {
     switch (platformType) {
         case PlatformType::GLFW:
-            platform = new PlatformGLFW(&windowConfig);
+            platform = new PlatformGLFW();
             break;
         default:
             console.error("[Consul] Unknown windowing platform!");
@@ -43,16 +43,13 @@ void Consul::initialiseRenderer(GraphicsAPI gfxApi)
 Consul::~Consul()
 {
     terminate();
-
-    delete renderer;
-    delete platform;
 }
 
 bool Consul::run()
 {
     beginTick();
 
-    if (windowConfig.shouldClose) {
+    if (context->windowConfig->shouldClose) {
         return false;
     }
 
@@ -73,7 +70,7 @@ bool Consul::run()
 
     endTick();
 
-    return !(windowConfig.shouldClose && platform->shouldClose());
+    return !(context->windowConfig->shouldClose && platform->shouldClose());
 }
 
 void Consul::beginTick()
@@ -84,9 +81,9 @@ void Consul::beginTick()
 
     platform->pollEvents();
 
-    input.beginTick();
+    context->inputSystem->beginTick();
 
-    windowConfig.shouldClose = platform->shouldClose();
+    context->windowConfig->shouldClose = platform->shouldClose();
 }
 
 void Consul::endTick()

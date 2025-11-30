@@ -1,10 +1,9 @@
 #pragma once
 
 #include "core/console/console.hpp"
+#include "core/engine_context.hpp"
 #include "platforms/platform.hpp"
 #include "graphics/renderer.hpp"
-#include "input/input_system.hpp"
-#include "window_config.hpp"
 #include "time.hpp"
 
 enum class PlatformType;
@@ -12,7 +11,6 @@ enum class PlatformType;
 class Consul
 {
 public:
-    WindowConfig windowConfig;
 
     /**
      * Initialise a Consul application, using default window configuration.
@@ -23,7 +21,7 @@ public:
      * Initialise a Consul application with the given window configuration.
      * @param config Window configuration settings.
      */
-    Consul(WindowConfig& config) : windowConfig(config) { initialiseEngine(); };
+    Consul(WindowConfig& config) { context->windowConfig = &config; initialiseEngine(); };
 
     ~Consul();
 
@@ -42,7 +40,7 @@ public:
 
 private:
     Console& console = Console::get();
-    InputSystem& input = InputSystem::get();
+    EngineContext* context = EngineContext::get();
     IPlatform* platform = nullptr;
     Renderer* renderer = nullptr;
 

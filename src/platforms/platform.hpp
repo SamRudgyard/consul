@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/window_config.hpp"
+#include "core/engine_context.hpp"
 #include "graphics/graphics.hpp"
 
 enum class PlatformType
@@ -12,7 +12,7 @@ enum class PlatformType
 class IPlatform
 {
 public:
-    IPlatform(WindowConfig* config) : windowConfig(config) {}
+    IPlatform() = default;
 
     virtual void initialiseWindow() = 0;
 
@@ -29,5 +29,5 @@ public:
     virtual void terminate() = 0;
 
 protected:
-    WindowConfig* windowConfig;
+    EngineContext* context = EngineContext::get();
 };

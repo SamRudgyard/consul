@@ -8,7 +8,7 @@ struct GLFWwindow;
 class PlatformGLFW : public IPlatform
 {
 public:
-    PlatformGLFW(WindowConfig* config) : IPlatform(config) {}
+    PlatformGLFW() : IPlatform() {}
 
     void initialiseWindow() override;
 

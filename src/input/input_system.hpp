@@ -38,49 +38,49 @@ public:
         return keyboard.getExitKey();
     }
 
-    void setKeyDown(int keyCode)
+    void setKeyDown(KeyboardKey key)
     {
-        keyboard.setKeyDown(keyCode);
+        keyboard.setKeyDown(key);
     }
 
-    void setKeyUp(int keyCode)
+    void setKeyUp(KeyboardKey key)
     {
-        keyboard.setKeyUp(keyCode);
+        keyboard.setKeyUp(key);
     }
 
-    bool isKeyDown(int keyCode) const
+    bool isKeyDown(KeyboardKey key) const
     {
-        return keyboard.isKeyDown(keyCode);
+        return keyboard.isKeyDown(key);
     }
 
-    bool isKeyPressed(int keyCode) const
+    bool isKeyPressed(KeyboardKey key) const
     {
-        return keyboard.isKeyPressed(keyCode);
+        return keyboard.isKeyPressed(key);
     }
 
-    void setMouseButtonDown(int buttonCode)
+    void setMouseButtonDown(MouseButton button)
     {
-        mouse.setButtonDown(buttonCode);
+        mouse.setButtonDown(button);
     }
 
-    void setMouseButtonUp(int buttonCode)
+    void setMouseButtonUp(MouseButton button)
     {
-        mouse.setButtonUp(buttonCode);
+        mouse.setButtonUp(button);
     }
 
-    bool isMouseButtonDown(int buttonCode) const
+    bool isMouseButtonDown(MouseButton button) const
     {
-        return mouse.isButtonDown(buttonCode);
+        return mouse.isButtonDown(button);
     }
 
-    bool isMouseButtonPressed(int buttonCode) const
+    bool isMouseButtonPressed(MouseButton button) const
     {
-        return mouse.isButtonPressed(buttonCode);
+        return mouse.isButtonPressed(button);
     }
 
-    bool isMouseButtonUp(int buttonCode) const
+    bool isMouseButtonUp(MouseButton button) const
     {
-        return mouse.isButtonUp(buttonCode);
+        return mouse.isButtonUp(button);
     }
 
     glm::vec2 getMousePosition() const
@@ -108,9 +108,19 @@ public:
         return mouse.getIsInsideWindow();
     }
 
-    void setMouseInsideWindow(bool inside)
+    void setMouseInsideWindow(const bool inside)
     {
         mouse.setIsInsideWindow(inside);
+    }
+
+    void setMouseVisibility(const bool visible)
+    {
+        mouse.setMouseVisibility(visible);
+    }
+
+    bool getMouseVisibility() const
+    {
+        return mouse.getMouseVisibility();
     }
 
 protected:
