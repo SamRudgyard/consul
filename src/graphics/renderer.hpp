@@ -23,6 +23,10 @@ public:
         }
     }
 
+    ~Renderer() {
+        delete gfxBackend;
+    }
+
     void clearBackground(const glm::vec4& colour)
     {
         if (!gfxBackend) {

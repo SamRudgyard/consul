@@ -43,6 +43,9 @@ void Consul::initialiseRenderer(GraphicsAPI gfxApi)
 Consul::~Consul()
 {
     terminate();
+
+    delete renderer;
+    delete platform;
 }
 
 bool Consul::run()
@@ -96,8 +99,6 @@ void Consul::terminate()
     console.log("[Consul] Shutting down Game Engine...");
 
     platform->terminate();
-    delete platform;
-
     console.log("[Consul] Windowing platform terminated.");
 
     // ImGui_ImplOpenGL3_Shutdown();
