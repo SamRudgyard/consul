@@ -49,7 +49,7 @@ bool Consul::run()
 {
     beginTick();
 
-    if (context->windowConfig->shouldClose) {
+    if (context->windowConfig.shouldClose) {
         return false;
     }
 
@@ -70,7 +70,7 @@ bool Consul::run()
 
     endTick();
 
-    return !(context->windowConfig->shouldClose && platform->shouldClose());
+    return !(context->windowConfig.shouldClose && platform->shouldClose());
 }
 
 void Consul::beginTick()
@@ -81,9 +81,9 @@ void Consul::beginTick()
 
     platform->pollEvents();
 
-    context->inputSystem->beginTick();
+    context->inputSystem.beginTick();
 
-    context->windowConfig->shouldClose = platform->shouldClose();
+    context->windowConfig.shouldClose = platform->shouldClose();
 }
 
 void Consul::endTick()

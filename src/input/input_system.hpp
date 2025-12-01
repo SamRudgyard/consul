@@ -6,17 +6,8 @@
 class InputSystem
 {
 public:
-    InputSystem(const InputSystem&) = delete;
-    InputSystem& operator=(const InputSystem&) = delete;
-    
-    /**
-     * Get the singleton InputSystem instance.
-     * @returns The single InputSystem instance.
-     */
-    static InputSystem& get() {
-        static InputSystem instance;
-        return instance;
-    }
+    InputSystem() = default;
+    ~InputSystem() = default;
 
     /**
      * Begin a new frame for input state tracking.
@@ -122,10 +113,6 @@ public:
     {
         return mouse.getMouseVisibility();
     }
-
-protected:
-    InputSystem() = default;
-    ~InputSystem() = default;
 
 private:
     KeyboardState keyboard;

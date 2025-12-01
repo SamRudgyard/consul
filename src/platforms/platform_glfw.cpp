@@ -1,7 +1,7 @@
 #include "platform_glfw.hpp"
 
 #include "core/console/console.hpp"
-#include "input/input_system.hpp"
+#include "core/engine_context.hpp"
 #include "GLFW/glfw3.h"
 
 #include <map>
@@ -26,19 +26,19 @@ void PlatformGLFW::initialiseWindow()
     glfwDefaultWindowHints();
     glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE); // Don't minimise window when losing focus
 
-    WindowConfig* windowConfig = context->windowConfig;
-    glfwWindowHint(GLFW_VISIBLE, windowConfig->isVisible                     ? GLFW_TRUE : GLFW_FALSE); // Make the window visible
-    glfwWindowHint(GLFW_RESIZABLE, windowConfig->isResizable                 ? GLFW_TRUE : GLFW_FALSE); // Allow window to be resized
-    glfwWindowHint(GLFW_DECORATED, windowConfig->isDecorated                 ? GLFW_TRUE : GLFW_FALSE); // Enable window decorations (title bar, borders, close button, etc.)
-    glfwWindowHint(GLFW_FOCUSED, windowConfig->isFocused                     ? GLFW_TRUE : GLFW_FALSE); // Make the window focused (i.e. ready to receive input)
-    glfwWindowHint(GLFW_FLOATING, windowConfig->isFloating                   ? GLFW_TRUE : GLFW_FALSE); // Make the window floating (i.e. always on top)
-    glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, windowConfig->isTransparent ? GLFW_TRUE : GLFW_FALSE); // Enable transparent framebuffer
+    WindowConfig& windowConfig = EngineContext::get()->windowConfig;
+    glfwWindowHint(GLFW_VISIBLE, windowConfig.isVisible                     ? GLFW_TRUE : GLFW_FALSE); // Make the window visible
+    glfwWindowHint(GLFW_RESIZABLE, windowConfig.isResizable                 ? GLFW_TRUE : GLFW_FALSE); // Allow window to be resized
+    glfwWindowHint(GLFW_DECORATED, windowConfig.isDecorated                 ? GLFW_TRUE : GLFW_FALSE); // Enable window decorations (title bar, borders, close button, etc.)
+    glfwWindowHint(GLFW_FOCUSED, windowConfig.isFocused                     ? GLFW_TRUE : GLFW_FALSE); // Make the window focused (i.e. ready to receive input)
+    glfwWindowHint(GLFW_FLOATING, windowConfig.isFloating                   ? GLFW_TRUE : GLFW_FALSE); // Make the window floating (i.e. always on top)
+    glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, windowConfig.isTransparent ? GLFW_TRUE : GLFW_FALSE); // Enable transparent framebuffer
 
 #if defined(__APPLE__)
      glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE); // Enable high-DPI retina framebuffer on macOS
 #endif
 
-    if (windowConfig->useMSAA) {
+    if (windowConfig.useMSAA) {
         glfwWindowHint(GLFW_SAMPLES, 4); // Enable 4x MSAA
     }
 
@@ -51,7 +51,7 @@ void PlatformGLFW::initialiseWindow()
 #endif
 
     GLFWmonitor* primaryMonitor = nullptr;
-    if (windowConfig->isFullscreen) {
+    if (windowConfig.isFullscreen) {
         console.log("[GLFW] Creating fullscreen window...");
 
         primaryMonitor = glfwGetPrimaryMonitor();
@@ -66,16 +66,16 @@ void PlatformGLFW::initialiseWindow()
             return;
         }
 
-        windowConfig->windowSize = glm::vec2((float)(videoMode->width), (float)(videoMode->height));
+        windowConfig.windowSize = glm::vec2((float)(videoMode->width), (float)(videoMode->height));
 
-        windowConfig->position = glm::vec2(0.f, 0.f);
+        windowConfig.position = glm::vec2(0.f, 0.f);
     }
 
-    const bool maximise = (windowConfig->windowSize.x == 0 || windowConfig->windowSize.y == 0);
+    const bool maximise = (windowConfig.windowSize.x == 0 || windowConfig.windowSize.y == 0);
     // Creating the window requires non-zero width and height
-    windowConfig->windowSize.x = std::max(windowConfig->windowSize.x, 1.f);
-    windowConfig->windowSize.y = std::max(windowConfig->windowSize.y, 1.f);
-    handle = glfwCreateWindow((int)windowConfig->windowSize.x, (int)windowConfig->windowSize.y, windowConfig->title, primaryMonitor, nullptr);
+    windowConfig.windowSize.x = std::max(windowConfig.windowSize.x, 1.f);
+    windowConfig.windowSize.y = std::max(windowConfig.windowSize.y, 1.f);
+    handle = glfwCreateWindow((int)windowConfig.windowSize.x, (int)windowConfig.windowSize.y, windowConfig.title, primaryMonitor, nullptr);
     if (!handle) {
         glfwTerminate();
         console.error("[GLFW] Failed to create GLFW window");
@@ -88,7 +88,7 @@ void PlatformGLFW::initialiseWindow()
         glfwMaximizeWindow(handle);
         int framebufferWidth, framebufferHeight;
         glfwGetFramebufferSize(handle, &framebufferWidth, &framebufferHeight);
-        windowConfig->windowSize = glm::vec2((float)(framebufferWidth), (float)(framebufferHeight));
+        windowConfig.windowSize = glm::vec2((float)(framebufferWidth), (float)(framebufferHeight));
     }
 
     glfwMakeContextCurrent(handle);
@@ -97,7 +97,7 @@ void PlatformGLFW::initialiseWindow()
         console.error("[GLFW] Failed to initialise GLFW: " + std::string(getGLFWErrorCodeAsString(error)));
     }
 
-    if (windowConfig->isMinimised) {
+    if (windowConfig.isMinimised) {
         console.log("[GLFW] Minimising window...");
         glfwIconifyWindow(handle);
     }
@@ -106,23 +106,23 @@ void PlatformGLFW::initialiseWindow()
     GLFWmonitor* currentMonitor = getCurrentMonitor();
     int monitorX, monitorY, monitorWidth, monitorHeight;
     glfwGetMonitorWorkarea(currentMonitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
-    int posX = std::max(monitorX + (monitorWidth - (int)windowConfig->windowSize.x) / 2, monitorX);
-    int posY = std::max(monitorY + (monitorHeight - (int)windowConfig->windowSize.y) / 2, monitorY);
+    int posX = std::max(monitorX + (monitorWidth - (int)windowConfig.windowSize.x) / 2, monitorX);
+    int posY = std::max(monitorY + (monitorHeight - (int)windowConfig.windowSize.y) / 2, monitorY);
 
-    windowConfig->position = glm::vec2((float)posX, (float)posY);
+    windowConfig.position = glm::vec2((float)posX, (float)posY);
 
     glfwSetWindowPos(handle, posX, posY);
 
     // Handle window config
-    toggleVSync(windowConfig->useVSync);
-    toggleFullscreen(windowConfig->isFullscreen);
-    toggleResizable(windowConfig->isResizable);
-    toggleDecorated(windowConfig->isDecorated);
-    toggleMinimised(windowConfig->isMinimised);
-    toggleVisible(windowConfig->isVisible);
-    toggleFocused(windowConfig->isFocused);
-    toggleFloating(windowConfig->isFloating);
-    toggleTransparent(windowConfig->isTransparent);
+    toggleVSync(windowConfig.useVSync);
+    toggleFullscreen(windowConfig.isFullscreen);
+    toggleResizable(windowConfig.isResizable);
+    toggleDecorated(windowConfig.isDecorated);
+    toggleMinimised(windowConfig.isMinimised);
+    toggleVisible(windowConfig.isVisible);
+    toggleFocused(windowConfig.isFocused);
+    toggleFloating(windowConfig.isFloating);
+    toggleTransparent(windowConfig.isTransparent);
 
     // Initialise window event callbacks
     glfwSetWindowSizeCallback(handle, onWindowResized);
@@ -147,7 +147,7 @@ void PlatformGLFW::loadGraphics(IGraphics* graphics)
 
 void PlatformGLFW::pollEvents()
 {
-    const InputSystem& input = InputSystem::get();
+    const InputSystem& input = EngineContext::get()->inputSystem;
     glfwSetInputMode(handle, GLFW_CURSOR, input.getMouseVisibility() ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN);
 
     glfwPollEvents();
@@ -188,8 +188,8 @@ void PlatformGLFW::onWindowResized(GLFWwindow* window, int width, int height)
     }
 
     EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
-    WindowConfig* windowConfig = context->windowConfig;
-    windowConfig->windowSize = glm::vec2((float)width, (float)height);
+    WindowConfig& windowConfig = context->windowConfig;
+    windowConfig.windowSize = glm::vec2((float)width, (float)height);
 
     Console::get().logOnDebug("[GLFW] Window resized to " + std::to_string(width) + "x" + std::to_string(height));
 }
@@ -197,22 +197,22 @@ void PlatformGLFW::onWindowResized(GLFWwindow* window, int width, int height)
 void PlatformGLFW::onWindowPosChanged(GLFWwindow* window, int xpos, int ypos)
 {
     EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
-    WindowConfig* windowConfig = context->windowConfig;
-    windowConfig->position = glm::vec2((float)xpos, (float)ypos);
+    WindowConfig& windowConfig = context->windowConfig;
+    windowConfig.position = glm::vec2((float)xpos, (float)ypos);
 
     Console::get().logOnDebug("[GLFW] Window position changed to ("
-                    + std::to_string((int)windowConfig->position.x) + ", "
-                    + std::to_string((int)windowConfig->position.y) +
+                    + std::to_string((int)windowConfig.position.x) + ", "
+                    + std::to_string((int)windowConfig.position.y) +
                     ")");
 }
 
 void PlatformGLFW::onWindowMaximised(GLFWwindow* window, int maximised)
 {
     EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
-    WindowConfig* windowConfig = context->windowConfig;
-    windowConfig->isMaximised = maximised;
+    WindowConfig& windowConfig = context->windowConfig;
+    windowConfig.isMaximised = maximised;
 
-    if (windowConfig->isMaximised) {
+    if (windowConfig.isMaximised) {
         Console::get().logOnDebug("[GLFW] Window maximised");
     } else {
         Console::get().logOnDebug("[GLFW] Window restored from maximised state");
@@ -222,10 +222,10 @@ void PlatformGLFW::onWindowMaximised(GLFWwindow* window, int maximised)
 void PlatformGLFW::onWindowMinimised(GLFWwindow* window, int iconified)
 {
     EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
-    WindowConfig* windowConfig = context->windowConfig;
-    windowConfig->isMinimised = iconified;
+    WindowConfig& windowConfig = context->windowConfig;
+    windowConfig.isMinimised = iconified;
 
-    if (windowConfig->isMinimised) {
+    if (windowConfig.isMinimised) {
         Console::get().logOnDebug("[GLFW] Window minimised");
     } else {
         Console::get().logOnDebug("[GLFW] Window restored from minimised state");
@@ -235,10 +235,10 @@ void PlatformGLFW::onWindowMinimised(GLFWwindow* window, int iconified)
 void PlatformGLFW::onWindowFocused(GLFWwindow* window, int focused)
 {
     EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
-    WindowConfig* windowConfig = context->windowConfig;
-    windowConfig->isFocused = focused;
+    WindowConfig& windowConfig = context->windowConfig;
+    windowConfig.isFocused = focused;
 
-    if (windowConfig->isFocused) {
+    if (windowConfig.isFocused) {
         Console::get().logOnDebug("[GLFW] Window focused");
     } else {
         Console::get().logOnDebug("[GLFW] Window lost focus");
@@ -253,7 +253,7 @@ void PlatformGLFW::onKeyInput(GLFWwindow* window, int key, int scancode, int act
 
     const KeyboardKey keyEnum = (KeyboardKey)key;
 
-    InputSystem& input = InputSystem::get();
+    InputSystem& input = EngineContext::get()->inputSystem;
 
     if (action == GLFW_RELEASE) {
         input.setKeyUp(keyEnum);
@@ -278,7 +278,7 @@ void PlatformGLFW::onCharInput(GLFWwindow* window, unsigned int codepoint)
 
 void PlatformGLFW::onMouseButtonInput(GLFWwindow* window, int button, int action, int mods)
 {
-    InputSystem& input = InputSystem::get();
+    InputSystem& input = EngineContext::get()->inputSystem;
     const MouseButton buttonEnum = (MouseButton)button;
 
     if (action == GLFW_PRESS) {
@@ -290,19 +290,19 @@ void PlatformGLFW::onMouseButtonInput(GLFWwindow* window, int button, int action
 
 void PlatformGLFW::onMouseMoved(GLFWwindow* window, double xpos, double ypos)
 {
-    InputSystem& input = InputSystem::get();
+    InputSystem& input = EngineContext::get()->inputSystem;
     input.setMousePosition(glm::vec2((float)xpos, (float)ypos));
 }
 
 void PlatformGLFW::onMouseScrolled(GLFWwindow* window, double xoffset, double yoffset)
 {
-    InputSystem& input = InputSystem::get();
+    InputSystem& input = EngineContext::get()->inputSystem;
     input.setMouseScrollOffset(glm::vec2((float)xoffset, (float)yoffset));
 }
 
 void PlatformGLFW::onMouseEnterOrExitWindow(GLFWwindow* window, int entered)
 {
-    InputSystem& input = InputSystem::get();
+    InputSystem& input = EngineContext::get()->inputSystem;
     input.setMouseInsideWindow(entered == GLFW_TRUE);
 }
 
@@ -332,12 +332,12 @@ const unsigned int PlatformGLFW::getCurrentMonitorNumber() const
         return 0;
     }
 
-    WindowConfig* windowConfig = context->windowConfig;
+    WindowConfig& windowConfig = EngineContext::get()->windowConfig;
 
     GLFWmonitor* currentMonitor = nullptr;
 
     GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
-    if (windowConfig->isFullscreen) {
+    if (windowConfig.isFullscreen) {
         currentMonitor = glfwGetWindowMonitor(handle);
         for (int im = 0; im < monitorCount; ++im) {
             if (monitors[im] == currentMonitor) {
@@ -348,8 +348,8 @@ const unsigned int PlatformGLFW::getCurrentMonitorNumber() const
 
     int windowCentreX, windowCentreY;
     glfwGetWindowPos(handle, &windowCentreX, &windowCentreY);
-    windowCentreX += (int)(windowConfig->windowSize.x / 2);
-    windowCentreY += (int)(windowConfig->windowSize.y / 2);
+    windowCentreX += (int)(windowConfig.windowSize.x / 2);
+    windowCentreY += (int)(windowConfig.windowSize.y / 2);
 
     for (int im = 0; im < monitorCount; ++im) {
         int monitorX, monitorY;
@@ -388,33 +388,33 @@ void PlatformGLFW::toggleVSync(const bool enable)
         glfwSwapInterval(1);
     }
 
-    context->windowConfig->useVSync = enable;
+    EngineContext::get()->windowConfig.useVSync = enable;
 }
 
 void PlatformGLFW::toggleFullscreen(const bool enable)
 {
-    WindowConfig* windowConfig = context->windowConfig;
+    WindowConfig& windowConfig = EngineContext::get()->windowConfig;
 
     if (enable) {
         GLFWmonitor* currentMonitor = getCurrentMonitor();
-        glfwSetWindowMonitor(handle, currentMonitor, 0, 0, (int)windowConfig->windowSize.x, (int)windowConfig->windowSize.y, GLFW_DONT_CARE);
+        glfwSetWindowMonitor(handle, currentMonitor, 0, 0, (int)windowConfig.windowSize.x, (int)windowConfig.windowSize.y, GLFW_DONT_CARE);
     } else {
-        glfwSetWindowMonitor(handle, nullptr, (int)windowConfig->position.x, (int)windowConfig->position.y, (int)windowConfig->windowSize.x, (int)windowConfig->windowSize.y, GLFW_DONT_CARE);
+        glfwSetWindowMonitor(handle, nullptr, (int)windowConfig.position.x, (int)windowConfig.position.y, (int)windowConfig.windowSize.x, (int)windowConfig.windowSize.y, GLFW_DONT_CARE);
     }
 
-    windowConfig->isFullscreen = enable;
+    windowConfig.isFullscreen = enable;
 }
 
 void PlatformGLFW::toggleResizable(const bool enable)
 {
     glfwSetWindowAttrib(handle, GLFW_RESIZABLE, enable ? GLFW_TRUE : GLFW_FALSE);
-    context->windowConfig->isResizable = enable;
+    EngineContext::get()->windowConfig.isResizable = enable;
 }
 
 void PlatformGLFW::toggleDecorated(const bool enable)
 {
     glfwSetWindowAttrib(handle, GLFW_DECORATED, enable ? GLFW_TRUE : GLFW_FALSE);
-    context->windowConfig->isDecorated = enable;
+    EngineContext::get()->windowConfig.isDecorated = enable;
 }
 
 void PlatformGLFW::toggleMinimised(const bool enable)
@@ -425,17 +425,17 @@ void PlatformGLFW::toggleMinimised(const bool enable)
         glfwRestoreWindow(handle);
     }
 
-    context->windowConfig->isMinimised = enable;
+    EngineContext::get()->windowConfig.isMinimised = enable;
 }
 
 void PlatformGLFW::toggleMaximised(const bool enable)
 {
-    if (!context->windowConfig->isResizable) {
+    if (!EngineContext::get()->windowConfig.isResizable) {
         return; // Can't maximise a non-resizable window
     }
 
     glfwSetWindowAttrib(handle, GLFW_MAXIMIZED, enable ? GLFW_TRUE : GLFW_FALSE);
-    context->windowConfig->isMaximised = enable;
+    EngineContext::get()->windowConfig.isMaximised = enable;
 }
 
 void PlatformGLFW::toggleVisible(const bool enable)
@@ -446,31 +446,31 @@ void PlatformGLFW::toggleVisible(const bool enable)
         glfwHideWindow(handle);
     }
 
-    context->windowConfig->isVisible = enable;
+    EngineContext::get()->windowConfig.isVisible = enable;
 }
 
 void PlatformGLFW::toggleFocused(const bool enable)
 {
     glfwSetWindowAttrib(handle, GLFW_FOCUS_ON_SHOW, enable ? GLFW_TRUE : GLFW_FALSE);
 
-    context->windowConfig->isFocused = enable;
+    EngineContext::get()->windowConfig.isFocused = enable;
 }
 
 void PlatformGLFW::toggleFloating(const bool enable)
 {
     glfwSetWindowAttrib(handle, GLFW_FLOATING, enable ? GLFW_TRUE : GLFW_FALSE);
 
-    context->windowConfig->isFloating = enable;
+    EngineContext::get()->windowConfig.isFloating = enable;
 }
 
 void PlatformGLFW::toggleTransparent(const bool enable)
 {
-    std::string isTransparent = context->windowConfig->isTransparent ? "enabled" : "disabled";
+    std::string isTransparent = EngineContext::get()->windowConfig.isTransparent ? "enabled" : "disabled";
     Console::get().warn("[GLFW] Window transparency can only be set before window initialisation (currently " + isTransparent + ").");
 }
 
 void PlatformGLFW::toggleMSAA(const bool enable)
 {
-    std::string isMSAA = context->windowConfig->useMSAA ? "enabled" : "disabled";
+    std::string isMSAA = EngineContext::get()->windowConfig.useMSAA ? "enabled" : "disabled";
     Console::get().warn("[GLFW] MSAA can only be set before window initialisation (currently " + isMSAA + ").");
 }

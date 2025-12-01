@@ -6,8 +6,8 @@
 class EngineContext
 {
 public:
-    WindowConfig* windowConfig = nullptr;
-    InputSystem* inputSystem = nullptr;
+    WindowConfig windowConfig;
+    InputSystem inputSystem;
 
     static EngineContext* get()
     {
