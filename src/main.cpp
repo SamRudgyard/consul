@@ -1,7 +1,6 @@
 #include "core/consul.hpp"
 #include "core/window_config.hpp"
-#include "shader_manager.hpp"
-#include "core/models/model.hpp"
+// #include "core/models/model.hpp"
 #include "graphics/camera/camera.hpp"
 
 int main(int argc, char **argv) {
@@ -14,7 +13,7 @@ int main(int argc, char **argv) {
 
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
 
-    // Shader& shader = ShaderManager::loadShader("shaders/basic.vs", "shaders/basic.fs", "basicShader");
+    IShader* shader = consul.getRenderer().newShader("shaders/basic.vs", "shaders/basic.fs");
 
     // Model model("assets/shiba/scene.gltf");
 

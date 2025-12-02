@@ -3,7 +3,9 @@
 #include "core/console/console.hpp"
 #include "graphics.hpp"
 #include "graphics_opengl.hpp"
+#include "graphics/shaders/shader.hpp"
 #include "platforms/platform.hpp"
+#include "utils.hpp"
 
 class Renderer
 {
@@ -37,6 +39,16 @@ public:
         assert(gfxBackend != nullptr && "Graphics backend not initialized!");
 
         gfxBackend->clearColour(colour);
+    }
+
+    IShader* newShader(const std::string& vertexFilePath, const std::string& fragmentFilePath)
+    {
+        IShader* shader = gfxBackend->newShader();
+
+        const std::string vertexSource = readFile(vertexFilePath.c_str());
+        const std::string fragmentSource = readFile(fragmentFilePath.c_str());
+        shader->compile(vertexSource, fragmentSource);
+        return shader;
     }
 
     

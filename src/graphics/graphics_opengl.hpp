@@ -6,6 +6,7 @@
 
 #include "graphics.hpp"
 #include "glad/glad.h"
+#include "shaders/opengl/opengl_shader.hpp"
 #include "utils.hpp"
 
 class OpenGLGraphics : public IGraphics
@@ -34,5 +35,10 @@ public:
     void clearScreenBuffer()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    IShader* newShader() override
+    {
+        return new OpenGLShader();
     }
 };

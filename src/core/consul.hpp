@@ -38,6 +38,12 @@ public:
      */
     void terminate();
 
+    /**
+     * Gets the renderer instance.
+     * @returns Reference to the renderer.
+    */
+    Renderer& getRenderer() { return *renderer; }
+
 private:
     Console& console = Console::get();
     EngineContext* context = EngineContext::get();

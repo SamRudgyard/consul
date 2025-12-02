@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glm/vec4.hpp"
+#include "shaders/shader.hpp"
 
 enum class GraphicsAPI
 {
@@ -13,4 +14,6 @@ class IGraphics
 public:
     virtual void loadGraphics(void* loaderFunc) = 0;
     virtual void clearColour(const glm::vec4& colour) = 0;
+
+    virtual IShader* newShader() = 0;
 };
