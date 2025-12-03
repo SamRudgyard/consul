@@ -1,5 +1,5 @@
 #include "core/models/model.hpp"
-#include "shader.hpp"
+#include "graphics/shaders/shader.hpp"
 #include "graphics/camera/camera.hpp"
 #include "core/models/texture.hpp"
 #include "core/console/console.hpp"
