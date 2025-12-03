@@ -1,17 +1,36 @@
 #include "graphics/camera/camera.hpp"
 #include "maths/constants.hpp"
 #include "core/engine_context.hpp"
+#include "graphics/shaders/shader.hpp"
 
 Camera::Camera(glm::vec3 position)
     : position(position)
 {
+    updateProjectionMatrix();
+    updateViewMatrix();
 }
 
-void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
-    glm::mat4 view = glm::mat4(1.0f);
-    glm::mat4 projection = glm::mat4(1.0f);
+void Camera::setFieldOfView(float FOVdeg)
+{
+    this->FOVdeg = FOVdeg;
+    updateProjectionMatrix();
+}
 
-    view = glm::lookAt(position, position + orientation, up);
+void Camera::setNearPlane(float nearPlane)
+{
+    this->nearPlane = nearPlane;
+    updateProjectionMatrix();
+}
+
+void Camera::setFarPlane(float farPlane)
+{
+    this->farPlane = farPlane;
+    updateProjectionMatrix();
+}
+
+void Camera::updateProjectionMatrix()
+{
+    glm::mat4 projection = glm::mat4(1.0f);
 
     // Use FoV angle from larger dimension, see https://stackoverflow.com/questions/26997631/limiting-fov-both-horizontally-and-vertically
     WindowConfig& config = EngineContext::get()->windowConfig;
@@ -38,7 +57,14 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
     projection[3][2] = 2.0f * nearPlane * farPlane / (nearPlane - farPlane);
     projection[3][3] = 0.0f;
 
-    cameraMatrix = projection*view;
+    projectionMatrix = projection;
+}
+
+void Camera::updateViewMatrix()
+{
+    glm::mat4 view = glm::mat4(1.0f);
+    view = glm::lookAt(position, position + orientation, up);
+    viewMatrix = view;
 }
 
 void Camera::handleInputs(float deltaTime) {
@@ -100,8 +126,7 @@ void Camera::handleInputs(float deltaTime) {
     }
 }
 
-void Camera::useCameraMatrix(Shader& shader, const char* uniform)
+void Camera::sendToShader(IShader* shader)
 {
-	// Exports camera matrix
-	// glUniformMatrix4fv(glGetUniformLocation(shader.id, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
+    shader->setUniformMat4("cameraMatrix", projectionMatrix * viewMatrix);
 }

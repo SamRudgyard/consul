@@ -10,15 +10,12 @@
 #include "glm/gtx/rotate_vector.hpp"
 #include "glm/gtx/vector_angle.hpp"
 
-#include "shader.hpp"
 #include "core/engine_context.hpp"
+
+class IShader;
 
 class Camera {
 public:
-    glm::vec3 position;
-    glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::mat4 cameraMatrix = glm::mat4(1.0f);
     float speed = 0.1f;
     float sensitivity = 100.0f;
 
@@ -29,12 +26,22 @@ public:
     Camera(glm::vec3 position);
 
     /**
-     * Recompute the camera matrix (projection * view) for the given perspective parameters.
-     * @param FOVdeg     Vertical field of view in degrees.
-     * @param nearPlane  Near clipping plane distance.
-     * @param farPlane   Far clipping plane distance.
+     * Set the field of view in degrees.
+     * @param FOVdeg Field of view angle in degrees.
      */
-    void updateMatrix(float FOVdeg, float nearPlane, float farPlane);
+    void setFieldOfView(float FOVdeg);
+
+    /**
+     * Set the near clipping plane distance.
+     * @param nearPlane Near clipping plane distance.
+     */
+    void setNearPlane(float nearPlane);
+
+    /**
+     * Set the far clipping plane distance.
+     * @param farPlane Far clipping plane distance.
+     */
+    void setFarPlane(float farPlane);
     
     /**
      * Handle basic WASD + space/ctrl movement and RMB-look input.
@@ -43,12 +50,28 @@ public:
     void handleInputs(float deltaTime);
 
     /**
-     * Upload the cameraMatrix to the shader uniform (mat4).
-     * 
-     * @param shader  Shader program to set the uniform in.
-     * @param uniform Name of the uniform variable in the shader.
+     * Sends the camera matrix (projection * view) to the given shader uniform.
+     * @param shader  Shader to send the matrix to.
      */
-    void useCameraMatrix(Shader& shader, const char* uniform);
+    void sendToShader(IShader* shader);
 private:
     EngineContext* context = EngineContext::get();
+    glm::vec3 position;
+    float FOVdeg = 45.0f;
+    float nearPlane = 0.1f;
+    float farPlane = 100.0f;
+    glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    glm::mat4 projectionMatrix = glm::mat4(1.0f);
+
+    /**
+     * Update the projection matrix based on current FOV, near and far planes.
+    */
+    void updateProjectionMatrix();
+
+    /**
+     * Update the view matrix based on current position and orientation.
+    */
+    void updateViewMatrix();
 };
