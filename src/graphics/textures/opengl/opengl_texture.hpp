@@ -6,7 +6,7 @@
 class OpenGLTexture : public ITexture
 {
 public:
-    OpenGLTexture(const char* texturePath, TextureType textureType);
+    OpenGLTexture(const TextureData& textureData);
 
     void bind() const override;
     void unbind() const override;

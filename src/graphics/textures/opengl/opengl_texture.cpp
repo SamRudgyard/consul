@@ -9,19 +9,21 @@
 #endif
 #include <stb_image.h>
 
-OpenGLTexture::OpenGLTexture(const char* texturePath, TextureType textureType)
-    : ITexture(texturePath, textureType)
+OpenGLTexture::OpenGLTexture(const TextureData& textureData)
+    : ITexture(textureData)
 {
-    if (!doesFileExist(texturePath)) {
-        Console::get().error("[OpenGLTexture::OpenGLTexture] Texture file does not exist: '" + std::string(texturePath) + "'");
+    std::string texturePath = textureData.getPath();
+
+    if (!doesFileExist(texturePath.c_str())) {
+        Console::get().error("[OpenGLTexture::OpenGLTexture] Texture file does not exist: '" + texturePath + "'");
         return;
     }
 
     int textureWidth, textureHeight, numColourChannels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load(texturePath, &textureWidth, &textureHeight, &numColourChannels, 0);
+    unsigned char* data = stbi_load(texturePath.c_str(), &textureWidth, &textureHeight, &numColourChannels, 0);
     if (!data) {
-        Console::get().error("[OpenGLTexture::OpenGLTexture] Texture file could not be loaded: '" + std::string(texturePath) + "'");
+        Console::get().error("[OpenGLTexture::OpenGLTexture] Texture file could not be loaded: '" + texturePath + "'");
         return;
     }
 

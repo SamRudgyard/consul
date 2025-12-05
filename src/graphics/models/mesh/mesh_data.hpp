@@ -29,7 +29,7 @@ public:
         std::vector<glm::vec2> textureCoords,
         std::vector<glm::vec4> tangents,
         std::vector<unsigned int> indices,
-        std::vector<ITexture*> textures
+        std::vector<TextureData> textures
     ) : positions(positions),
         normals(normals),
         colours(colours),
@@ -54,7 +54,7 @@ public:
     const std::vector<glm::vec2>& getTextureCoords() const { return textureCoords; }
     const std::vector<glm::vec4>& getTangents() const { return tangents; }
     const std::vector<unsigned int>& getIndices() const { return indices; }
-    const std::vector<ITexture*>& getTextures() const { return textures; }
+    const std::vector<TextureData>& getTextures() const { return textures; }
 
 private:
     std::vector<glm::vec3> positions;
@@ -63,6 +63,6 @@ private:
     std::vector<glm::vec2> textureCoords;
     std::vector<glm::vec4> tangents; // TODO: Why vec4 for tangents?
     std::vector<unsigned int> indices;
-    std::vector<ITexture*> textures;
+    std::vector<TextureData> textures;
     std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(6, 0);
 };

@@ -148,8 +148,8 @@ void OpenGLMesh::draw(IShader* shader, Camera& camera) const
     unsigned int numOfSpecularTextures = 0;
     for (unsigned int it = 0; it < meshData.getTextures().size(); ++it) {
         std::string num = std::to_string(it);
-        ITexture* texture = meshData.getTextures()[it];
-        TextureType type = texture->getTextureType();
+        const TextureData& texture = meshData.getTextures()[it]; // TODO: A mesh shouldn't really own textures, change this later
+        TextureType type = texture.getType();
         if (type == TextureType::DIFFUSE) {
             num = std::to_string(numOfDiffuseTextures++);
         } else if (type == TextureType::SPECULAR) {
@@ -159,7 +159,7 @@ void OpenGLMesh::draw(IShader* shader, Camera& camera) const
             Console::get().error("[OpenGLMesh::draw] Unknown texture type '" + std::to_string(type) + "'");
         }
 
-        texture->bind();
-        texture->setTextureUnit(shader, (texture->getTextureTypeAsString() + num).c_str());
+        // texture->bind();
+        // texture->setTextureUnit(shader, (texture->getTextureTypeAsString() + num).c_str());
     }
 }

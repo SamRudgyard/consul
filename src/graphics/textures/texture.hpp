@@ -4,14 +4,7 @@
 #include <string>
 
 #include "graphics/shaders/shader.hpp"
-
-/**
- * Supported texture types used in shaders.
- */
-enum TextureType {
-    DIFFUSE,
-    SPECULAR
-};
+#include "graphics/textures/texture_data.hpp"
 
 class ITexture {
 public:
@@ -31,18 +24,6 @@ public:
     virtual void release() const = 0;
 
     /**
-     * Get the texture type.
-     * @returns Texture type.
-     */
-    TextureType getTextureType() const { return type; }
-
-    /**
-     * Get the texture type as a string.
-     * @returns String representation of the texture type.
-     */
-    const char* getTextureTypeAsString() const { return textureTypeToString.at(type); }
-
-    /**
      * Set sampler uniform in a shader program to this texture's unit.
      * @param shader   Shader program.
      * @param uniform  Name of the sampler uniform variable.
@@ -55,16 +36,9 @@ protected:
      * @param image       Path to image file.
      * @param textureType Texture type.
      */
-    ITexture(const char* texturePath, TextureType textureType) 
-        : path(texturePath), type(textureType) {};
+    ITexture(const TextureData& textureData)
+        : textureData(textureData) {};
 
 private:
-    std::string path;
-    TextureType type;
-
-    // Textures will be named "diffuse0", "diffuse1", "specular0", "specular1", etc.
-    std::map <TextureType, const char*> textureTypeToString = {
-        {TextureType::DIFFUSE, "diffuse"},
-        {TextureType::SPECULAR, "specular"}
-    };
+    TextureData textureData;
 };
