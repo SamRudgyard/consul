@@ -137,7 +137,7 @@ unsigned int OpenGLMesh::enableVertexBuffer(const std::vector<glm::vec4>& data, 
     return vbo;
 }
 
-void OpenGLMesh::draw(IShader* shader, Camera& camera) const
+void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
 {
     shader->use();
     glBindVertexArray(vao);
@@ -162,4 +162,13 @@ void OpenGLMesh::draw(IShader* shader, Camera& camera) const
         // texture->bind();
         // texture->setTextureUnit(shader, (texture->getTextureTypeAsString() + num).c_str());
     }
+
+    shader->setUniformVec3("lightPosition", 0.0f, 0.0f, 20.0f);
+    shader->setUniformVec3("lightColour", 1.0f, 1.0f, 1.0f);
+    shader->setUniformMat4("model", getModelMatrix());
+
+    camera.sendToShader(shader);
+
+    const MeshData& data = getMeshData();
+    glDrawElements(GL_TRIANGLES, data.getNumIndices(), GL_UNSIGNED_INT, 0);
 }

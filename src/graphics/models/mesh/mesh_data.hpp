@@ -56,7 +56,13 @@ public:
     const std::vector<unsigned int>& getIndices() const { return indices; }
     const std::vector<TextureData>& getTextures() const { return textures; }
 
+    void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }
+    const glm::mat4& getModelMatrix() const { return modelMatrix; }
+
+    const unsigned int getNumIndices() const { return (unsigned int)indices.size(); }
+
 private:
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec4> colours;

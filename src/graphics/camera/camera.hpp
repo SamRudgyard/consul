@@ -53,7 +53,7 @@ public:
      * Sends the camera matrix (projection * view) to the given shader uniform.
      * @param shader  Shader to send the matrix to.
      */
-    void sendToShader(IShader* shader);
+    void sendToShader(const IShader* shader) const;
 private:
     EngineContext* context = EngineContext::get();
     glm::vec3 position;

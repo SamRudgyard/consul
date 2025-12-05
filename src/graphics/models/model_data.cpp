@@ -1,13 +1,14 @@
-#include "core/models/model.hpp"
+#include "model_data.hpp"
 #include "graphics/shaders/shader.hpp"
 #include "graphics/camera/camera.hpp"
-#include "core/models/texture.hpp"
+#include "graphics/models/mesh/mesh_data.hpp"
+#include "graphics/textures/texture.hpp"
 #include "core/console/console.hpp"
 #include "utils.hpp"
 
 #include <algorithm>
 
-Model::Model(const char* modelPath)
+ModelData::ModelData(const char* modelPath)
     : file(std::string(modelPath))
 {
 	// Make a JSON object
@@ -15,7 +16,7 @@ Model::Model(const char* modelPath)
 	jsonContents = json::parse(text);
 
     if (getFileExtension(modelPath) != ".gltf") {
-        Console::get().error("[Model::Model] Unsupported model format in file: '" + file + "'. Only .gltf files are supported.");
+        Console::get().error("[ModelData::ModelData] Unsupported model format in file: '" + file + "'. Only .gltf files are supported.");
     }
 
     // The uri (unique resource identifier) of the binary data
@@ -25,24 +26,33 @@ Model::Model(const char* modelPath)
 	std::string binaryContents = readFile((fileDirectory + uri).c_str());
     binaryData = std::vector<unsigned char>(binaryContents.begin(), binaryContents.end());
 
+    loadTextures();
+
 	// Traverse all nodes
 	traverseNode(0);
 }
 
-void Model::draw(Shader& shader, Camera& camera, glm::vec3 translation, glm::quat rotation, glm::vec3 scale)
+void ModelData::draw(const IShader* shader, const Camera& camera, const glm::vec3 translation, const glm::quat rotation, const glm::vec3 scale)
 {
+    glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+    glm::mat4 rotationMatrix = glm::mat4_cast(rotation);
+    glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), translation);
+
+    glm::mat4 srtMatrix = scaleMatrix*rotationMatrix*translationMatrix;
+
 	for (unsigned int im = 0; im < meshes.size(); im++)
 	{
-		meshes[im].draw(shader, camera, transformationMatrices[im], translation, rotation, scale);
+        meshes[im].setModelMatrix(srtMatrix * transformationMatrices[im]);
+		// meshes[im].draw(shader, camera);
 	}
 }
 
-void Model::loadMesh(unsigned int iMesh)
+MeshData& ModelData::loadMesh(unsigned int iMesh)
 {
 	// Get all accessor indices
     json primitives = jsonContents["meshes"][iMesh]["primitives"];
     if (primitives.size() < 1) {
-        Console::get().error("[Model::loadMesh] Mesh " + std::to_string(iMesh) + " contains no primitives.");
+        Console::get().error("[ModelData::loadMesh] Mesh " + std::to_string(iMesh) + " contains no primitives.");
     }
     json attributes = primitives[0]["attributes"];
 	unsigned int positionAccessorIndex = attributes["POSITION"];
@@ -50,24 +60,21 @@ void Model::loadMesh(unsigned int iMesh)
 	unsigned int texCoordAccessorIndex = attributes["TEXCOORD_0"];
 	unsigned int indexAccessorIndex = primitives[0]["indices"];
 
-	// Use accessor indices to get all vertices components
 	std::vector<float> positionFloats = readAccessorFloats(jsonContents["accessors"][positionAccessorIndex]);
 	std::vector<glm::vec3> positions = toVec3(positionFloats);
 	std::vector<float> normalFloats = readAccessorFloats(jsonContents["accessors"][normalAccessorIndex]);
 	std::vector<glm::vec3> normals = toVec3(normalFloats);
+    std::vector<glm::vec4> colours; // Empty colours vector, TODO: implement reading colors if needed
 	std::vector<float> textureFloats = readAccessorFloats(jsonContents["accessors"][texCoordAccessorIndex]);
 	std::vector<glm::vec2> textureUVs = toVec2(textureFloats);
+    std::vector<glm::vec4> tangents; // Empty tangents vector, TODO: implement reading tangents if needed
+	std::vector<unsigned int> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
 
-	// Combine all the vertex components and also get the indices and textures
-	std::vector<Vertex> vertices = assembleVertices(positions, normals, textureUVs);
-	std::vector<GLuint> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
-	std::vector<Texture> textures = loadTextures();
-
-	// Combine the vertices, indices, and textures into a mesh
-	meshes.push_back(Mesh(vertices, indices, textures));
+    MeshData& mesh = meshes.emplace_back(MeshData(positions, normals, colours, textureUVs, tangents, indices, loadedTextures)); // TODO: Remove when we get rid of mesh owning its textures
+    return mesh;
 }
 
-void Model::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
+void ModelData::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
 {
     glm::mat4 localTransMatrix = glm::mat4(1.0f);
 
@@ -96,7 +103,7 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
 	{
         // Only store the transformation matrix if there is a mesh to go with it
         transformationMatrices.push_back(transformationMatrix);
-		loadMesh(node["mesh"]);
+		MeshData& mesh = loadMesh(node["mesh"]);
 	}
 
 	if (node.contains("children"))
@@ -106,7 +113,7 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
 	}
 }
 
-std::vector<float> Model::readAccessorFloats(json accessor)
+std::vector<float> ModelData::readAccessorFloats(json accessor)
 {
 	std::vector<float> floatVector;
 
@@ -124,7 +131,7 @@ std::vector<float> Model::readAccessorFloats(json accessor)
     };
     auto it = typeToBytesPerComponent.find(componentType);
     if (it == typeToBytesPerComponent.end()) {
-        Console::get().error("[Model::readAccessorFloats] Invalid component type '" + componentType + "' in accessor (not SCALAR, VEC2, VEC3, or VEC4): '" + file + "'");
+        Console::get().error("[ModelData::readAccessorFloats] Invalid component type '" + componentType + "' in accessor (not SCALAR, VEC2, VEC3, or VEC4): '" + file + "'");
     }
     unsigned int bytesPerComponent = it->second;
 
@@ -135,7 +142,7 @@ std::vector<float> Model::readAccessorFloats(json accessor)
 	unsigned int dataEnd = dataStart + sizeof(float)*nFloats;
 
     if (dataEnd > binaryData.size()) {
-        Console::get().error("[Model::readAccessorFloats] Attempting to read out-of-bounds data: '" + file + "'");
+        Console::get().error("[ModelData::readAccessorFloats] Attempting to read out-of-bounds data: '" + file + "'");
     }
 
     const float* floats = reinterpret_cast<const float*>(binaryData.data() + dataStart);
@@ -144,7 +151,7 @@ std::vector<float> Model::readAccessorFloats(json accessor)
 	return floatVector;
 }
 
-std::vector<unsigned int> Model::readAccessorIndices(json accessor)
+std::vector<unsigned int> ModelData::readAccessorIndices(json accessor)
 {
 	std::vector<unsigned int> indices;
 
@@ -161,10 +168,10 @@ std::vector<unsigned int> Model::readAccessorIndices(json accessor)
     unsigned int nBytesPerComponent = 0;
     switch (componentType) {
         case GL_BYTE: // 5120
-            Console::get().error("[Model::readAccessorIndices] GL_BYTE (5120) is not supported for index accessors: '" + file + "'");
+            Console::get().error("[ModelData::readAccessorIndices] GL_BYTE (5120) is not supported for index accessors: '" + file + "'");
             break;
         case GL_UNSIGNED_BYTE: // 5121
-            Console::get().error("[Model::readAccessorIndices] GL_UNSIGNED_BYTE (5121) is not supported for index accessors: '" + file + "'");
+            Console::get().error("[ModelData::readAccessorIndices] GL_UNSIGNED_BYTE (5121) is not supported for index accessors: '" + file + "'");
             break;
         case GL_SHORT: // 5122
             nBytesPerComponent = sizeof(short);
@@ -179,10 +186,10 @@ std::vector<unsigned int> Model::readAccessorIndices(json accessor)
             nBytesPerComponent = sizeof(unsigned int);
             break;
         case GL_FLOAT: // 5126
-            Console::get().error("[Model::readAccessorIndices] GL_FLOAT (5126) is not supported for index accessors: '" + file + "'");
+            Console::get().error("[ModelData::readAccessorIndices] GL_FLOAT (5126) is not supported for index accessors: '" + file + "'");
             break;
         default:
-            Console::get().error("[Model::readAccessorIndices] Invalid component type '" + std::to_string(componentType) + "' in accessor for indices: '" + file + "'");
+            Console::get().error("[ModelData::readAccessorIndices] Invalid component type '" + std::to_string(componentType) + "' in accessor for indices: '" + file + "'");
             break;
     }
 
@@ -195,79 +202,37 @@ std::vector<unsigned int> Model::readAccessorIndices(json accessor)
 	return indices;
 }
 
-std::vector<Texture> Model::loadTextures()
+void ModelData::loadTextures()
 {
-    std::vector<Texture> textures;
     const std::string fileDirectory = file.substr(0, file.find_last_of('/') + 1);
 
     for (const auto& image : jsonContents["images"])
     {
         const std::string uri = image["uri"];
 
-        // Check if texture is already loaded
-        auto it = std::find(loadedTextureFiles.begin(), loadedTextureFiles.end(), uri);
-        if (it == loadedTextureFiles.end())
-        {
-            // Determine texture type based on URI naming convention
-            TextureType type;
-            if (uri.find("baseColor") != std::string::npos)
-                type = TextureType::DIFFUSE;
-            else if (uri.find("metallicRoughness") != std::string::npos)
-                type = TextureType::SPECULAR;
-            else
-            {
-                Console::get().warn("[Model::loadTextures] Unknown texture type for URI: '" + uri + "'");
-                continue;
-            }
-
-            // Load the new texture
-            std::string texturePath = fileDirectory + uri;
-            Texture texture(texturePath.c_str(), type, static_cast<GLuint>(loadedTextureFiles.size()));
-            loadedTextures.push_back(texture);
-            loadedTextureFiles.push_back(uri);
-
-            // Use the newly loaded texture
-            textures.push_back(texture);
-        }
+        // Determine texture type based on URI naming convention
+        TextureType type;
+        if (uri.find("baseColor") != std::string::npos)
+            type = TextureType::DIFFUSE;
+        else if (uri.find("metallicRoughness") != std::string::npos)
+            type = TextureType::SPECULAR;
         else
         {
-            // Texture already loaded, reuse it
-            unsigned int textureIndex = std::distance(loadedTextureFiles.begin(), it);
-            textures.push_back(loadedTextures[textureIndex]);
+            Console::get().warn("[ModelData::loadTextures] Unknown texture type for URI: '" + uri + "'");
+            continue;
         }
+
+        // Load the new texture
+        std::string texturePath = fileDirectory + uri;
+        TextureData textureData(texturePath.c_str(), type);
+        loadedTextures.push_back(textureData); // So we can avoid reloading it later
     }
-
-    return textures;
 }
 
-std::vector<Vertex> Model::assembleVertices
-(
-	std::vector<glm::vec3> positions,
-	std::vector<glm::vec3> normals,
-	std::vector<glm::vec2> texUVs
-)
-{
-	std::vector<Vertex> vertices;
-	for (unsigned int i = 0; i < positions.size(); i++)
-	{
-		vertices.push_back
-		(
-			Vertex
-			{
-				positions[i],
-				normals[i],
-				glm::vec3(1.0f, 1.0f, 1.0f),
-				texUVs[i]
-			}
-		);
-	}
-	return vertices;
-}
-
-std::vector<glm::vec2> Model::toVec2(std::vector<float> floatVec)
+std::vector<glm::vec2> ModelData::toVec2(std::vector<float> floatVec)
 {
 	if (floatVec.size() % 2 != 0) {
-        Console::get().error("[Model::toVec2] Float vector size is not a multiple of 2: '" + file + "'");
+        Console::get().error("[ModelData::toVec2] Float vector size is not a multiple of 2: '" + file + "'");
     }
 
 	const unsigned int floatsPerVector = 2;
@@ -284,10 +249,10 @@ std::vector<glm::vec2> Model::toVec2(std::vector<float> floatVec)
 	return vectors;
 }
 
-std::vector<glm::vec3> Model::toVec3(std::vector<float> floatVec)
+std::vector<glm::vec3> ModelData::toVec3(std::vector<float> floatVec)
 {
     if (floatVec.size() % 3 != 0) {
-        Console::get().error("[Model::toVec3] Float vector size is not a multiple of 3: '" + file + "'");
+        Console::get().error("[ModelData::toVec3] Float vector size is not a multiple of 3: '" + file + "'");
     }
 
 	const unsigned int floatsPerVector = 3;
@@ -304,10 +269,10 @@ std::vector<glm::vec3> Model::toVec3(std::vector<float> floatVec)
 	return vectors;
 }
 
-std::vector<glm::vec4> Model::toVec4(std::vector<float> floatVec)
+std::vector<glm::vec4> ModelData::toVec4(std::vector<float> floatVec)
 {
 	if (floatVec.size() % 4 != 0) {
-        Console::get().error("[Model::toVec4] Float vector size is not a multiple of 4: '" + file + "'");
+        Console::get().error("[ModelData::toVec4] Float vector size is not a multiple of 4: '" + file + "'");
     }
 
 	const unsigned int floatsPerVector = 4;

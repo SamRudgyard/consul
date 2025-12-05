@@ -9,7 +9,7 @@ public:
     OpenGLMesh(MeshData& meshData);
     ~OpenGLMesh();
 
-    void draw(IShader* shader, Camera& camera) const override;
+    void draw(const IShader* shader, const Camera& camera) const override;
 
 private:
     unsigned int vao;

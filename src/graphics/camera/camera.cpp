@@ -126,7 +126,8 @@ void Camera::handleInputs(float deltaTime) {
     }
 }
 
-void Camera::sendToShader(IShader* shader)
+void Camera::sendToShader(const IShader* shader) const
 {
+    shader->setUniformVec3("cameraPosition", position);
     shader->setUniformMat4("cameraMatrix", projectionMatrix * viewMatrix);
 }
