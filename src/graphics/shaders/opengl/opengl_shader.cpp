@@ -13,7 +13,7 @@ OpenGLShader::~OpenGLShader()
     glCheckError();
 }
 
-void OpenGLShader::use()
+void OpenGLShader::use() const
 {
     glUseProgram(id);
 }
@@ -86,47 +86,47 @@ void OpenGLShader::compile(const std::string& vertexSource, const std::string& f
     console.logOnDebug("[Shader::compile] Shader program compiled and linked successfully (ID: " + std::to_string(id) + ")");
 }
 
-void OpenGLShader::setUniformInt(const char* name, int value)
+void OpenGLShader::setUniformInt(const char* name, int value) const
 {
     glUniform1i(glGetUniformLocation(id, name), value);
 }
 
-void OpenGLShader::setUniformFloat(const char* name, float value)
+void OpenGLShader::setUniformFloat(const char* name, float value) const
 {
     glUniform1f(glGetUniformLocation(id, name), value);
 }
 
-void OpenGLShader::setUniformVec2(const char* name, const float x, const float y)
+void OpenGLShader::setUniformVec2(const char* name, const float x, const float y) const
 {
     glUniform2f(glGetUniformLocation(id, name), x, y);
 }
 
-void OpenGLShader::setUniformVec2(const char* name, const glm::vec2& value)
+void OpenGLShader::setUniformVec2(const char* name, const glm::vec2& value) const
 {
     glUniform2f(glGetUniformLocation(id, name), value.x, value.y);
 }
 
-void OpenGLShader::setUniformVec3(const char* name, const float x, const float y, const float z)
+void OpenGLShader::setUniformVec3(const char* name, const float x, const float y, const float z) const
 {
     glUniform3f(glGetUniformLocation(id, name), x, y, z);
 }
 
-void OpenGLShader::setUniformVec3(const char* name, const glm::vec3& value)
+void OpenGLShader::setUniformVec3(const char* name, const glm::vec3& value) const
 {
     glUniform3f(glGetUniformLocation(id, name), value.x, value.y, value.z);
 }
 
-void OpenGLShader::setUniformVec4(const char* name, const float x, const float y, const float z, const float w)
+void OpenGLShader::setUniformVec4(const char* name, const float x, const float y, const float z, const float w) const
 {
     glUniform4f(glGetUniformLocation(id, name), x, y, z, w);
 }
 
-void OpenGLShader::setUniformVec4(const char* name, const glm::vec4& value)
+void OpenGLShader::setUniformVec4(const char* name, const glm::vec4& value) const
 {
     glUniform4f(glGetUniformLocation(id, name), value.x, value.y, value.z, value.w);
 }
 
-void OpenGLShader::setUniformMat4(const char* name, const glm::mat4& matrix)
+void OpenGLShader::setUniformMat4(const char* name, const glm::mat4& matrix) const
 {
     glUniformMatrix4fv(glGetUniformLocation(id, name), 1, GL_FALSE, glm::value_ptr(matrix));
 }

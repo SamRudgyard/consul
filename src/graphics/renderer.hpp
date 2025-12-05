@@ -3,6 +3,8 @@
 #include "core/console/console.hpp"
 #include "graphics.hpp"
 #include "graphics_opengl.hpp"
+#include "graphics/models/mesh/mesh_data.hpp"
+#include "graphics/models/mesh/mesh.hpp"
 #include "graphics/shaders/shader.hpp"
 #include "platforms/platform.hpp"
 #include "utils.hpp"
@@ -49,6 +51,12 @@ public:
         const std::string fragmentSource = readFile(fragmentFilePath.c_str());
         shader->compile(vertexSource, fragmentSource);
         return shader;
+    }
+
+    IMesh* newMesh(MeshData& meshData)
+    {
+        IMesh* mesh = gfxBackend->newMesh(meshData);
+        return mesh;
     }
 
     
