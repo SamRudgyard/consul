@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../mesh.hpp"
+#include "../renderable_mesh.hpp"
 #include "../mesh_data.hpp"
 
-class OpenGLMesh : public IMesh
+class OpenGLMesh : public RenderableMesh
 {
 public:
     OpenGLMesh(MeshData& meshData);

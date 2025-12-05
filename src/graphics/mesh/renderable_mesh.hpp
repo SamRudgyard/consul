@@ -2,11 +2,11 @@
 
 #include "mesh_data.hpp"
 
-class IMesh
+class RenderableMesh
 {
 public:
-    IMesh(MeshData& meshData) : meshData(meshData) {}
-    virtual ~IMesh() = default;
+    RenderableMesh(MeshData& meshData) : meshData(meshData) {}
+    virtual ~RenderableMesh() = default;
 
     virtual void draw(const IShader* shader, const Camera& camera) const = 0;
 

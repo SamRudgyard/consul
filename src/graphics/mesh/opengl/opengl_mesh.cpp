@@ -7,7 +7,7 @@
 #include "utils.hpp"
 
 OpenGLMesh::OpenGLMesh(MeshData& meshData)
-    : IMesh(meshData)
+    : RenderableMesh(meshData)
 {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);

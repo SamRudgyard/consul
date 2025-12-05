@@ -3,8 +3,8 @@
 #include "core/console/console.hpp"
 #include "graphics.hpp"
 #include "graphics_opengl.hpp"
-#include "graphics/models/mesh/mesh_data.hpp"
-#include "graphics/models/mesh/mesh.hpp"
+#include "graphics/mesh/mesh_data.hpp"
+#include "graphics/mesh/renderable_mesh.hpp"
 #include "graphics/shaders/shader.hpp"
 #include "platforms/platform.hpp"
 #include "utils.hpp"
@@ -53,9 +53,9 @@ public:
         return shader;
     }
 
-    IMesh* newMesh(MeshData& meshData)
+    RenderableMesh* newMesh(MeshData& meshData)
     {
-        IMesh* mesh = gfxBackend->newMesh(meshData);
+        RenderableMesh* mesh = gfxBackend->newMesh(meshData);
         return mesh;
     }
 

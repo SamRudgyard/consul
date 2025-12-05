@@ -6,7 +6,7 @@
 #include "graphics/shaders/shader.hpp"
 #include "graphics/textures/texture_data.hpp"
 
-class ITexture {
+class RenderableTexture {
 public:
     /**
      * Bind this texture.
@@ -36,7 +36,7 @@ protected:
      * @param image       Path to image file.
      * @param textureType Texture type.
      */
-    ITexture(const TextureData& textureData)
+    RenderableTexture(const TextureData& textureData)
         : textureData(textureData) {};
 
 private:

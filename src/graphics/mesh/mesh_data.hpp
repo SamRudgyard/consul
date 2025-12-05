@@ -2,13 +2,13 @@
 
 #include "glm/glm.hpp"
 #include "graphics/camera/camera.hpp"
-#include "graphics/textures/texture.hpp"
+#include "graphics/textures/renderable_texture.hpp"
 
 #include <string>
 #include <vector>
 #include <iostream>
 
-class ITexture;
+class RenderableTexture;
 
 enum class AttributeType
 {

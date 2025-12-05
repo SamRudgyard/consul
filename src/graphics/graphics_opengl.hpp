@@ -7,7 +7,7 @@
 #include "graphics.hpp"
 #include "glad/glad.h"
 #include "shaders/opengl/opengl_shader.hpp"
-#include "models/mesh/opengl/opengl_mesh.hpp"
+#include "graphics/mesh/opengl/opengl_mesh.hpp"
 #include "utils.hpp"
 
 class OpenGLGraphics : public IGraphics
@@ -43,7 +43,7 @@ public:
         return new OpenGLShader();
     }
 
-    IMesh* newMesh(MeshData& meshData) override
+    RenderableMesh* newMesh(MeshData& meshData) override
     {
         return new OpenGLMesh(meshData);
     }

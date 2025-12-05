@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "graphics/models/mesh/mesh_data.hpp"
+#include "graphics/mesh/mesh_data.hpp"
 #include "graphics/textures/texture_data.hpp"
 #include "glad/glad.h"
 #include "glm/glm.hpp"
@@ -13,7 +13,7 @@ using json = nlohmann::json;
 
 class IShader;
 class Camera;
-class ITexture;
+class RenderableTexture;
 
 class ModelData
 {

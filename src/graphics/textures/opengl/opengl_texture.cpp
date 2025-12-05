@@ -10,7 +10,7 @@
 #include <stb_image.h>
 
 OpenGLTexture::OpenGLTexture(const TextureData& textureData)
-    : ITexture(textureData)
+    : RenderableTexture(textureData)
 {
     std::string texturePath = textureData.getPath();
 

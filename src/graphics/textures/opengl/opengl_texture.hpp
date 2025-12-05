@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../texture.hpp"
+#include "../renderable_texture.hpp"
 #include "graphics/shaders/shader.hpp"
 
-class OpenGLTexture : public ITexture
+class OpenGLTexture : public RenderableTexture
 {
 public:
     OpenGLTexture(const TextureData& textureData);
