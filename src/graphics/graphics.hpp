@@ -3,7 +3,7 @@
 #include "glm/vec4.hpp"
 #include "shaders/shader.hpp"
 #include "graphics/mesh/renderable_mesh.hpp"
-#include "graphics/mesh/mesh_data.hpp"
+#include "graphics/mesh/mesh.hpp"
 
 enum class GraphicsAPI
 {
@@ -18,5 +18,5 @@ public:
     virtual void clearColour(const glm::vec4& colour) = 0;
 
     virtual IShader* newShader() = 0;
-    virtual RenderableMesh* newMesh(MeshData& meshData) = 0;
+    virtual RenderableMesh* newMesh(Mesh& mesh) = 0;
 };

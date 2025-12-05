@@ -1,19 +1,19 @@
 #pragma once
 
-#include "mesh_data.hpp"
+#include "mesh.hpp"
 
 class RenderableMesh
 {
 public:
-    RenderableMesh(MeshData& meshData) : meshData(meshData) {}
+    RenderableMesh(Mesh& mesh) : mesh(mesh) {}
     virtual ~RenderableMesh() = default;
 
     virtual void draw(const IShader* shader, const Camera& camera) const = 0;
 
-    const MeshData& getMeshData() const { return meshData; }
+    const Mesh& getMesh() const { return mesh; }
 
-    void setModelMatrix(const glm::mat4& matrix) { meshData.setModelMatrix(matrix); }
-    const glm::mat4& getModelMatrix() const { return meshData.getModelMatrix(); }
+    void setModelMatrix(const glm::mat4& matrix) { mesh.setModelMatrix(matrix); }
+    const glm::mat4& getModelMatrix() const { return mesh.getModelMatrix(); }
 private:
-    MeshData meshData;
+    Mesh& mesh;
 };

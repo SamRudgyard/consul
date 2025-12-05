@@ -6,58 +6,58 @@
 #include "glad/glad.h"
 #include "utils.hpp"
 
-OpenGLMesh::OpenGLMesh(MeshData& meshData)
-    : RenderableMesh(meshData)
+OpenGLMesh::OpenGLMesh(Mesh& mesh)
+    : RenderableMesh(mesh)
 {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    if (meshData.getPositions().empty()) {
-        Console::get().error("[OpenGLMesh::OpenGLMesh] Provided MeshData has no position data");
+    if (mesh.getPositions().empty()) {
+        Console::get().error("[OpenGLMesh::OpenGLMesh] Provided Mesh has no position data");
         return;
     }
 
-    unsigned int positionVBO = enableVertexBuffer(meshData.getPositions(), AttributeType::POSITION, false);
-    meshData.setVertexBuffer(positionVBO, AttributeType::POSITION);
+    unsigned int positionVBO = enableVertexBuffer(mesh.getPositions(), AttributeType::POSITION, false);
+    mesh.setVertexBuffer(positionVBO, AttributeType::POSITION);
 
-    if (meshData.getNormals().empty()) {
+    if (mesh.getNormals().empty()) {
         // Mesh doesn't have normals => use default normals
         glVertexAttrib3fv((unsigned int)(AttributeType::NORMAL), glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f)));
     } else {
-        unsigned int normalVBO = enableVertexBuffer(meshData.getNormals(), AttributeType::NORMAL, false);
-        meshData.setVertexBuffer(normalVBO, AttributeType::NORMAL);
+        unsigned int normalVBO = enableVertexBuffer(mesh.getNormals(), AttributeType::NORMAL, false);
+        mesh.setVertexBuffer(normalVBO, AttributeType::NORMAL);
     }
     
-    if (meshData.getColours().empty()) {
+    if (mesh.getColours().empty()) {
         // Mesh doesn't have colours => use default white colour
         glVertexAttrib4fv((unsigned int)(AttributeType::COLOUR), glm::value_ptr(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)));
     } else {
-        unsigned int colourVBO = enableVertexBuffer(meshData.getColours(), AttributeType::COLOUR, false);
-        meshData.setVertexBuffer(colourVBO, AttributeType::COLOUR);
+        unsigned int colourVBO = enableVertexBuffer(mesh.getColours(), AttributeType::COLOUR, false);
+        mesh.setVertexBuffer(colourVBO, AttributeType::COLOUR);
     }
 
-    if (meshData.getTextureCoords().empty()) {
+    if (mesh.getTextureCoords().empty()) {
         // Mesh doesn't have texture coordinates => use default (0, 0)
         glVertexAttrib2fv((unsigned int)(AttributeType::TEXCOORD), glm::value_ptr(glm::vec2(0.0f, 0.0f)));
     } else {
-        unsigned int texCoordVBO = enableVertexBuffer(meshData.getTextureCoords(), AttributeType::TEXCOORD, false);
-        meshData.setVertexBuffer(texCoordVBO, AttributeType::TEXCOORD);
+        unsigned int texCoordVBO = enableVertexBuffer(mesh.getTextureCoords(), AttributeType::TEXCOORD, false);
+        mesh.setVertexBuffer(texCoordVBO, AttributeType::TEXCOORD);
     }
 
-    if (meshData.getTangents().empty()) {
+    if (mesh.getTangents().empty()) {
         // Mesh doesn't have tangents => use default tangent
         glVertexAttrib4fv((unsigned int)(AttributeType::TANGENT), glm::value_ptr(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)));
     } else {
-        unsigned int tangentVBO = enableVertexBuffer(meshData.getTangents(), AttributeType::TANGENT, false);
-        meshData.setVertexBuffer(tangentVBO, AttributeType::TANGENT);
+        unsigned int tangentVBO = enableVertexBuffer(mesh.getTangents(), AttributeType::TANGENT, false);
+        mesh.setVertexBuffer(tangentVBO, AttributeType::TANGENT);
     }
 
     // Generate elemnt buffer object (EBO) for indices
-    const std::vector<unsigned int>& indices = meshData.getIndices();
+    const std::vector<unsigned int>& indices = mesh.getIndices();
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
-    meshData.setVertexBuffer(ebo, AttributeType::INDICES);
+    mesh.setVertexBuffer(ebo, AttributeType::INDICES);
 
     // Unbind all to prevent accidental modification
     glBindVertexArray(0);                       // Unbind VAO first
@@ -72,27 +72,27 @@ OpenGLMesh::~OpenGLMesh()
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &ebo);
 
-    const MeshData& meshData = getMeshData();
+    const Mesh& mesh = getMesh();
     
-    unsigned int positionVBO = meshData.getVertexBuffer(AttributeType::POSITION);
+    unsigned int positionVBO = mesh.getVertexBuffer(AttributeType::POSITION);
     glDeleteBuffers(1, &positionVBO);
     
-    unsigned int normalVBO = meshData.getVertexBuffer(AttributeType::NORMAL);
+    unsigned int normalVBO = mesh.getVertexBuffer(AttributeType::NORMAL);
     if (normalVBO != 0) {
         glDeleteBuffers(1, &normalVBO);
     }
 
-    unsigned int colourVBO = meshData.getVertexBuffer(AttributeType::COLOUR);
+    unsigned int colourVBO = mesh.getVertexBuffer(AttributeType::COLOUR);
     if (colourVBO != 0) {
         glDeleteBuffers(1, &colourVBO);
     }
 
-    unsigned int texCoordVBO = meshData.getVertexBuffer(AttributeType::TEXCOORD);
+    unsigned int texCoordVBO = mesh.getVertexBuffer(AttributeType::TEXCOORD);
     if (texCoordVBO != 0) {
         glDeleteBuffers(1, &texCoordVBO);
     }
 
-    unsigned int tangentVBO = meshData.getVertexBuffer(AttributeType::TANGENT);
+    unsigned int tangentVBO = mesh.getVertexBuffer(AttributeType::TANGENT);
     if (tangentVBO != 0) {
         glDeleteBuffers(1, &tangentVBO);
     }
@@ -143,12 +143,12 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
     glBindVertexArray(vao);
     glCheckError();
 
-    const MeshData& meshData = getMeshData();
+    const Mesh& mesh = getMesh();
     unsigned int numOfDiffuseTextures = 0;
     unsigned int numOfSpecularTextures = 0;
-    for (unsigned int it = 0; it < meshData.getTextures().size(); ++it) {
+    for (unsigned int it = 0; it < mesh.getTextures().size(); ++it) {
         std::string num = std::to_string(it);
-        const TextureData& texture = meshData.getTextures()[it]; // TODO: A mesh shouldn't really own textures, change this later
+        const Texture& texture = mesh.getTextures()[it]; // TODO: A mesh shouldn't really own textures, change this later
         TextureType type = texture.getType();
         if (type == TextureType::DIFFUSE) {
             num = std::to_string(numOfDiffuseTextures++);
@@ -169,6 +169,5 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
 
     camera.sendToShader(shader);
 
-    const MeshData& data = getMeshData();
-    glDrawElements(GL_TRIANGLES, data.getNumIndices(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, mesh.getNumIndices(), GL_UNSIGNED_INT, 0);
 }

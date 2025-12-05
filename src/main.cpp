@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 
     IShader* shader = consul.getRenderer().newShader("shaders/basic.vs", "shaders/basic.fs");
 
-    // ModelData model("assets/shiba/scene.gltf");
+    // Model model("assets/shiba/scene.gltf");
 
     while (consul.run()) {
         // model.draw(shader, camera, glm::vec3(0.0f), glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.1f));

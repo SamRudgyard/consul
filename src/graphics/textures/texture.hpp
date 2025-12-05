@@ -11,10 +11,10 @@ enum TextureType {
     SPECULAR
 };
 
-class TextureData
+class Texture
 {
 public:
-    TextureData(const char* texturePath, TextureType textureType) 
+    Texture(const char* texturePath, TextureType textureType) 
         : path(texturePath), type(textureType) {};
 
     const char* getPath() const { return path; }

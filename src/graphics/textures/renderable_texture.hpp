@@ -4,7 +4,7 @@
 #include <string>
 
 #include "graphics/shaders/shader.hpp"
-#include "graphics/textures/texture_data.hpp"
+#include "graphics/textures/texture.hpp"
 
 class RenderableTexture {
 public:
@@ -36,9 +36,9 @@ protected:
      * @param image       Path to image file.
      * @param textureType Texture type.
      */
-    RenderableTexture(const TextureData& textureData)
+    RenderableTexture(const Texture& textureData)
         : textureData(textureData) {};
 
 private:
-    TextureData textureData;
+    Texture textureData;
 };

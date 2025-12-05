@@ -1,8 +1,8 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "graphics/mesh/mesh_data.hpp"
-#include "graphics/textures/texture_data.hpp"
+#include "graphics/mesh/mesh.hpp"
+#include "graphics/textures/texture.hpp"
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 
@@ -15,14 +15,14 @@ class IShader;
 class Camera;
 class RenderableTexture;
 
-class ModelData
+class Model
 {
 public:
 	/**
 	 * Load the given glTF model.
 	 * @param file Path to the .gltf model file.
 	 */
-	ModelData(const char* file);
+	Model(const char* file);
 
 	/**
 	 * Draws the model.
@@ -47,8 +47,8 @@ private:
 	std::vector<unsigned char> binaryData;
 	json jsonContents;
 
-	std::vector<MeshData> meshes;
-	std::vector<TextureData> loadedTextures;
+	std::vector<Mesh> meshes;
+	std::vector<Texture> loadedTextures;
 	std::vector<glm::mat4> transformationMatrices;
 
 	/**
@@ -56,7 +56,7 @@ private:
 	 * @param iMesh Index of the mesh, as found in the glTF file.
 	 * @returns Reference to the loaded mesh.
 	 */
-	MeshData& loadMesh(unsigned int iMesh);
+	Mesh& loadMesh(unsigned int iMesh);
 
 	/**
 	 * Traverse a node within the glTF file recursively to collect meshes and construct transforms.

@@ -3,7 +3,7 @@
 #include <string>
 #include "glm/glm.hpp"
 
-class IShader
+class IShader // TODO: Rename to Shader, or perhaps RenderableShader if we have a Shader class for the source code?
 {
 public:
     IShader() = default;

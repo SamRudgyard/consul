@@ -43,8 +43,8 @@ public:
         return new OpenGLShader();
     }
 
-    RenderableMesh* newMesh(MeshData& meshData) override
+    RenderableMesh* newMesh(Mesh& mesh) override
     {
-        return new OpenGLMesh(meshData);
+        return new OpenGLMesh(mesh);
     }
 };

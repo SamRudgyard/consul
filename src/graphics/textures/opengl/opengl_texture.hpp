@@ -6,7 +6,7 @@
 class OpenGLTexture : public RenderableTexture
 {
 public:
-    OpenGLTexture(const TextureData& textureData);
+    OpenGLTexture(const Texture& textureData);
 
     void bind() const override;
     void unbind() const override;

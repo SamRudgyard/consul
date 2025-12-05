@@ -1,12 +1,12 @@
 #pragma once
 
 #include "../renderable_mesh.hpp"
-#include "../mesh_data.hpp"
+#include "../mesh.hpp"
 
 class OpenGLMesh : public RenderableMesh
 {
 public:
-    OpenGLMesh(MeshData& meshData);
+    OpenGLMesh(Mesh& mesh);
     ~OpenGLMesh();
 
     void draw(const IShader* shader, const Camera& camera) const override;

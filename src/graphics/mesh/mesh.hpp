@@ -20,16 +20,16 @@ enum class AttributeType
     INDICES     = 5,
 };
 
-class MeshData {
+class Mesh {
 public:
-    MeshData(
+    Mesh(
         std::vector<glm::vec3> positions,
         std::vector<glm::vec3> normals,
         std::vector<glm::vec4> colours,
         std::vector<glm::vec2> textureCoords,
         std::vector<glm::vec4> tangents,
         std::vector<unsigned int> indices,
-        std::vector<TextureData> textures
+        std::vector<Texture> textures
     ) : positions(positions),
         normals(normals),
         colours(colours),
@@ -54,7 +54,7 @@ public:
     const std::vector<glm::vec2>& getTextureCoords() const { return textureCoords; }
     const std::vector<glm::vec4>& getTangents() const { return tangents; }
     const std::vector<unsigned int>& getIndices() const { return indices; }
-    const std::vector<TextureData>& getTextures() const { return textures; }
+    const std::vector<Texture>& getTextures() const { return textures; }
 
     void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }
     const glm::mat4& getModelMatrix() const { return modelMatrix; }
@@ -69,6 +69,6 @@ private:
     std::vector<glm::vec2> textureCoords;
     std::vector<glm::vec4> tangents; // TODO: Why vec4 for tangents?
     std::vector<unsigned int> indices;
-    std::vector<TextureData> textures;
+    std::vector<Texture> textures;
     std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(6, 0);
 };
