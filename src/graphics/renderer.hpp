@@ -76,7 +76,7 @@ public:
         }
     }
 
-    void Render(const IShader* shader, const Camera& camera)
+    void render(const IShader* shader, const Camera& camera)
     {
         for (RenderableMesh* mesh : loadedMeshes)
         {

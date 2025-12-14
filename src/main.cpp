@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
     while (consul.run()) {
         camera.handleInputs(1/60.0f);
-        renderer.Render(shader, camera);
+        renderer.render(shader, camera);
     }
 
     return 0;
