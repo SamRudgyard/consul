@@ -15,5 +15,5 @@ public:
     void setModelMatrix(const glm::mat4& matrix) { mesh.setModelMatrix(matrix); }
     const glm::mat4& getModelMatrix() const { return mesh.getModelMatrix(); }
 private:
-    Mesh& mesh;
+    Mesh mesh;
 };
