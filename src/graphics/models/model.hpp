@@ -24,22 +24,17 @@ public:
 	 */
 	Model(const char* file);
 
-	/**
-	 * Draws the model.
-	 * @param shader      Shader program to use for drawing.
-	 * @param camera      Camera providing view/projection matrices.
-	 * @param translation Additional translation to apply.
-	 * @param rotation    Additional rotation to apply.
-	 * @param scale       Additional scale to apply.
+	/*
+	 * Gets the meshes loaded from this model.
+	 * @returns Vector of meshes. 
 	 */
-	void draw
-	(
-		const IShader* shader,
-		const Camera& camera,
-		const glm::vec3 translation = glm::vec3(0.0f),
-		const glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
-		const glm::vec3 scale = glm::vec3(1.0f)
-	);
+	std::vector<Mesh> getMeshes() const { return meshes; }
+
+	/**
+	 * Gets the transformation matrices for each mesh in the model.
+	 * @returns Vector of transformation matrices.
+	 */
+	std::vector<glm::mat4> getTransformationMatrices() const { return transformationMatrices; }
 
 private:
 	// Variables for easy access
@@ -54,9 +49,8 @@ private:
 	/**
 	 * Load a single mesh.
 	 * @param iMesh Index of the mesh, as found in the glTF file.
-	 * @returns Reference to the loaded mesh.
 	 */
-	Mesh& loadMesh(unsigned int iMesh);
+	void loadMesh(unsigned int iMesh);
 
 	/**
 	 * Traverse a node within the glTF file recursively to collect meshes and construct transforms.

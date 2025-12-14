@@ -5,6 +5,8 @@
 #include "graphics_opengl.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/mesh/renderable_mesh.hpp"
+#include "graphics/models/model.hpp"
+#include "graphics/camera/camera.hpp"
 #include "graphics/shaders/shader.hpp"
 #include "platforms/platform.hpp"
 #include "utils.hpp"
@@ -29,6 +31,11 @@ public:
 
     ~Renderer() {
         delete gfxBackend;
+
+        for (RenderableMesh* mesh : loadedMeshes) {
+            delete mesh;
+        }
+        loadedMeshes.clear();
     }
 
     void clearBackground(const glm::vec4& colour)
@@ -59,8 +66,27 @@ public:
         return renderableMesh;
     }
 
+    void loadModel(Model& model)
+    {
+        std::vector<Mesh> meshes = model.getMeshes();
+        for (Mesh& mesh : meshes)
+        {
+            RenderableMesh* renderableMesh = newMesh(mesh);
+            loadedMeshes.push_back(renderableMesh);
+        }
+    }
+
+    void Render(const IShader* shader, const Camera& camera)
+    {
+        for (RenderableMesh* mesh : loadedMeshes)
+        {
+            mesh->draw(shader, camera);
+        }
+    }
+
     
 private:
     IGraphics* gfxBackend = nullptr;
     GraphicsAPI gfxApi;
+    std::vector<RenderableMesh*> loadedMeshes;
 };

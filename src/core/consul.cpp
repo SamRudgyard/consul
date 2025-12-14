@@ -75,11 +75,11 @@ bool Consul::run()
 
 void Consul::beginTick()
 {
-    renderer->clearBackground(glm::vec4(0.f, 0.f, 0.f, 1.f));
+    platform->pollEvents();
 
     platform->swapBuffers();
 
-    platform->pollEvents();
+    renderer->clearBackground(glm::vec4(0.f, 0.f, 0.f, 1.f));
 
     context->inputSystem.beginTick();
 

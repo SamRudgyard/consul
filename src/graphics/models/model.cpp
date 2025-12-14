@@ -2,6 +2,7 @@
 #include "graphics/shaders/shader.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/mesh/mesh.hpp"
+#include "graphics/mesh/renderable_mesh.hpp"
 #include "graphics/textures/renderable_texture.hpp"
 #include "core/console/console.hpp"
 #include "utils.hpp"
@@ -32,22 +33,7 @@ Model::Model(const char* modelPath)
 	traverseNode(0);
 }
 
-void Model::draw(const IShader* shader, const Camera& camera, const glm::vec3 translation, const glm::quat rotation, const glm::vec3 scale)
-{
-    glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
-    glm::mat4 rotationMatrix = glm::mat4_cast(rotation);
-    glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), translation);
-
-    glm::mat4 srtMatrix = scaleMatrix*rotationMatrix*translationMatrix;
-
-	for (unsigned int im = 0; im < meshes.size(); im++)
-	{
-        meshes[im].setModelMatrix(srtMatrix * transformationMatrices[im]);
-		// meshes[im].draw(shader, camera);
-	}
-}
-
-Mesh& Model::loadMesh(unsigned int iMesh)
+void Model::loadMesh(unsigned int iMesh)
 {
 	// Get all accessor indices
     json primitives = jsonContents["meshes"][iMesh]["primitives"];
@@ -70,8 +56,8 @@ Mesh& Model::loadMesh(unsigned int iMesh)
     std::vector<glm::vec4> tangents; // Empty tangents vector, TODO: implement reading tangents if needed
 	std::vector<unsigned int> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
 
-    Mesh& mesh = meshes.emplace_back(Mesh(positions, normals, colours, textureUVs, tangents, indices, loadedTextures)); // TODO: Remove when we get rid of mesh owning its textures
-    return mesh;
+    Mesh mesh(positions, normals, colours, textureUVs, tangents, indices, loadedTextures);
+    meshes.push_back(mesh); // TODO: Remove when we get rid of mesh owning its textures
 }
 
 void Model::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
@@ -103,7 +89,7 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
 	{
         // Only store the transformation matrix if there is a mesh to go with it
         transformationMatrices.push_back(transformationMatrix);
-		Mesh& mesh = loadMesh(node["mesh"]);
+		loadMesh(node["mesh"]);
 	}
 
 	if (node.contains("children"))
@@ -224,8 +210,7 @@ void Model::loadTextures()
 
         // Load the new texture
         std::string texturePath = fileDirectory + uri;
-        Texture textureData(texturePath.c_str(), type);
-        loadedTextures.push_back(textureData); // So we can avoid reloading it later
+        loadedTextures.emplace_back(Texture(texturePath.c_str(), type)); // So we can avoid reloading it later
     }
 }
 

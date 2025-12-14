@@ -3,6 +3,7 @@
 #include "core/console/console.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/shaders/shader.hpp"
+#include "graphics/textures/opengl/opengl_texture.hpp"
 #include "glad/glad.h"
 #include "utils.hpp"
 
@@ -65,6 +66,27 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
 
     glCheckError();
+
+    std::vector<Texture> meshTextures = mesh.getTextures();
+    unsigned int numOfDiffuseTextures = 0;
+    unsigned int numOfSpecularTextures = 0;
+    for (unsigned int it = 0; it < meshTextures.size(); ++it) {
+        const Texture& texture = meshTextures[it];
+        std::string nTextureType;
+        switch (texture.getType()) {
+            case TextureType::DIFFUSE:
+                nTextureType = std::to_string(numOfDiffuseTextures++);
+                break;
+            case TextureType::SPECULAR:
+                nTextureType = std::to_string(numOfSpecularTextures++);
+                break;
+            default:
+                Console::get().error("[OpenGLMesh::OpenGLMesh] Unsupported texture type");
+                continue;
+        }
+        OpenGLTexture openglTexture(texture);
+        textures.insert({texture.getTextureTypeAsString() + nTextureType, openglTexture});
+    }
 }
 
 OpenGLMesh::~OpenGLMesh()
@@ -143,25 +165,13 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
     glBindVertexArray(vao);
     glCheckError();
 
-    const Mesh& mesh = getMesh();
-    unsigned int numOfDiffuseTextures = 0;
-    unsigned int numOfSpecularTextures = 0;
-    for (unsigned int it = 0; it < mesh.getTextures().size(); ++it) {
-        std::string num = std::to_string(it);
-        const Texture& texture = mesh.getTextures()[it]; // TODO: A mesh shouldn't really own textures, change this later
-        TextureType type = texture.getType();
-        if (type == TextureType::DIFFUSE) {
-            num = std::to_string(numOfDiffuseTextures++);
-        } else if (type == TextureType::SPECULAR) {
-            num = std::to_string(numOfSpecularTextures++);
-        }
-        else {
-            Console::get().error("[OpenGLMesh::draw] Unknown texture type '" + std::to_string(type) + "'");
-        }
-
-        // texture->bind();
-        // texture->setTextureUnit(shader, (texture->getTextureTypeAsString() + num).c_str());
+    for (const auto& [name, texture] : textures) {
+        texture.bind();
+        texture.setTextureUnit(shader, name.c_str());
+        glCheckError();
     }
+
+    shader->use();
 
     shader->setUniformVec3("lightPosition", 0.0f, 0.0f, 20.0f);
     shader->setUniformVec3("lightColour", 1.0f, 1.0f, 1.0f);
@@ -169,5 +179,5 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
 
     camera.sendToShader(shader);
 
-    glDrawElements(GL_TRIANGLES, mesh.getNumIndices(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, this->getMesh().getNumIndices(), GL_UNSIGNED_INT, 0);
 }

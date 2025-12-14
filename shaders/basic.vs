@@ -11,7 +11,7 @@ out vec3 fragColour;
 out vec2 fragTexCoords;
 
 uniform mat4 model;
-uniform mat4 camMatrix;
+uniform mat4 cameraMatrix;
 
 void main()
 {
@@ -20,5 +20,5 @@ void main()
     fragColour = inputColour;
     fragTexCoords = mat2(1.0, 0.0, 0.0, -1.0)*inputTexCoords;
 
-    gl_Position = camMatrix * vec4(fragPosition, 1.0);
+    gl_Position = cameraMatrix * vec4(fragPosition, 1.0);
 }
