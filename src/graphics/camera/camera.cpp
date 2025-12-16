@@ -124,6 +124,9 @@ void Camera::handleInputs(float deltaTime) {
     } else {
         input.setMouseVisibility(true);
     }
+
+    updateViewMatrix();
+    updateProjectionMatrix();
 }
 
 void Camera::sendToShader(const IShader* shader) const
