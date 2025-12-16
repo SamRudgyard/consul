@@ -25,6 +25,14 @@ public:
         }
 
         glCheckError();
+
+        glEnable(GL_DEPTH_TEST);                                // Enable depth testing
+        glDepthFunc(GL_LESS);                                   // Type of depth testing to apply
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      // Colour blending, determines how pixel colours are combined
+        glEnable(GL_BLEND);                                     // Enable colour blending (required for transparencies)
+        glCullFace(GL_BACK);                                    // Cull back faces
+        glFrontFace(GL_CCW);                                    // Front faces are counter clockwise
+        glEnable(GL_CULL_FACE);                                 // Enable backface culling
     }
 
     void clearColour(const glm::vec4& colour) override
