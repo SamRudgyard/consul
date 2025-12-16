@@ -1,12 +1,12 @@
 #pragma once
 
-#include "core/window_config.hpp"
+#include "core/window.hpp"
 #include "input/input_system.hpp"
 
 class EngineContext
 {
 public:
-    WindowConfig windowConfig;
+    Window window;
     InputSystem inputSystem;
 
     static EngineContext* get()

@@ -33,9 +33,9 @@ void Camera::updateProjectionMatrix()
     glm::mat4 projection = glm::mat4(1.0f);
 
     // Use FoV angle from larger dimension, see https://stackoverflow.com/questions/26997631/limiting-fov-both-horizontally-and-vertically
-    WindowConfig& config = EngineContext::get()->windowConfig;
+    Window& window = EngineContext::get()->window;
     float tanFov = tan(0.5f*FOVdeg*DEG_TO_RAD);
-    float aspRat = (float)config.windowSize.x / (float)config.windowSize.y;
+    float aspRat = (float)window.windowSize.x / (float)window.windowSize.y;
 
     projection[0][0] = 1.0f / (aspRat * tanFov);
     projection[0][1] = 0.0f;
@@ -99,9 +99,9 @@ void Camera::handleInputs(float deltaTime) {
     if (input.isMouseButtonDown(MouseButton::BUTTON_RIGHT)) {
         input.setMouseVisibility(false);
 
-        WindowConfig& config = EngineContext::get()->windowConfig;
-        float width = (float)config.windowSize.x;
-        float height = (float)config.windowSize.y;
+        Window& window = EngineContext::get()->window;
+        float width = (float)window.windowSize.x;
+        float height = (float)window.windowSize.y;
 
         if (input.isMouseButtonPressed(MouseButton::BUTTON_RIGHT)) {
             

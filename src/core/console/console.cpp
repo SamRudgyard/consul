@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "core/engine_context.hpp"
 #include "core/window.hpp"
 #include "utils.hpp"
 
@@ -57,10 +58,12 @@ void Console::info(const std::string& message)
 
 void Console::draw(const char* title, bool* open)
 {
-    unsigned int consoleWidth = (int)(0.2f * Window::width);
-    unsigned int consoleHeight = (int)(0.3f * Window::height);
+    EngineContext* context = EngineContext::get();
+    Window& window = context->window;
+    unsigned int consoleWidth = (int)(0.2f * window.windowSize.x);
+    unsigned int consoleHeight = (int)(0.3f * window.windowSize.y);
     ImGui::SetNextWindowSize({(float)consoleWidth, (float)consoleHeight}, ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos({(float)(Window::width - consoleWidth), (float)(Window::height - consoleHeight)}, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos({(float)(window.windowSize.x - consoleWidth), (float)(window.windowSize.y - consoleHeight)}, ImGuiCond_FirstUseEver);
     if (!ImGui::Begin(title, open))
     {
         ImGui::End();

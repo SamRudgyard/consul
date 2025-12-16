@@ -19,9 +19,9 @@ public:
 
     /**
      * Initialise a Consul application with the given window configuration.
-     * @param config Window configuration settings.
+     * @param window Window configuration settings.
      */
-    Consul(WindowConfig& config) { context->windowConfig = config; initialiseEngine(); };
+    Consul(Window& window) { context->window = window; initialiseEngine(); };
 
     ~Consul();
 

@@ -1,15 +1,15 @@
 #include "core/consul.hpp"
-#include "core/window_config.hpp"
+#include "core/window.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/camera/camera.hpp"
 
 int main(int argc, char **argv) {
 
-    WindowConfig windowConfig;
-    windowConfig.title = "Test";
-    windowConfig.isMaximised = true;
+    Window window;
+    window.title = "Test";
+    window.isMaximised = true;
 
-    Consul consul(windowConfig);
+    Consul consul(window);
 
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
 
