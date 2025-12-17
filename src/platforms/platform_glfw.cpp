@@ -107,15 +107,16 @@ void PlatformGLFW::initialiseWindow()
     }
 
     // Try to centre window
-    GLFWmonitor* currentMonitor = getCurrentMonitor();
-    int monitorX, monitorY, monitorWidth, monitorHeight;
-    glfwGetMonitorWorkarea(currentMonitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
-    int posX = std::max(monitorX + (monitorWidth - (int)window.windowSize.x) / 2, monitorX);
-    int posY = std::max(monitorY + (monitorHeight - (int)window.windowSize.y) / 2, monitorY);
+    if (!window.isFullscreen) {
+        GLFWmonitor* currentMonitor = getCurrentMonitor();
+        int monitorX, monitorY, monitorWidth, monitorHeight;
+        glfwGetMonitorWorkarea(currentMonitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
+        int posX = std::max(monitorX + (monitorWidth - (int)window.windowSize.x) / 2, monitorX);
+        int posY = std::max(monitorY + (monitorHeight - (int)window.windowSize.y) / 2, monitorY);
 
-    window.position = glm::vec2((float)posX, (float)posY);
-
-    glfwSetWindowPos(handle, posX, posY);
+        window.position = glm::vec2((float)posX, (float)posY);
+        glfwSetWindowPos(handle, posX, posY);
+    }
 
     // Handle window config
     toggleVSync(window.useVSync);
