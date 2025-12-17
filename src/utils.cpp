@@ -60,6 +60,7 @@ void sleep(unsigned int seconds)
 }
 
 void glCheckError_(const char* file, int line) {
+#ifndef NDEBUG
     Console& console = Console::get();
     
     GLenum errorCode;
@@ -75,4 +76,5 @@ void glCheckError_(const char* file, int line) {
         }
         console.error("[OpenGL] " + error + " at " + std::string(file) + " (line " + std::to_string(line) + ")");
     }
+#endif
 }

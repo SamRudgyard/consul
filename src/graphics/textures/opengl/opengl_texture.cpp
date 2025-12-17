@@ -12,6 +12,8 @@
 OpenGLTexture::OpenGLTexture(const Texture& textureData)
     : RenderableTexture(textureData)
 {
+    glCheckError();
+
     std::string texturePath = textureData.getPath();
 
     if (!doesFileExist(texturePath.c_str())) {
@@ -28,10 +30,15 @@ OpenGLTexture::OpenGLTexture(const Texture& textureData)
     }
 
     glGenTextures(1, &id);
+    glCheckError();
     bind();
+    glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Set texture wrapping to GL_REPEAT along the X axis
+    glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Set texture wrapping to GL_REPEAT along the Y axis
     glCheckError();
 
@@ -60,7 +67,9 @@ OpenGLTexture::OpenGLTexture(const Texture& textureData)
 
 void OpenGLTexture::bind() const {
     glActiveTexture(GL_TEXTURE0 + unit);
+    glCheckError();
     glBindTexture(GL_TEXTURE_2D, id);
+    glCheckError();
 }
 
 void OpenGLTexture::unbind() const {
@@ -74,6 +83,5 @@ void OpenGLTexture::release() const {
 void OpenGLTexture::setTextureUnit(const IShader* shader, const char* uniform) const {
     shader->use();
     shader->setUniformInt(uniform, unit);
-    glUseProgram(0);
     glCheckError();
 }
