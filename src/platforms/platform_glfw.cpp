@@ -4,6 +4,8 @@
 #include "core/engine_context.hpp"
 #include "GLFW/glfw3.h"
 
+#include "imgui_impl_glfw.h"
+
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -139,6 +141,18 @@ void PlatformGLFW::initialiseWindow()
     glfwSetCursorEnterCallback(handle, onMouseEnterOrExitWindow);
 
     glfwSetInputMode(handle, GLFW_LOCK_KEY_MODS, GLFW_TRUE); // Ensure modifier key flags (i.e. caps lock) are passed to key callbacks
+}
+
+void PlatformGLFW::initialiseImGui(GraphicsAPI gfxApi)
+{
+    switch (gfxApi) {
+        case GraphicsAPI::OpenGL:
+            ImGui_ImplGlfw_InitForOpenGL(handle, true);
+            break;
+        default:
+            Console::get().error("[PlatformGLFW] Unknown graphics API for ImGui initialisation!");
+            return;
+    }
 }
 
 void PlatformGLFW::loadGraphics(IGraphics* graphics)

@@ -9,6 +9,7 @@
 #include "graphics/camera/camera.hpp"
 #include "graphics/shaders/shader.hpp"
 #include "platforms/platform.hpp"
+#include "imgui_impl_opengl3.h"
 #include "utils.hpp"
 
 class Renderer
@@ -36,6 +37,18 @@ public:
             delete mesh;
         }
         loadedMeshes.clear();
+    }
+
+    void initialiseImGui()
+    {
+        switch (gfxApi) {
+            case GraphicsAPI::OpenGL:
+                ImGui_ImplOpenGL3_Init("#version 330");
+                break;
+            default:
+                Console::get().error("[Renderer] Unknown graphics API for ImGui initialisation!");
+                return;
+        }
     }
 
     void clearBackground(const glm::vec4& colour)

@@ -16,6 +16,8 @@ public:
 
     virtual void initialiseWindow() = 0;
 
+    virtual void initialiseImGui(GraphicsAPI gfxApi) = 0;
+
     virtual void loadGraphics(IGraphics* graphics) = 0;
 
     virtual void pollEvents() = 0;

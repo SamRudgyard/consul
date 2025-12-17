@@ -12,6 +12,8 @@ public:
 
     void initialiseWindow() override;
 
+    void initialiseImGui(GraphicsAPI gfxApi) override;
+
     void loadGraphics(IGraphics* graphics) override;
 
     void pollEvents() override;

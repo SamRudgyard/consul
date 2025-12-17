@@ -1,9 +1,9 @@
 #include "consul.hpp"
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 #include "platforms/platform_glfw.hpp"
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
 #include "utils.hpp"
 
 void Consul::initialiseEngine()
@@ -16,8 +16,21 @@ void Consul::initialiseEngine()
     initialiseWindow(PlatformType::GLFW);
     console.log("[Consul] Windowing platform initialised.");
 
-    initialiseRenderer(GraphicsAPI::OpenGL);
+    GraphicsAPI gfxApi = GraphicsAPI::OpenGL;
+    initialiseRenderer(gfxApi);
     console.log("[Consul] Graphics renderer initialised.");
+
+    // Setup ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange; // Don't let ImGui move the mouse
+    ImGui::StyleColorsDark();
+    platform->initialiseImGui(gfxApi);
+    renderer->initialiseImGui();
+    console.log("[Consul] ImGui initialised.");
 }
 
 void Consul::initialiseWindow(PlatformType platformType)
@@ -55,26 +68,11 @@ bool Consul::run()
         return false;
     }
 
-    // Start the ImGui frame
-    // ImGui_ImplOpenGL3_NewFrame();
-    // ImGui_ImplGlfw_NewFrame();
-    // ImGui::NewFrame();
-
-    // console.draw("Console");
-
-    // ImGui::Render();
-
-    // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    // ImGui::UpdatePlatformWindows();
-
     return !(context->window.shouldClose && platform->shouldClose());
 }
 
 void Consul::beginTick()
 {
-    // platform->setMousePosition(context->inputSystem.getMousePosition().x, context->inputSystem.getMousePosition().y);
-
     platform->pollEvents();
 
     renderer->clearBackground(glm::vec4(0.f, 0.f, 0.f, 1.f));
@@ -85,6 +83,18 @@ void Consul::beginTick()
 
 void Consul::endTick()
 {
+    // Start the ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    console.draw("Console");
+
+    ImGui::Render();
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // ImGui::UpdatePlatformWindows();
+
     Time& time = context->time;
     time.currentTime = platform->getTime();
     time.deltaTime = time.currentTime - time.previousTime;
@@ -106,12 +116,12 @@ void Consul::terminate()
 {
     console.log("[Consul] Shutting down Game Engine...");
 
+    ImGui_ImplGlfw_Shutdown();
     platform->terminate();
     console.log("[Consul] Windowing platform terminated.");
 
-    // ImGui_ImplOpenGL3_Shutdown();
-    // ImGui_ImplGlfw_Shutdown();
-    // ImGui::DestroyContext();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui::DestroyContext();
 
     console.log("[Consul] ImGui terminated.");
 
