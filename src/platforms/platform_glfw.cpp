@@ -94,6 +94,7 @@ void PlatformGLFW::initialiseWindow()
     window.windowSize = glm::vec2((float)(windowWidth), (float)(windowHeight));
     glfwGetFramebufferSize(handle, &framebufferWidth, &framebufferHeight);
     window.framebufferSize = glm::vec2((float)(framebufferWidth), (float)(framebufferHeight));
+    glfwGetWindowContentScale(handle, &window.contentScale.x, &window.contentScale.y);
 
     glfwMakeContextCurrent(handle);
     int error = glfwGetError(NULL);
@@ -137,6 +138,7 @@ void PlatformGLFW::initialiseWindow()
     glfwSetWindowMaximizeCallback(handle, onWindowMaximised);
     glfwSetWindowIconifyCallback(handle, onWindowMinimised);
     glfwSetWindowFocusCallback(handle, onWindowFocused);
+    glfwSetWindowContentScaleCallback(handle, onContentScaleChanged);
     glfwSetKeyCallback(handle, onKeyInput);
     glfwSetCharCallback(handle, onCharInput);
     glfwSetMouseButtonCallback(handle, onMouseButtonInput);
@@ -269,6 +271,17 @@ void PlatformGLFW::onWindowFocused(GLFWwindow* window, int focused)
     } else {
         Console::get().logOnDebug("[GLFW] Window lost focus");
     }
+}
+
+void PlatformGLFW::onContentScaleChanged(GLFWwindow* window, float xscale, float yscale)
+{
+    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    context->window.contentScale = glm::vec2(xscale, yscale);
+
+    Console::get().logOnDebug("[GLFW] Window content scale changed to ("
+                    + std::to_string(xscale) + ", "
+                    + std::to_string(yscale) +
+                    ")");
 }
 
 void PlatformGLFW::onKeyInput(GLFWwindow* window, int key, int scancode, int action, int mods)
