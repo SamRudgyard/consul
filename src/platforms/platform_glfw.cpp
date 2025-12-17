@@ -495,6 +495,10 @@ void PlatformGLFW::toggleFocused(const bool enable)
     glfwSetWindowAttrib(handle, GLFW_FOCUS_ON_SHOW, enable ? GLFW_TRUE : GLFW_FALSE);
 
     EngineContext::get()->window.isFocused = enable;
+    
+    if (enable) {
+        glfwFocusWindow(handle);
+    }
 }
 
 void PlatformGLFW::toggleFloating(const bool enable)
