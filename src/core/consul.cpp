@@ -78,6 +78,7 @@ void Consul::beginTick()
     platform->pollEvents();
 
     renderer->clearBackground(glm::vec4(0.f, 0.f, 0.f, 1.f));
+    renderer->setViewport(0, 0, (int)context->window.windowSize.x, (int)context->window.windowSize.y);
 
     context->inputSystem.beginTick();
 }

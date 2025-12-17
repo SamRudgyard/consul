@@ -28,6 +28,7 @@ public:
 
         glEnable(GL_DEPTH_TEST);                                // Enable depth testing
         glDepthFunc(GL_LESS);                                   // Type of depth testing to apply
+        glClearDepth(1.0f);                                     // Clear depth buffer to farthest
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      // Colour blending, determines how pixel colours are combined
         glEnable(GL_BLEND);                                     // Enable colour blending (required for transparencies)
         glCullFace(GL_BACK);                                    // Cull back faces
@@ -44,6 +45,11 @@ public:
     void clearScreenBuffer()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    void setViewport(int x, int y, int width, int height) override
+    {
+        glViewport(x, y, width, height);
     }
 
     IShader* newShader() override

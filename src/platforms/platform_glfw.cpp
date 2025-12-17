@@ -119,6 +119,7 @@ void PlatformGLFW::initialiseWindow()
     toggleResizable(window.isResizable);
     toggleDecorated(window.isDecorated);
     toggleMinimised(window.isMinimised);
+    toggleMaximised(window.isMaximised);
     toggleVisible(window.isVisible);
     toggleFocused(window.isFocused);
     toggleFloating(window.isFloating);
@@ -435,7 +436,16 @@ void PlatformGLFW::toggleMaximised(const bool enable)
         return; // Can't maximise a non-resizable window
     }
 
-    glfwSetWindowAttrib(handle, GLFW_MAXIMIZED, enable ? GLFW_TRUE : GLFW_FALSE);
+    if (enable) {
+        glfwMaximizeWindow(handle);
+    } else {
+        glfwRestoreWindow(handle);
+    }
+
+    int width, height;
+    glfwGetFramebufferSize(handle, &width, &height);
+    context->window.windowSize = glm::vec2((float)(width), (float)(height));
+    
     EngineContext::get()->window.isMaximised = enable;
 }
 

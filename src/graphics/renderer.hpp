@@ -50,6 +50,11 @@ public:
         gfxBackend->clearColour(colour);
     }
 
+    void setViewport(int x, int y, int width, int height)
+    {
+        gfxBackend->setViewport(x, y, width, height);
+    }
+
     IShader* newShader(const std::string& vertexFilePath, const std::string& fragmentFilePath)
     {
         IShader* shader = gfxBackend->newShader();
