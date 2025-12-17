@@ -302,7 +302,6 @@ void PlatformGLFW::onMouseMoved(GLFWwindow* window, double xpos, double ypos)
 {
     InputSystem& input = EngineContext::get()->inputSystem;
     input.setMousePosition(glm::vec2((float)xpos, (float)ypos));
-    glfwSetCursorPos(window, xpos, ypos);
 }
 
 void PlatformGLFW::onMouseScrolled(GLFWwindow* window, double xoffset, double yoffset)
