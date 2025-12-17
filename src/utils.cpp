@@ -1,5 +1,8 @@
 #include "utils.hpp"
 
+#include <thread>
+#include <chrono>
+
 #include "glad/glad.h"
 #include "core/console/console.hpp"
 
@@ -49,6 +52,11 @@ void unloadFileText(char* text) {
 
 bool isSubstring(const std::string& str, const std::string& substr) {
     return str.find(substr) != std::string::npos;
+}
+
+void sleep(unsigned int seconds)
+{
+    std::this_thread::sleep_for(std::chrono::seconds(seconds));
 }
 
 void glCheckError_(const char* file, int line) {

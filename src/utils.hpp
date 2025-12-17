@@ -81,6 +81,8 @@ void unloadFileText(char* text);
  */
 bool isSubstring(const std::string& str, const std::string& substr);
 
+void sleep(unsigned int seconds);
+
 /** 
  * Check for OpenGL errors and log them with file and line information.
  * 

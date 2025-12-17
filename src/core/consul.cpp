@@ -1,4 +1,5 @@
 #include "consul.hpp"
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -47,13 +48,12 @@ Consul::~Consul()
 
 bool Consul::run()
 {
+    endTick();
     beginTick();
 
     if (context->window.shouldClose) {
         return false;
     }
-
-    Time::newFrame();
 
     // Start the ImGui frame
     // ImGui_ImplOpenGL3_NewFrame();
@@ -68,27 +68,37 @@ bool Consul::run()
 
     // ImGui::UpdatePlatformWindows();
 
-    endTick();
-
     return !(context->window.shouldClose && platform->shouldClose());
 }
 
 void Consul::beginTick()
 {
-    platform->pollEvents();
+    // platform->setMousePosition(context->inputSystem.getMousePosition().x, context->inputSystem.getMousePosition().y);
 
-    platform->swapBuffers();
+    platform->pollEvents();
 
     renderer->clearBackground(glm::vec4(0.f, 0.f, 0.f, 1.f));
 
     context->inputSystem.beginTick();
-
-    context->window.shouldClose = platform->shouldClose();
 }
 
 void Consul::endTick()
 {
-    // Future end-of-frame operations can be added here
+    Time& time = context->time;
+    time.currentTime = platform->getTime();
+    time.deltaTime = time.currentTime - time.previousTime;
+    if (time.deltaTime < time.targetFrameTime) {
+        sleep(time.targetFrameTime - time.deltaTime);
+        time.currentTime = platform->getTime();
+        time.deltaTime = time.currentTime - time.previousTime;
+    }
+    time.frameCount++;
+    time.previousTime = time.currentTime;
+
+    platform->swapBuffers();
+    context->window.shouldClose = platform->shouldClose();
+    
+    context->inputSystem.endTick();
 }
 
 void Consul::terminate()
