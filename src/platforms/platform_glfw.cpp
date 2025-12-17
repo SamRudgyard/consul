@@ -427,7 +427,12 @@ void PlatformGLFW::toggleFullscreen(const bool enable)
 
     if (enable) {
         GLFWmonitor* currentMonitor = getCurrentMonitor();
-        glfwSetWindowMonitor(handle, currentMonitor, 0, 0, (int)window.windowSize.x, (int)window.windowSize.y, GLFW_DONT_CARE);
+        const GLFWvidmode* mode = glfwGetVideoMode(currentMonitor);
+        if (!mode) {
+            Console::get().error("[GLFW] Failed to get video mode for current monitor");
+            return;
+        }
+        glfwSetWindowMonitor(handle, currentMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
     } else {
         glfwSetWindowMonitor(handle, nullptr, (int)window.position.x, (int)window.position.y, (int)window.windowSize.x, (int)window.windowSize.y, GLFW_DONT_CARE);
     }
@@ -469,7 +474,7 @@ void PlatformGLFW::toggleMaximised(const bool enable)
     } else {
         glfwRestoreWindow(handle);
     }
-    
+
     EngineContext::get()->window.isMaximised = enable;
 }
 
