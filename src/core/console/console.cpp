@@ -59,11 +59,17 @@ void Console::info(const std::string& message)
 void Console::draw(const char* title, bool* open)
 {
     EngineContext* context = EngineContext::get();
-    Window& window = context->window;
-    unsigned int consoleWidth = (int)(0.2f * window.windowSize.x);
-    unsigned int consoleHeight = (int)(0.3f * window.windowSize.y);
-    ImGui::SetNextWindowSize({(float)consoleWidth, (float)consoleHeight}, ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos({(float)(window.windowSize.x - consoleWidth), (float)(window.windowSize.y - consoleHeight)}, ImGuiCond_FirstUseEver);
+    Window& window = context->window; // We'll fallback to window size if viewport is unavailable
+
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImVec2 viewportSize = viewport ? viewport->WorkSize : ImVec2(window.windowSize.x, window.windowSize.y);
+    float consoleWidth = 0.2f * viewportSize.x;
+    float consoleHeight = 0.3f * viewportSize.y;
+    ImVec2 bottomRight = viewport ? ImVec2(viewport->WorkPos.x + viewportSize.x, viewport->WorkPos.y + viewportSize.y)
+                                  : ImVec2(window.windowSize.x, window.windowSize.y);
+
+    ImGui::SetNextWindowSize({consoleWidth, consoleHeight}, ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos({bottomRight.x - consoleWidth, bottomRight.y - consoleHeight}, ImGuiCond_Appearing);
     if (!ImGui::Begin(title, open))
     {
         ImGui::End();
