@@ -19,6 +19,11 @@ public:
         mouse.beginTick();
     }
 
+    void endTick()
+    {
+        mouse.endTick();
+    }
+
     void setExitKey(KeyboardKey key)
     {
         keyboard.setExitKey(key);
@@ -82,6 +87,11 @@ public:
     void setMousePosition(const glm::vec2& position)
     {
         mouse.setMousePosition(position);
+    }
+
+    glm::vec2 getPreviousMousePosition() const
+    {
+        return mouse.getPreviousMousePosition();
     }
 
     void setMouseScrollOffset(const glm::vec2& offset)

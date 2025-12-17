@@ -17,7 +17,7 @@ class IShader;
 class Camera {
 public:
     float speed = 0.1f;
-    float sensitivity = 100.0f;
+    float sensitivity = 0.1f;
 
     /**
      * A perspective camera with given viewport width/height and world position.

@@ -25,6 +25,11 @@ public:
         lastFrameState = currentState;
     }
 
+    void endTick()
+    {
+        previousPosition = position;
+    }
+
     void setButtonDown(MouseButton button)
     {
         currentState.set((size_t)button);
@@ -70,6 +75,12 @@ public:
         position = pos;
     }
 
+    glm::vec2 getPreviousMousePosition() const
+    {
+        return previousPosition;
+    }
+
+
     glm::vec2 getScrollOffset() const
     {
         return scrollOffset;
@@ -104,6 +115,7 @@ private:
     std::bitset<MAX_MOUSE_BUTTONS> currentState;
     std::bitset<MAX_MOUSE_BUTTONS> lastFrameState;
     glm::vec2 position = glm::vec2(0.f, 0.f);
+    glm::vec2 previousPosition = glm::vec2(0.f, 0.f);
     glm::vec2 scrollOffset = glm::vec2(0.f, 0.f);
     bool isVisible = true;
     bool isInsideWindow = true;

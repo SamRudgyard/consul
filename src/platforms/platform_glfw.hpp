@@ -22,6 +22,8 @@ public:
 
     double getTime() override;
 
+    void setMousePosition(unsigned int x, unsigned int y) override;
+
     void terminate() override;
 
     static void onError(int error, const char* description);

@@ -287,6 +287,7 @@ void PlatformGLFW::onMouseMoved(GLFWwindow* window, double xpos, double ypos)
 {
     InputSystem& input = EngineContext::get()->inputSystem;
     input.setMousePosition(glm::vec2((float)xpos, (float)ypos));
+    glfwSetCursorPos(window, xpos, ypos);
 }
 
 void PlatformGLFW::onMouseScrolled(GLFWwindow* window, double xoffset, double yoffset)
@@ -316,6 +317,11 @@ const char* PlatformGLFW::getGLFWErrorCodeAsString(int errorCode)
         case GLFW_NO_WINDOW_CONTEXT:      return "GLFW_NO_WINDOW_CONTEXT";
         default:                          return "UNKNOWN_GLFW_ERROR";
     }
+}
+
+void PlatformGLFW::setMousePosition(unsigned int x, unsigned int y)
+{
+    glfwSetCursorPos(handle, (double)x, (double)y);
 }
 
 const unsigned int PlatformGLFW::getCurrentMonitorNumber() const

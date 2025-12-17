@@ -24,6 +24,8 @@ public:
 
     virtual bool shouldClose() = 0;
 
+    virtual void setMousePosition(unsigned int x, unsigned int y) = 0;
+
     virtual double getTime() = 0;
 
     virtual void terminate() = 0;
