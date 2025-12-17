@@ -29,11 +29,13 @@ public:
     void terminate() override;
 
     static void onError(int error, const char* description);
+    static void onFramebufferResized(GLFWwindow* window, int width, int height);
     static void onWindowResized(GLFWwindow* window, int width, int height);
     static void onWindowPosChanged(GLFWwindow* window, int xpos, int ypos);
     static void onWindowMaximised(GLFWwindow* window, int maximised);
     static void onWindowMinimised(GLFWwindow* window, int iconified);
     static void onWindowFocused(GLFWwindow* window, int focused);
+    static void onContentScaleChanged(GLFWwindow* window, float xscale, float yscale);
     static void onKeyInput(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void onCharInput(GLFWwindow* window, unsigned int codepoint);
     static void onMouseButtonInput(GLFWwindow* window, int button, int action, int mods);

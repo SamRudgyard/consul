@@ -88,10 +88,13 @@ void PlatformGLFW::initialiseWindow()
     if (maximise) {
         console.log("[GLFW] Creating maximised window...");
         glfwMaximizeWindow(handle);
-        int framebufferWidth, framebufferHeight;
-        glfwGetFramebufferSize(handle, &framebufferWidth, &framebufferHeight);
-        window.windowSize = glm::vec2((float)(framebufferWidth), (float)(framebufferHeight));
     }
+    int windowWidth, framebufferWidth, windowHeight, framebufferHeight;
+    glfwGetWindowSize(handle, &windowWidth, &windowHeight);
+    window.windowSize = glm::vec2((float)(windowWidth), (float)(windowHeight));
+    glfwGetFramebufferSize(handle, &framebufferWidth, &framebufferHeight);
+    window.framebufferSize = glm::vec2((float)(framebufferWidth), (float)(framebufferHeight));
+    glfwGetWindowContentScale(handle, &window.contentScale.x, &window.contentScale.y);
 
     glfwMakeContextCurrent(handle);
     int error = glfwGetError(NULL);
@@ -105,15 +108,16 @@ void PlatformGLFW::initialiseWindow()
     }
 
     // Try to centre window
-    GLFWmonitor* currentMonitor = getCurrentMonitor();
-    int monitorX, monitorY, monitorWidth, monitorHeight;
-    glfwGetMonitorWorkarea(currentMonitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
-    int posX = std::max(monitorX + (monitorWidth - (int)window.windowSize.x) / 2, monitorX);
-    int posY = std::max(monitorY + (monitorHeight - (int)window.windowSize.y) / 2, monitorY);
+    if (!window.isFullscreen) {
+        GLFWmonitor* currentMonitor = getCurrentMonitor();
+        int monitorX, monitorY, monitorWidth, monitorHeight;
+        glfwGetMonitorWorkarea(currentMonitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
+        int posX = std::max(monitorX + (monitorWidth - (int)window.windowSize.x) / 2, monitorX);
+        int posY = std::max(monitorY + (monitorHeight - (int)window.windowSize.y) / 2, monitorY);
 
-    window.position = glm::vec2((float)posX, (float)posY);
-
-    glfwSetWindowPos(handle, posX, posY);
+        window.position = glm::vec2((float)posX, (float)posY);
+        glfwSetWindowPos(handle, posX, posY);
+    }
 
     // Handle window config
     toggleVSync(window.useVSync);
@@ -128,11 +132,13 @@ void PlatformGLFW::initialiseWindow()
     toggleTransparent(window.isTransparent);
 
     // Initialise window event callbacks
+    glfwSetFramebufferSizeCallback(handle, onFramebufferResized);
     glfwSetWindowSizeCallback(handle, onWindowResized);
     glfwSetWindowPosCallback(handle, onWindowPosChanged);
     glfwSetWindowMaximizeCallback(handle, onWindowMaximised);
     glfwSetWindowIconifyCallback(handle, onWindowMinimised);
     glfwSetWindowFocusCallback(handle, onWindowFocused);
+    glfwSetWindowContentScaleCallback(handle, onContentScaleChanged);
     glfwSetKeyCallback(handle, onKeyInput);
     glfwSetCharCallback(handle, onCharInput);
     glfwSetMouseButtonCallback(handle, onMouseButtonInput);
@@ -196,6 +202,18 @@ void PlatformGLFW::onError(int error, const char* description)
     throw std::runtime_error(errorMsg);
 }
 
+void PlatformGLFW::onFramebufferResized(GLFWwindow* window, int width, int height)
+{
+    if (width <= 0 || height <= 0) {
+        return; // When window is minimised GLFW may send a resize event with 0 width and/or height
+    }
+
+    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    context->window.framebufferSize = glm::vec2((float)width, (float)height);
+
+    Console::get().logOnDebug("[GLFW] Framebuffer resized to " + std::to_string(width) + "x" + std::to_string(height));
+}
+
 void PlatformGLFW::onWindowResized(GLFWwindow* window, int width, int height)
 {
     if (width <= 0 || height <= 0) {
@@ -253,6 +271,17 @@ void PlatformGLFW::onWindowFocused(GLFWwindow* window, int focused)
     } else {
         Console::get().logOnDebug("[GLFW] Window lost focus");
     }
+}
+
+void PlatformGLFW::onContentScaleChanged(GLFWwindow* window, float xscale, float yscale)
+{
+    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    context->window.contentScale = glm::vec2(xscale, yscale);
+
+    Console::get().logOnDebug("[GLFW] Window content scale changed to ("
+                    + std::to_string(xscale) + ", "
+                    + std::to_string(yscale) +
+                    ")");
 }
 
 void PlatformGLFW::onKeyInput(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -397,11 +426,9 @@ GLFWmonitor* PlatformGLFW::getCurrentMonitor() const
 
 void PlatformGLFW::toggleVSync(const bool enable)
 {
-    glfwSwapInterval(0);
-    if (enable) {
-        Console::get().log("[GLFW] Enabling VSync...");
-        glfwSwapInterval(1);
-    }
+    glfwSwapInterval(enable ? 1 : 0);
+    std::string vsyncStatus = enable ? "enabled" : "disabled";
+    Console::get().logOnDebug("[GLFW] VSync " + vsyncStatus);
 
     EngineContext::get()->window.useVSync = enable;
 }
@@ -412,7 +439,12 @@ void PlatformGLFW::toggleFullscreen(const bool enable)
 
     if (enable) {
         GLFWmonitor* currentMonitor = getCurrentMonitor();
-        glfwSetWindowMonitor(handle, currentMonitor, 0, 0, (int)window.windowSize.x, (int)window.windowSize.y, GLFW_DONT_CARE);
+        const GLFWvidmode* mode = glfwGetVideoMode(currentMonitor);
+        if (!mode) {
+            Console::get().error("[GLFW] Failed to get video mode for current monitor");
+            return;
+        }
+        glfwSetWindowMonitor(handle, currentMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
     } else {
         glfwSetWindowMonitor(handle, nullptr, (int)window.position.x, (int)window.position.y, (int)window.windowSize.x, (int)window.windowSize.y, GLFW_DONT_CARE);
     }
@@ -455,10 +487,6 @@ void PlatformGLFW::toggleMaximised(const bool enable)
         glfwRestoreWindow(handle);
     }
 
-    int width, height;
-    glfwGetFramebufferSize(handle, &width, &height);
-    context->window.windowSize = glm::vec2((float)(width), (float)(height));
-    
     EngineContext::get()->window.isMaximised = enable;
 }
 
@@ -478,6 +506,10 @@ void PlatformGLFW::toggleFocused(const bool enable)
     glfwSetWindowAttrib(handle, GLFW_FOCUS_ON_SHOW, enable ? GLFW_TRUE : GLFW_FALSE);
 
     EngineContext::get()->window.isFocused = enable;
+    
+    if (enable) {
+        glfwFocusWindow(handle);
+    }
 }
 
 void PlatformGLFW::toggleFloating(const bool enable)
