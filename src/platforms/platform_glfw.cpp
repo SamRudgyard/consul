@@ -88,10 +88,12 @@ void PlatformGLFW::initialiseWindow()
     if (maximise) {
         console.log("[GLFW] Creating maximised window...");
         glfwMaximizeWindow(handle);
-        int framebufferWidth, framebufferHeight;
-        glfwGetFramebufferSize(handle, &framebufferWidth, &framebufferHeight);
-        window.windowSize = glm::vec2((float)(framebufferWidth), (float)(framebufferHeight));
     }
+    int windowWidth, framebufferWidth, windowHeight, framebufferHeight;
+    glfwGetWindowSize(handle, &windowWidth, &windowHeight);
+    window.windowSize = glm::vec2((float)(windowWidth), (float)(windowHeight));
+    glfwGetFramebufferSize(handle, &framebufferWidth, &framebufferHeight);
+    window.framebufferSize = glm::vec2((float)(framebufferWidth), (float)(framebufferHeight));
 
     glfwMakeContextCurrent(handle);
     int error = glfwGetError(NULL);
@@ -128,6 +130,7 @@ void PlatformGLFW::initialiseWindow()
     toggleTransparent(window.isTransparent);
 
     // Initialise window event callbacks
+    glfwSetFramebufferSizeCallback(handle, onFramebufferResized);
     glfwSetWindowSizeCallback(handle, onWindowResized);
     glfwSetWindowPosCallback(handle, onWindowPosChanged);
     glfwSetWindowMaximizeCallback(handle, onWindowMaximised);
@@ -194,6 +197,18 @@ void PlatformGLFW::onError(int error, const char* description)
     std::string errorCode = PlatformGLFW::getGLFWErrorCodeAsString(error);
     std::string errorMsg = "[GLFW] Error " + errorCode + ": " + std::string(description);
     throw std::runtime_error(errorMsg);
+}
+
+void PlatformGLFW::onFramebufferResized(GLFWwindow* window, int width, int height)
+{
+    if (width <= 0 || height <= 0) {
+        return; // When window is minimised GLFW may send a resize event with 0 width and/or height
+    }
+
+    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    context->window.framebufferSize = glm::vec2((float)width, (float)height);
+
+    Console::get().logOnDebug("[GLFW] Framebuffer resized to " + std::to_string(width) + "x" + std::to_string(height));
 }
 
 void PlatformGLFW::onWindowResized(GLFWwindow* window, int width, int height)
@@ -454,10 +469,6 @@ void PlatformGLFW::toggleMaximised(const bool enable)
     } else {
         glfwRestoreWindow(handle);
     }
-
-    int width, height;
-    glfwGetFramebufferSize(handle, &width, &height);
-    context->window.windowSize = glm::vec2((float)(width), (float)(height));
     
     EngineContext::get()->window.isMaximised = enable;
 }

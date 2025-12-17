@@ -7,6 +7,7 @@ struct Window
     glm::vec2 position = glm::vec2(0.f, 0.f);           // Top-left position of the window
     glm::vec2 monitorSize = glm::vec2(0.f, 0.f);        // Size (pixels) of the monitor the window is on
     glm::vec2 windowSize = glm::vec2(1280.f, 720.f);    // Size (pixels) of the window
+    glm::vec2 framebufferSize = glm::vec2(1280.f, 720.f); // Size (pixels) of the framebuffer
 
     const char* title = "Consul Application";
 
