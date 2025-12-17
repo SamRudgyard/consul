@@ -73,7 +73,6 @@ void PlatformGLFW::initialiseWindow()
         window.position = glm::vec2(0.f, 0.f);
     }
 
-    const bool maximise = (window.windowSize.x == 0 || window.windowSize.y == 0);
     // Creating the window requires non-zero width and height
     window.windowSize.x = std::max(window.windowSize.x, 1.f);
     window.windowSize.y = std::max(window.windowSize.y, 1.f);
@@ -85,10 +84,6 @@ void PlatformGLFW::initialiseWindow()
     }
     glfwSetWindowUserPointer(handle, context); // Allows access to the EngineContext instance in static callbacks
 
-    if (maximise) {
-        console.log("[GLFW] Creating maximised window...");
-        glfwMaximizeWindow(handle);
-    }
     int windowWidth, framebufferWidth, windowHeight, framebufferHeight;
     glfwGetWindowSize(handle, &windowWidth, &windowHeight);
     window.windowSize = glm::vec2((float)(windowWidth), (float)(windowHeight));
@@ -100,11 +95,6 @@ void PlatformGLFW::initialiseWindow()
     int error = glfwGetError(NULL);
     if (error != GLFW_NO_ERROR) {
         console.error("[GLFW] Failed to initialise GLFW: " + std::string(getGLFWErrorCodeAsString(error)));
-    }
-
-    if (window.isMinimised) {
-        console.log("[GLFW] Minimising window...");
-        glfwIconifyWindow(handle);
     }
 
     // Try to centre window
