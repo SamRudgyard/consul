@@ -426,11 +426,9 @@ GLFWmonitor* PlatformGLFW::getCurrentMonitor() const
 
 void PlatformGLFW::toggleVSync(const bool enable)
 {
-    glfwSwapInterval(0);
-    if (enable) {
-        Console::get().log("[GLFW] Enabling VSync...");
-        glfwSwapInterval(1);
-    }
+    glfwSwapInterval(enable ? 1 : 0);
+    std::string vsyncStatus = enable ? "enabled" : "disabled";
+    Console::get().logOnDebug("[GLFW] VSync " + vsyncStatus);
 
     EngineContext::get()->window.useVSync = enable;
 }
