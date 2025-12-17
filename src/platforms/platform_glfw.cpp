@@ -478,6 +478,13 @@ void PlatformGLFW::toggleMaximised(const bool enable)
     }
 
     EngineContext::get()->window.isMaximised = enable;
+
+    // Update window and framebuffer
+    int winWidth, fbWidth, winHeight, fbHeight;
+    glfwGetWindowSize(handle, &winWidth, &winHeight);
+    glfwGetFramebufferSize(handle, &fbWidth, &fbHeight);
+    EngineContext::get()->window.windowSize = glm::vec2((float)winWidth, (float)winHeight);
+    EngineContext::get()->window.framebufferSize = glm::vec2((float)fbWidth, (float)fbHeight);
 }
 
 void PlatformGLFW::toggleVisible(const bool enable)
