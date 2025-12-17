@@ -1,5 +1,8 @@
 #include "utils.hpp"
 
+#include <thread>
+#include <chrono>
+
 #include "glad/glad.h"
 #include "core/console/console.hpp"
 
@@ -51,7 +54,13 @@ bool isSubstring(const std::string& str, const std::string& substr) {
     return str.find(substr) != std::string::npos;
 }
 
+void sleep(unsigned int seconds)
+{
+    std::this_thread::sleep_for(std::chrono::seconds(seconds));
+}
+
 void glCheckError_(const char* file, int line) {
+#ifndef NDEBUG
     Console& console = Console::get();
     
     GLenum errorCode;
@@ -67,4 +76,5 @@ void glCheckError_(const char* file, int line) {
         }
         console.error("[OpenGL] " + error + " at " + std::string(file) + " (line " + std::to_string(line) + ")");
     }
+#endif
 }

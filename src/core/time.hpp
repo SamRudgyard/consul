@@ -1,26 +1,10 @@
 #pragma once
 
-/**
- * Frame timing utilities. Call newFrame() once per frame to update timing values.
- */
-class Time
+struct Time
 {
-public:
-    static double currentTime;
-    static double previousTime;
-    static double deltaTime;
-    static double frameTime;
-    static double targetFrameTime;
-    static int frameCount;
-
-    /**
-     * Update timing values for a new frame (deltaTime, frameTime, frameCount).
-     */
-    static void newFrame();
-
-    /**
-     * Set the desired target FPS and compute the corresponding frame time (seconds).
-     * @param fps Target frames per second.
-     */
-    static void setTargetFPS(unsigned int fps);
+    float currentTime = 0.0f;               // Current time in seconds
+    float previousTime = 0.0f;              // Time at the previous frame in seconds
+    float deltaTime = 0.0f;                 // Time elapsed since last frame in seconds
+    float targetFrameTime = 1.0f / 60.0f;   // Target frame time for 60 FPS
+    unsigned int frameCount = 0;            // Total number of frames rendered
 };

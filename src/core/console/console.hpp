@@ -3,7 +3,7 @@
 #include <string>
 #include <deque>
 
-#define MAX_CONSOLE_SIZE 10
+#define MAX_CONSOLE_SIZE 1000
 
 /**
  * Minimal in-application console with a rolling log and an ImGui-based UI.

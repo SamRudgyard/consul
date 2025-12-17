@@ -1,7 +1,9 @@
-#include "core/models/model.hpp"
-#include "shader.hpp"
-#include "core/camera/camera.hpp"
-#include "core/models/texture.hpp"
+#include "model.hpp"
+#include "graphics/shaders/shader.hpp"
+#include "graphics/camera/camera.hpp"
+#include "graphics/mesh/mesh.hpp"
+#include "graphics/mesh/renderable_mesh.hpp"
+#include "graphics/textures/renderable_texture.hpp"
 #include "core/console/console.hpp"
 #include "utils.hpp"
 
@@ -25,16 +27,10 @@ Model::Model(const char* modelPath)
 	std::string binaryContents = readFile((fileDirectory + uri).c_str());
     binaryData = std::vector<unsigned char>(binaryContents.begin(), binaryContents.end());
 
+    loadTextures();
+
 	// Traverse all nodes
 	traverseNode(0);
-}
-
-void Model::draw(Shader& shader, Camera& camera, glm::vec3 translation, glm::quat rotation, glm::vec3 scale)
-{
-	for (unsigned int im = 0; im < meshes.size(); im++)
-	{
-		meshes[im].draw(shader, camera, transformationMatrices[im], translation, rotation, scale);
-	}
 }
 
 void Model::loadMesh(unsigned int iMesh)
@@ -50,21 +46,18 @@ void Model::loadMesh(unsigned int iMesh)
 	unsigned int texCoordAccessorIndex = attributes["TEXCOORD_0"];
 	unsigned int indexAccessorIndex = primitives[0]["indices"];
 
-	// Use accessor indices to get all vertices components
 	std::vector<float> positionFloats = readAccessorFloats(jsonContents["accessors"][positionAccessorIndex]);
 	std::vector<glm::vec3> positions = toVec3(positionFloats);
 	std::vector<float> normalFloats = readAccessorFloats(jsonContents["accessors"][normalAccessorIndex]);
 	std::vector<glm::vec3> normals = toVec3(normalFloats);
+    std::vector<glm::vec4> colours; // Empty colours vector, TODO: implement reading colors if needed
 	std::vector<float> textureFloats = readAccessorFloats(jsonContents["accessors"][texCoordAccessorIndex]);
 	std::vector<glm::vec2> textureUVs = toVec2(textureFloats);
+    std::vector<glm::vec4> tangents; // Empty tangents vector, TODO: implement reading tangents if needed
+	std::vector<unsigned int> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
 
-	// Combine all the vertex components and also get the indices and textures
-	std::vector<Vertex> vertices = assembleVertices(positions, normals, textureUVs);
-	std::vector<GLuint> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
-	std::vector<Texture> textures = loadTextures();
-
-	// Combine the vertices, indices, and textures into a mesh
-	meshes.push_back(Mesh(vertices, indices, textures));
+    Mesh mesh(positions, normals, colours, textureUVs, tangents, indices, loadedTextures);
+    meshes.push_back(mesh); // TODO: Remove when we get rid of mesh owning its textures
 }
 
 void Model::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
@@ -195,73 +188,30 @@ std::vector<unsigned int> Model::readAccessorIndices(json accessor)
 	return indices;
 }
 
-std::vector<Texture> Model::loadTextures()
+void Model::loadTextures()
 {
-    std::vector<Texture> textures;
     const std::string fileDirectory = file.substr(0, file.find_last_of('/') + 1);
 
     for (const auto& image : jsonContents["images"])
     {
         const std::string uri = image["uri"];
 
-        // Check if texture is already loaded
-        auto it = std::find(loadedTextureFiles.begin(), loadedTextureFiles.end(), uri);
-        if (it == loadedTextureFiles.end())
-        {
-            // Determine texture type based on URI naming convention
-            TextureType type;
-            if (uri.find("baseColor") != std::string::npos)
-                type = TextureType::DIFFUSE;
-            else if (uri.find("metallicRoughness") != std::string::npos)
-                type = TextureType::SPECULAR;
-            else
-            {
-                Console::get().warn("[Model::loadTextures] Unknown texture type for URI: '" + uri + "'");
-                continue;
-            }
-
-            // Load the new texture
-            std::string texturePath = fileDirectory + uri;
-            Texture texture(texturePath.c_str(), type, static_cast<GLuint>(loadedTextureFiles.size()));
-            loadedTextures.push_back(texture);
-            loadedTextureFiles.push_back(uri);
-
-            // Use the newly loaded texture
-            textures.push_back(texture);
-        }
+        // Determine texture type based on URI naming convention
+        TextureType type;
+        if (uri.find("baseColor") != std::string::npos)
+            type = TextureType::DIFFUSE;
+        else if (uri.find("metallicRoughness") != std::string::npos)
+            type = TextureType::SPECULAR;
         else
         {
-            // Texture already loaded, reuse it
-            unsigned int textureIndex = std::distance(loadedTextureFiles.begin(), it);
-            textures.push_back(loadedTextures[textureIndex]);
+            Console::get().warn("[Model::loadTextures] Unknown texture type for URI: '" + uri + "'");
+            continue;
         }
+
+        // Load the new texture
+        std::string texturePath = fileDirectory + uri;
+        loadedTextures.emplace_back(Texture(texturePath.c_str(), type)); // So we can avoid reloading it later
     }
-
-    return textures;
-}
-
-std::vector<Vertex> Model::assembleVertices
-(
-	std::vector<glm::vec3> positions,
-	std::vector<glm::vec3> normals,
-	std::vector<glm::vec2> texUVs
-)
-{
-	std::vector<Vertex> vertices;
-	for (unsigned int i = 0; i < positions.size(); i++)
-	{
-		vertices.push_back
-		(
-			Vertex
-			{
-				positions[i],
-				normals[i],
-				glm::vec3(1.0f, 1.0f, 1.0f),
-				texUVs[i]
-			}
-		);
-	}
-	return vertices;
 }
 
 std::vector<glm::vec2> Model::toVec2(std::vector<float> floatVec)

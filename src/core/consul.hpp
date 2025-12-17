@@ -1,35 +1,31 @@
 #pragma once
 
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
-
 #include "core/console/console.hpp"
-#include "window.hpp"
-#include "mouse.hpp"
+#include "core/engine_context.hpp"
+#include "platforms/platform.hpp"
+#include "graphics/renderer.hpp"
 #include "time.hpp"
-#include "keyboard.hpp"
+
+enum class PlatformType;
 
 class Consul
 {
 public:
-    /**
-     * Initialise a Consul application, with the desired window size.
-     *
-     * @param title        Window title.
-     * @param width        Desired window width in pixels (0 to maximise when windowed).
-     * @param height       Desired window height in pixels (0 to maximise when windowed).
-     * @param isFullscreen Create the window in fullscreen mode when true.
-     */
-    Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen = false);
 
     /**
-     * Initialise a Consul application, either to maximised or fullscreen.
-     * @param title        Window title.
-     * @param isFullscreen Create the window in fullscreen mode, else maximised.
+     * Initialise a Consul application, using default window configuration.
      */
-    Consul(const char* title, bool isFullscreen = false);
+    Consul() { initialiseEngine(); };
+
+    /**
+     * Initialise a Consul application with the given window configuration.
+     * @param window Window configuration settings.
+     */
+    Consul(Window& window) { context->window = window; initialiseEngine(); };
 
     ~Consul();
+
+    void initialiseEngine();
 
     /**
      * Begins a new frame of the Consul application.
@@ -43,11 +39,20 @@ public:
     void terminate();
 
     /**
-     * Enable or disable vertical sync (vsync), the synchronisation of the frame rate with the monitor's refresh rate.
-     * @param enabled True to enable vsync, false to disable.
-     */
-    void setVSync(bool enabled);
+     * Gets the renderer instance.
+     * @returns Reference to the renderer.
+    */
+    Renderer& getRenderer() { return *renderer; }
 
 private:
     Console& console = Console::get();
+    EngineContext* context = EngineContext::get();
+    IPlatform* platform = nullptr;
+    Renderer* renderer = nullptr;
+
+    void initialiseWindow(PlatformType platformType);
+    void initialiseRenderer(GraphicsAPI gfxApi);
+
+    void beginTick();
+    void endTick();
 };

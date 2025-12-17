@@ -1,7 +1,8 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "core/models/mesh.hpp"
+#include "graphics/mesh/mesh.hpp"
+#include "graphics/textures/texture.hpp"
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 
@@ -10,9 +11,9 @@
 
 using json = nlohmann::json;
 
-class Shader;
+class IShader;
 class Camera;
-class Texture;
+class RenderableTexture;
 
 class Model
 {
@@ -23,22 +24,17 @@ public:
 	 */
 	Model(const char* file);
 
-	/**
-	 * Draws the model.
-	 * @param shader      Shader program to use for drawing.
-	 * @param camera      Camera providing view/projection matrices.
-	 * @param translation Additional translation to apply.
-	 * @param rotation    Additional rotation to apply.
-	 * @param scale       Additional scale to apply.
+	/*
+	 * Gets the meshes loaded from this model.
+	 * @returns Vector of meshes. 
 	 */
-	void draw
-	(
-		Shader& shader,
-		Camera& camera,
-		glm::vec3 translation = glm::vec3(0.0f),
-		glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
-		glm::vec3 scale = glm::vec3(1.0f)
-	);
+	std::vector<Mesh> getMeshes() const { return meshes; }
+
+	/**
+	 * Gets the transformation matrices for each mesh in the model.
+	 * @returns Vector of transformation matrices.
+	 */
+	std::vector<glm::mat4> getTransformationMatrices() const { return transformationMatrices; }
 
 private:
 	// Variables for easy access
@@ -46,12 +42,9 @@ private:
 	std::vector<unsigned char> binaryData;
 	json jsonContents;
 
-	// All the meshes and transformations
 	std::vector<Mesh> meshes;
+	std::vector<Texture> loadedTextures;
 	std::vector<glm::mat4> transformationMatrices;
-
-	std::vector<std::string> loadedTextureFiles;
-    std::vector<Texture> loadedTextures;
 
 	/**
 	 * Load a single mesh.
@@ -82,41 +75,27 @@ private:
 
 	/**
 	 * Load textures used by the model.
-	 * @returns Vector of loaded textures.
 	 */
-	std::vector<Texture> loadTextures();
-
-	/**
-	 * Assemble separate position, normal, and UV arrays into Vertex arrays.
-	 * @param positions Vertex positions.
-	 * @param normals   Vertex normals.
-	 * @param texUVs    Vertex texture coordinates.
-	 * @returns Vector of assembled Vertex structures.
-	 */
-	std::vector<Vertex> assembleVertices(
-		std::vector<glm::vec3> positions,
-		std::vector<glm::vec3> normals,
-		std::vector<glm::vec2> texUVs
-	);
+	void loadTextures();
 
 	/**
 	 * Convert a float array to a vec2 array.
 	 * @param floatVec Vector of floats.
 	 * @returns Vector of vec2.
 	 */
-	std::vector<glm::vec2> toVec2(std::vector<float> floatVec);
+	std::vector<glm::vec2> toVec2(const std::vector<float> floatVec);
 
 	/**
 	 * Convert a float array to a vec3 array.
 	 * @param floatVec Vector of floats.
 	 * @returns Vector of vec3.
 	 */
-	std::vector<glm::vec3> toVec3(std::vector<float> floatVec);
+	std::vector<glm::vec3> toVec3(const std::vector<float> floatVec);
 
 	/**
 	 * Convert a float array to a vec4 array.
 	 * @param floatVec Vector of floats.
 	 * @returns Vector of vec4.
 	 */
-	std::vector<glm::vec4> toVec4(std::vector<float> floatVec);
+	std::vector<glm::vec4> toVec4(const std::vector<float> floatVec);
 };
