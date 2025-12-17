@@ -95,7 +95,6 @@ void Camera::handleInputs(float deltaTime) {
         speed = 5.0f;
     }
 
-    // Mouse controls
     if (input.isMouseButtonDown(MouseButton::BUTTON_RIGHT)) {
         input.setMouseVisibility(false);
 
@@ -103,26 +102,13 @@ void Camera::handleInputs(float deltaTime) {
         float width = (float)window.windowSize.x;
         float height = (float)window.windowSize.y;
 
-        // if (input.isMouseButtonPressed(MouseButton::BUTTON_RIGHT)) {
-            
-        //     input.setMousePosition(glm::vec2(width/2, height/2));
-        // }
-
         glm::vec2 mousePos = input.getMousePosition();
         glm::vec2 prevMousePos = input.getPreviousMousePosition();
-        std::cout << "Mouse delta: " << (mousePos.x - prevMousePos.x) << ", " << (mousePos.y - prevMousePos.y) << std::endl;
         float rotationX = sensitivity*(float)(mousePos.y - prevMousePos.y);
         float rotationY = sensitivity*(float)(mousePos.x - prevMousePos.x);
 
-        glm::vec3 newOrientation = glm::rotate(orientation, glm::radians(-rotationX), glm::normalize(glm::cross(orientation, up)));
-        // if (!((glm::angle(newOrientation, up) <= glm::radians(5.0f)) || (glm::angle(newOrientation, -up) <= glm::radians(5.0f)))) {
-            orientation = newOrientation;
-        // }
-
-        orientation = glm::rotate(orientation, glm::radians(-rotationY), up);
-
-        // Set mouse position to the centre of the screen
-        // input.setMousePosition(glm::vec2(width/2, height/2));
+        glm::vec3 xRotation = glm::rotate(orientation, glm::radians(-rotationX), glm::normalize(glm::cross(orientation, up)));
+        orientation = glm::rotate(xRotation, glm::radians(-rotationY), up);
     } else {
         input.setMouseVisibility(true);
     }
