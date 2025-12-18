@@ -2,6 +2,7 @@
 
 #include "platforms/platform_glfw.hpp"
 #include "imgui.h"
+#include "implot.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 #include "utils.hpp"
@@ -23,6 +24,7 @@ void Consul::initialiseEngine()
     // Setup ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
@@ -33,6 +35,7 @@ void Consul::initialiseEngine()
     console.log("[Consul] ImGui initialised.");
 
     context->ui.registerWindow("Console", [this](const std::string& name, bool* open) { console.draw(name, open); }, &consoleWindowOpen);
+    context->ui.registerWindow("FPS Monitor", [this](const std::string& name, bool* /*open*/) { context->fpsMonitor.draw(); });
 }
 
 void Consul::initialiseWindow(PlatformType platformType)
@@ -89,6 +92,8 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    context->fpsMonitor.update(context->time.deltaTime);
     context->ui.render();
 
     ImGui::Render();
@@ -118,12 +123,14 @@ void Consul::terminate()
 {
     console.log("[Consul] Shutting down Game Engine...");
     context->ui.unregisterWindow("Console");
+    context->ui.unregisterWindow("FPS Monitor");
 
     ImGui_ImplGlfw_Shutdown();
     platform->terminate();
     console.log("[Consul] Windowing platform terminated.");
 
     ImGui_ImplOpenGL3_Shutdown();
+    ImPlot::DestroyContext();
     ImGui::DestroyContext();
 
     console.log("[Consul] ImGui terminated.");

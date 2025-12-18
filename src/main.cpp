@@ -21,7 +21,8 @@ int main(int argc, char **argv) {
     renderer.loadModel(model);
 
     while (consul.run()) {
-        camera.handleInputs(1/60.0f);
+        EngineContext* context = EngineContext::get();
+        camera.handleInputs(context->time.deltaTime);
         renderer.render(shader, camera);
     }
 

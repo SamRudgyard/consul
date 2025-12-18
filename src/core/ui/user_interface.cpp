@@ -31,7 +31,7 @@ void UserInterface::render()
         const std::string& name = window.name;
         bool* open = window.open;
 
-        if (!open || !*open) {
+        if (open && !*open) {
             continue;
         }
 

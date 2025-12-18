@@ -25,7 +25,7 @@ public:
      * Register or update a window with a draw callback.
      * If a window with the same name exists, its callback and open state are updated.
      */
-    void registerWindow(const std::string& name, DrawCallback draw, bool* open);
+    void registerWindow(const std::string& name, DrawCallback draw, bool* open = nullptr);
 
     /**
      * Unregister a window by name.

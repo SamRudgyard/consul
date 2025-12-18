@@ -83,6 +83,22 @@ target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/
 # imgui backends require linking to glfw; use the glfw target from FetchContent
 target_link_libraries(imgui PUBLIC glfw)
 
+# ImPlot (v0.17)
+FetchContent_Declare(
+  implot
+  GIT_REPOSITORY https://github.com/epezent/implot.git
+  GIT_TAG v0.17
+)
+FetchContent_MakeAvailable(implot)
+
+set(IMPLOT_SRC
+  ${implot_SOURCE_DIR}/implot.cpp
+  ${implot_SOURCE_DIR}/implot_items.cpp
+)
+add_library(implot STATIC ${IMPLOT_SRC})
+target_include_directories(implot PUBLIC ${implot_SOURCE_DIR})
+target_link_libraries(implot PUBLIC imgui)
+
 # --- end FetchContent block ---
 
 
@@ -122,6 +138,7 @@ target_link_libraries(${PROJECT_NAME}
     glfw
     glad
     imgui
+    implot
     glm::glm
     nlohmann_json::nlohmann_json
 )
