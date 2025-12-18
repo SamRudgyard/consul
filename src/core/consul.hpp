@@ -49,6 +49,7 @@ private:
     EngineContext* context = EngineContext::get();
     IPlatform* platform = nullptr;
     Renderer* renderer = nullptr;
+    bool consoleWindowOpen = true;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);

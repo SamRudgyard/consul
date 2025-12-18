@@ -57,7 +57,7 @@ public:
     /**
      * Draw the console's UI window.
      */
-    void draw(const char* title, bool* open = nullptr);
+    void draw(const std::string& title, bool* open);
 
 protected:
     Console() = default;

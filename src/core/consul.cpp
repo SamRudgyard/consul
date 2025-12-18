@@ -31,6 +31,8 @@ void Consul::initialiseEngine()
     platform->initialiseImGui(gfxApi);
     renderer->initialiseImGui();
     console.log("[Consul] ImGui initialised.");
+
+    context->ui.registerWindow("Console", [this](const std::string& name, bool* open) { console.draw(name, open); }, &consoleWindowOpen);
 }
 
 void Consul::initialiseWindow(PlatformType platformType)
@@ -87,7 +89,7 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    console.draw("Console");
+    context->ui.render();
 
     ImGui::Render();
 
@@ -115,6 +117,7 @@ void Consul::endTick()
 void Consul::terminate()
 {
     console.log("[Consul] Shutting down Game Engine...");
+    context->ui.unregisterWindow("Console");
 
     ImGui_ImplGlfw_Shutdown();
     platform->terminate();
