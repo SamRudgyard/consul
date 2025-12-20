@@ -11,23 +11,10 @@
 
 void FpsMonitor::update(double deltaTimeSeconds)
 {
-    if (deltaTimeSeconds <= 0.0)
-    {
-        lastMs = 0.0f;
-        lastFps = 0.0f;
-    }
-    else
-    {
-        lastMs = static_cast<float>(deltaTimeSeconds * SECONDS_TO_MILLISECONDS);
-        lastFps = static_cast<float>(1.0 / deltaTimeSeconds);
-    }
-
-    fpsHistory[writeIndex] = lastFps;
+    currentDeltaTime = deltaTimeSeconds;
+    currentFps = deltaTimeSeconds > 0.0 ? 1.0 / deltaTimeSeconds : 0.0;
+    fpsHistory[writeIndex] = currentFps;
     writeIndex = (writeIndex + 1) % HISTORY_SIZE;
-    if (writeIndex == 0)
-    {
-        filled = true;
-    }
 }
 
 void FpsMonitor::draw()
@@ -36,10 +23,11 @@ void FpsMonitor::draw()
     ImVec2 workPos = viewport ? viewport->WorkPos : ImVec2(0.0f, 0.0f);
     ImVec2 workSize = viewport ? viewport->WorkSize : ImVec2(0.0f, 0.0f);
 
+    // Place the overlay in the top-right corner of the main viewport.
     const ImVec2 padding = ImVec2(10.0f, 10.0f);
     const ImVec2 windowPos = ImVec2(workPos.x + workSize.x - padding.x, workPos.y + padding.y);
     ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2(1.0f, 0.0f));
-    ImGui::SetNextWindowBgAlpha(0.8f);
+    // ImGui::SetNextWindowBgAlpha(0.8f);
 
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar
         | ImGuiWindowFlags_NoResize
@@ -51,47 +39,27 @@ void FpsMonitor::draw()
 
     if (ImGui::Begin("FPS Monitor", nullptr, flags))
     {
-        ImGui::Text("Frame: %.2f ms (%.0f FPS)", lastMs, lastFps);
+        ImGui::Text("Frame: %.2f ms (%.0f FPS)", currentDeltaTime, currentFps);
 
-        const int sampleCount = filled ? static_cast<int>(HISTORY_SIZE) : static_cast<int>(writeIndex);
-        if (sampleCount > 0) {
-            const int offset = filled ? static_cast<int>(writeIndex) : 0;
+        float yMin = 0.0f;
+        float maxFPS = *std::max_element(std::begin(fpsHistory), std::end(fpsHistory));
+        float yMax = 1.1f*maxFPS;
 
-            float minFps = MASSIVE;
-            float maxFps = TINY;
-            for (int i = 0; i < sampleCount; ++i) {
-                int idx = (offset + i) % static_cast<int>(HISTORY_SIZE);
-                float value = fpsHistory[static_cast<std::size_t>(idx)];
-                minFps = std::min(minFps, value);
-                maxFps = std::max(maxFps, value);
-            }
-            if (minFps == MASSIVE) {
-                minFps = 0.0f;
-            }
+        if (ImPlot::BeginPlot("##fps_plot", ImVec2(-1, 120.0f), ImPlotFlags_NoLegend)) {
+            ImPlot::SetupAxes("Frame", "FPS", ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoGridLines);
+            ImPlot::SetupAxisLimits(ImAxis_X1, 0, HISTORY_SIZE - 1, ImPlotCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_Y1, yMin, yMax, ImPlotCond_Always);
 
-            float yMin = 0.9f*minFps;
-            float yMax = 1.1f*maxFps;
+            auto getter = [](int idx, void* data) -> ImPlotPoint
+            {
+                auto* monitor = (FpsMonitor*)(data);
+                unsigned int offset = monitor->writeIndex;
+                unsigned int index = (offset + idx) % HISTORY_SIZE;
+                return ImPlotPoint(idx, monitor->fpsHistory[index]);
+            };
 
-            if (ImPlot::BeginPlot("##fps_plot", ImVec2(-1, 120.0f), ImPlotFlags_NoLegend)) {
-                ImPlot::SetupAxes("Frame", "FPS", ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoGridLines);
-                ImPlot::SetupAxisLimits(ImAxis_X1, 0, sampleCount > 1 ? sampleCount - 1 : 1, ImPlotCond_Always);
-                ImPlot::SetupAxisLimits(ImAxis_Y1, yMin, yMax, ImPlotCond_Always);
-
-                auto getter = [](int idx, void* data) -> ImPlotPoint
-                {
-                    auto* monitor = static_cast<FpsMonitor*>(data);
-                    int offset = monitor->filled ? static_cast<int>(monitor->writeIndex) : 0;
-                    int index = (offset + idx) % static_cast<int>(HISTORY_SIZE);
-                    return ImPlotPoint(idx, monitor->fpsHistory[static_cast<std::size_t>(index)]);
-                };
-
-                ImPlot::PlotLineG("FPS", getter, this, sampleCount);
-                ImPlot::EndPlot();
-            }
-        }
-        else
-        {
-            ImGui::TextUnformatted("Collecting data...");
+            ImPlot::PlotLineG("FPS", getter, this, HISTORY_SIZE);
+            ImPlot::EndPlot();
         }
     }
     ImGui::End();

@@ -19,10 +19,9 @@ public:
     void draw();
 
 private:
-    static constexpr std::size_t HISTORY_SIZE = 256;
-    std::array<float, HISTORY_SIZE> fpsHistory{}; // ring buffer of FPS values
-    std::size_t writeIndex = 0;
-    bool filled = false;
-    float lastMs = 0.0f;
-    float lastFps = 0.0f;
+    static constexpr unsigned int HISTORY_SIZE = 256;
+    std::array<float, HISTORY_SIZE> fpsHistory{0.0f};
+    unsigned int writeIndex = 0;
+    float currentDeltaTime = 0.0f;
+    float currentFps = 0.0f;
 };
