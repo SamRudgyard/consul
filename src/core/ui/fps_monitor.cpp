@@ -69,8 +69,8 @@ void FpsMonitor::draw()
                 minFps = 0.0f;
             }
 
-            float yMin = 0.0f;
-            float yMax = std::max(60.0f, maxFps * 1.2f);
+            float yMin = 0.9f*minFps;
+            float yMax = 1.1f*maxFps;
 
             if (ImPlot::BeginPlot("##fps_plot", ImVec2(-1, 120.0f), ImPlotFlags_NoLegend)) {
                 ImPlot::SetupAxes("Frame", "FPS", ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoGridLines);
@@ -88,7 +88,6 @@ void FpsMonitor::draw()
                 ImPlot::PlotLineG("FPS", getter, this, sampleCount);
                 ImPlot::EndPlot();
             }
-            ImGui::Text("Min %.0f  Max %.0f", minFps, maxFps);
         }
         else
         {
