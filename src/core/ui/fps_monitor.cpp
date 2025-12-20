@@ -9,17 +9,17 @@
 #include "maths/constants.hpp"
 #include "maths/unit_conversions.hpp"
 
-void FpsMonitor::update(float deltaTimeSeconds)
+void FpsMonitor::update(double deltaTimeSeconds)
 {
-    if (deltaTimeSeconds <= 0.0f)
+    if (deltaTimeSeconds <= 0.0)
     {
         lastMs = 0.0f;
         lastFps = 0.0f;
     }
     else
     {
-        lastMs = deltaTimeSeconds * SECONDS_TO_MILLISECONDS;
-        lastFps = 1.0f / deltaTimeSeconds;
+        lastMs = static_cast<float>(deltaTimeSeconds * SECONDS_TO_MILLISECONDS);
+        lastFps = static_cast<float>(1.0 / deltaTimeSeconds);
     }
 
     fpsHistory[writeIndex] = lastFps;

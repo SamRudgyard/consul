@@ -6,6 +6,12 @@
 #include "glad/glad.h"
 #include "core/console/console.hpp"
 
+#include "maths/unit_conversions.hpp"
+
+#if defined(__APPLE__)
+#include <unistd.h>
+#endif
+
 bool doesFileExist(const char* filePath)
 {
     std::ifstream file(filePath);
@@ -54,9 +60,12 @@ bool isSubstring(const std::string& str, const std::string& substr) {
     return str.find(substr) != std::string::npos;
 }
 
-void sleep(unsigned int seconds)
+void waitTime(double seconds)
 {
-    std::this_thread::sleep_for(std::chrono::seconds(seconds));
+    if (seconds <= 0.0) {
+        return;
+    }
+    std::this_thread::sleep_for(std::chrono::duration<double>(seconds));
 }
 
 void glCheckError_(const char* file, int line) {

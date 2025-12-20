@@ -2,9 +2,9 @@
 
 struct Time
 {
-    float currentTime = 0.0f;               // Current time in seconds
-    float previousTime = 0.0f;              // Time at the previous frame in seconds
-    float deltaTime = 0.0f;                 // Time elapsed since last frame in seconds
-    float targetFrameTime = 1.0f / 60.0f;   // Target frame time for 60 FPS
+    double currentTime = 0.0;               // Current time in seconds
+    double previousTime = 0.0;              // Time at the previous frame in seconds
+    double deltaTime = 0.0;                 // Time elapsed since last frame in seconds
+    double targetFrameTime = 1.0 / 60.0;    // Target frame time for 60 FPS
     unsigned int frameCount = 0;            // Total number of frames rendered
 };

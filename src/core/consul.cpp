@@ -106,10 +106,10 @@ void Consul::endTick()
     time.currentTime = platform->getTime();
     time.deltaTime = time.currentTime - time.previousTime;
     if (time.deltaTime < time.targetFrameTime) {
-        sleep(time.targetFrameTime - time.deltaTime);
-        time.currentTime = platform->getTime();
-        time.deltaTime = time.currentTime - time.previousTime;
+        waitTime(time.targetFrameTime - time.deltaTime);
     }
+    time.currentTime = platform->getTime();
+    time.deltaTime = time.currentTime - time.previousTime;
     time.frameCount++;
     time.previousTime = time.currentTime;
 

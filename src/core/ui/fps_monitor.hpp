@@ -11,7 +11,7 @@ public:
     /**
      * Push the latest frame time in seconds.
      */
-    void update(float deltaTimeSeconds);
+    void update(double deltaTimeSeconds);
 
     /**
      * Render the FPS overlay window.
