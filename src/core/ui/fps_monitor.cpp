@@ -1,8 +1,10 @@
 #include "fps_monitor.hpp"
 
 #include <algorithm>
+#include <numeric>
 #include <cstdio>
 #include <limits>
+#include <vector>
 
 #include "imgui.h"
 #include "implot.h"
@@ -13,8 +15,15 @@ void FpsMonitor::update(double deltaTimeSeconds)
 {
     currentDeltaTime = deltaTimeSeconds;
     currentFps = deltaTimeSeconds > 0.0 ? 1.0 / deltaTimeSeconds : 0.0;
-    fpsHistory[writeIndex] = currentFps;
-    writeIndex = (writeIndex + 1) % HISTORY_SIZE;
+    fpsHistory.push_back(currentFps);
+    timeHistory.push_back((float)deltaTimeSeconds);
+
+    float totalRecordedTime = std::accumulate(timeHistory.begin(), timeHistory.end(), 0.0f);
+    while (totalRecordedTime > MAX_SECONDS_RECORDED) {
+        fpsHistory.erase(fpsHistory.begin());
+        timeHistory.erase(timeHistory.begin());
+        totalRecordedTime = std::accumulate(timeHistory.begin(), timeHistory.end(), 0.0f);
+    }
 }
 
 void FpsMonitor::draw()
@@ -39,27 +48,29 @@ void FpsMonitor::draw()
 
     if (ImGui::Begin("FPS Monitor", nullptr, flags))
     {
-        ImGui::Text("Frame: %.2f ms (%.0f FPS)", currentDeltaTime, currentFps);
+        ImGui::Text("Frame: %.2f ms (%.0f FPS)", currentDeltaTime*SECONDS_TO_MILLISECONDS, currentFps);
 
-        float yMin = 0.0f;
-        float maxFPS = *std::max_element(std::begin(fpsHistory), std::end(fpsHistory));
-        float yMax = 1.1f*maxFPS;
+        if (!fpsHistory.empty()) {
+            float maxFps = *std::max_element(fpsHistory.begin(), fpsHistory.end());
+            float yMax = 1.1f * maxFps;
 
-        if (ImPlot::BeginPlot("##fps_plot", ImVec2(-1, 120.0f), ImPlotFlags_NoLegend)) {
-            ImPlot::SetupAxes("Frame", "FPS", ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoGridLines);
-            ImPlot::SetupAxisLimits(ImAxis_X1, 0, HISTORY_SIZE - 1, ImPlotCond_Always);
-            ImPlot::SetupAxisLimits(ImAxis_Y1, yMin, yMax, ImPlotCond_Always);
+            std::vector<float> xSamples;
+            xSamples.reserve(timeHistory.size());
+            float elapsedSeconds = 0.0f;
+            for (float deltaSeconds : timeHistory) {
+                elapsedSeconds += deltaSeconds;
+                xSamples.push_back(elapsedSeconds);
+            }
 
-            auto getter = [](int idx, void* data) -> ImPlotPoint
-            {
-                auto* monitor = (FpsMonitor*)(data);
-                unsigned int offset = monitor->writeIndex;
-                unsigned int index = (offset + idx) % HISTORY_SIZE;
-                return ImPlotPoint(idx, monitor->fpsHistory[index]);
-            };
-
-            ImPlot::PlotLineG("FPS", getter, this, HISTORY_SIZE);
-            ImPlot::EndPlot();
+            if (ImPlot::BeginPlot("##fps_plot", ImVec2(-1, 120.0f), ImPlotFlags_NoLegend)) {
+                ImPlot::SetupAxes("Seconds", "FPS", ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoGridLines);
+                ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, MAX_SECONDS_RECORDED, ImPlotCond_Always);
+                ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0, yMax, ImPlotCond_Always);
+                ImPlot::PlotLine("FPS", xSamples.data(), fpsHistory.data(), static_cast<int>(fpsHistory.size()));
+                ImPlot::EndPlot();
+            }
+        } else {
+            ImGui::TextUnformatted("Collecting data...");
         }
     }
     ImGui::End();

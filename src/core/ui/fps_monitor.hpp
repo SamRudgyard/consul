@@ -1,6 +1,6 @@
 #pragma once
 
-#include <array>
+#include <vector>
 
 /**
  * Tracks frame timing and renders an ImGui FPS overlay.
@@ -19,9 +19,11 @@ public:
     void draw();
 
 private:
-    static constexpr unsigned int HISTORY_SIZE = 256;
-    std::array<float, HISTORY_SIZE> fpsHistory{0.0f};
+    static constexpr unsigned int MAX_SECONDS_RECORDED = 10;
+    std::vector<float> fpsHistory;
+    std::vector<float> timeHistory;
     unsigned int writeIndex = 0;
     float currentDeltaTime = 0.0f;
     float currentFps = 0.0f;
+    float finalRecordedTime = 0.0f;
 };
