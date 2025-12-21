@@ -66,7 +66,7 @@ void FpsMonitor::draw()
                 ImPlot::SetupAxes("Seconds Ago", "FPS", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoGridLines);
                 ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, MAX_SECONDS_RECORDED, ImPlotCond_Always);
                 ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0, yMax, ImPlotCond_Always);
-                ImPlot::PlotLine("FPS", secsAgo.data(), fpsHistory.data(), static_cast<int>(fpsHistory.size()));
+                ImPlot::PlotLine("FPS", secsAgo.data(), fpsHistory.data(), fpsHistory.size());
                 ImPlot::EndPlot();
             }
         } else {
