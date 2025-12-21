@@ -1,0 +1,81 @@
+#include "fps_monitor.hpp"
+
+#include <algorithm>
+#include <numeric>
+#include <cstdio>
+#include <limits>
+#include <vector>
+
+#include "imgui.h"
+#include "implot.h"
+#include "maths/constants.hpp"
+#include "maths/unit_conversions.hpp"
+
+void FpsMonitor::update(double deltaTimeSeconds)
+{
+    currentDeltaTime = deltaTimeSeconds;
+    currentFps = deltaTimeSeconds > 0.0 ? 1.0 / deltaTimeSeconds : 0.0;
+    fpsHistory.push_back(currentFps);
+    timeHistory.push_back((float)deltaTimeSeconds);
+
+    totalRecordedTime = std::accumulate(timeHistory.begin(), timeHistory.end(), 0.0f);
+    while (totalRecordedTime > MAX_SECONDS_RECORDED) {
+        fpsHistory.erase(fpsHistory.begin());
+        timeHistory.erase(timeHistory.begin());
+        totalRecordedTime = std::accumulate(timeHistory.begin(), timeHistory.end(), 0.0f);
+    }
+}
+
+void FpsMonitor::draw(const std::string& title, bool* open)
+{
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImVec2 workPos = viewport ? viewport->WorkPos : ImVec2(0.0f, 0.0f);
+    ImVec2 workSize = viewport ? viewport->WorkSize : ImVec2(0.0f, 0.0f);
+
+    // Place the overlay in the top-right corner of the main viewport.
+    const ImVec2 padding = ImVec2(10.0f, 10.0f);
+    const ImVec2 windowPos = ImVec2(workPos.x + workSize.x - padding.x, workPos.y + padding.y);
+    ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2(1.0f, 0.0f));
+
+    if (!ImGui::Begin(title.c_str(), open)) {
+        ImGui::End();
+        return;
+    }
+
+    ImGui::Text("Frame: %.2f ms (%.0f FPS)", currentDeltaTime*SECONDS_TO_MILLISECONDS, currentFps);
+    ImGui::SetNextItemWidth(80.0f);
+    std::vector<const char*> rangeLabels;
+    std::vector<XLimit> rangeValues;
+    for (const auto& pair : xRanges) {
+        rangeLabels.push_back(pair.first);
+        rangeValues.push_back(pair.second);
+    }
+    int selectedIndex = std::distance(rangeValues.begin(), std::find(rangeValues.begin(), rangeValues.end(), selectedFpsRange));
+    ImGui::Combo("##fps_x_range", &selectedIndex, rangeLabels.data(), rangeLabels.size());
+    const char* selectedRange = rangeLabels.at(selectedIndex);
+    selectedFpsRange = xRanges.at(selectedRange);
+
+    if (!fpsHistory.empty()) {
+        float maxFps = *std::max_element(fpsHistory.begin(), fpsHistory.end());
+        float yMax = 1.1f * maxFps;
+
+        std::vector<float> secsAgo;
+        secsAgo.reserve(timeHistory.size());
+        float elapsedSeconds = totalRecordedTime;
+        for (float deltaSeconds : timeHistory) {
+            secsAgo.push_back(elapsedSeconds);
+            elapsedSeconds -= deltaSeconds;
+        }
+
+        if (ImPlot::BeginPlot("##fps_plot", ImVec2(-1, 120.0f), ImPlotFlags_NoLegend)) {
+            ImPlot::SetupAxes("Seconds Ago", "FPS", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoGridLines);
+            ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, (float)selectedFpsRange, ImPlotCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0, yMax, ImPlotCond_Always);
+            ImPlot::PlotLine("FPS", secsAgo.data(), fpsHistory.data(), fpsHistory.size());
+            ImPlot::EndPlot();
+        }
+    } else {
+        ImGui::TextUnformatted("Collecting data...");
+    }
+    ImGui::End();
+}

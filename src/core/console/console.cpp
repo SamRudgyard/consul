@@ -56,7 +56,7 @@ void Console::info(const std::string& message)
     items.push_back("[INFO] " + message);
 }
 
-void Console::draw(const char* title, bool* open)
+void Console::draw(const std::string& title, bool* open)
 {
     EngineContext* context = EngineContext::get();
     Window& window = context->window; // We'll fallback to window size if viewport is unavailable
@@ -70,7 +70,7 @@ void Console::draw(const char* title, bool* open)
 
     ImGui::SetNextWindowSize({consoleWidth, consoleHeight}, ImGuiCond_Appearing);
     ImGui::SetNextWindowPos({bottomRight.x - consoleWidth, bottomRight.y - consoleHeight}, ImGuiCond_Appearing);
-    if (!ImGui::Begin(title, open))
+    if (!ImGui::Begin(title.c_str(), open))
     {
         ImGui::End();
         return;
