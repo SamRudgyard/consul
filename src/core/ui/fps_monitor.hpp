@@ -25,7 +25,7 @@ public:
     /**
      * Render the FPS overlay window.
      */
-    void draw();
+    void draw(const std::string& title, bool* open);
 
 private:
     static constexpr unsigned int MAX_SECONDS_RECORDED = 60;

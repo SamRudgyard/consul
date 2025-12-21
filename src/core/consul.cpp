@@ -35,7 +35,7 @@ void Consul::initialiseEngine()
     console.log("[Consul] ImGui initialised.");
 
     context->ui.registerWindow("Console", [this](const std::string& name, bool* open) { console.draw(name, open); }, &consoleWindowOpen);
-    context->ui.registerWindow("FPS Monitor", [this](const std::string& name, bool* /*open*/) { context->fpsMonitor.draw(); });
+    context->ui.registerWindow("FPS Monitor", [this](const std::string& name, bool* open) { context->fpsMonitor.draw(name, open); }, &fpsMonitorWindowOpen);
 }
 
 void Consul::initialiseWindow(PlatformType platformType)

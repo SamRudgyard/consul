@@ -50,6 +50,7 @@ private:
     IPlatform* platform = nullptr;
     Renderer* renderer = nullptr;
     bool consoleWindowOpen = true;
+    bool fpsMonitorWindowOpen = true;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);
