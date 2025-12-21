@@ -88,6 +88,17 @@ void Consul::beginTick()
 
 void Consul::endTick()
 {
+    Time& time = context->time;
+    time.currentTime = platform->getTime();
+    time.deltaTime = time.currentTime - time.previousTime;
+    if (time.deltaTime < time.targetFrameTime) {
+        waitTime(time.targetFrameTime - time.deltaTime);
+    }
+    time.currentTime = platform->getTime();
+    time.deltaTime = time.currentTime - time.previousTime;
+    time.frameCount++;
+    time.previousTime = time.currentTime;
+
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -101,17 +112,6 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // ImGui::UpdatePlatformWindows();
-
-    Time& time = context->time;
-    time.currentTime = platform->getTime();
-    time.deltaTime = time.currentTime - time.previousTime;
-    if (time.deltaTime < time.targetFrameTime) {
-        waitTime(time.targetFrameTime - time.deltaTime);
-    }
-    time.currentTime = platform->getTime();
-    time.deltaTime = time.currentTime - time.previousTime;
-    time.frameCount++;
-    time.previousTime = time.currentTime;
 
     platform->swapBuffers();
     context->window.shouldClose = platform->shouldClose();
