@@ -18,7 +18,7 @@ void FpsMonitor::update(double deltaTimeSeconds)
     fpsHistory.push_back(currentFps);
     timeHistory.push_back((float)deltaTimeSeconds);
 
-    float totalRecordedTime = std::accumulate(timeHistory.begin(), timeHistory.end(), 0.0f);
+    totalRecordedTime = std::accumulate(timeHistory.begin(), timeHistory.end(), 0.0f);
     while (totalRecordedTime > MAX_SECONDS_RECORDED) {
         fpsHistory.erase(fpsHistory.begin());
         timeHistory.erase(timeHistory.begin());
@@ -54,19 +54,19 @@ void FpsMonitor::draw()
             float maxFps = *std::max_element(fpsHistory.begin(), fpsHistory.end());
             float yMax = 1.1f * maxFps;
 
-            std::vector<float> xSamples;
-            xSamples.reserve(timeHistory.size());
-            float elapsedSeconds = 0.0f;
+            std::vector<float> secsAgo;
+            secsAgo.reserve(timeHistory.size());
+            float elapsedSeconds = totalRecordedTime;
             for (float deltaSeconds : timeHistory) {
-                elapsedSeconds += deltaSeconds;
-                xSamples.push_back(elapsedSeconds);
+                secsAgo.push_back(elapsedSeconds);
+                elapsedSeconds -= deltaSeconds;
             }
 
             if (ImPlot::BeginPlot("##fps_plot", ImVec2(-1, 120.0f), ImPlotFlags_NoLegend)) {
-                ImPlot::SetupAxes("Seconds", "FPS", ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoGridLines);
+                ImPlot::SetupAxes("Seconds Ago", "FPS", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoGridLines);
                 ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, MAX_SECONDS_RECORDED, ImPlotCond_Always);
                 ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0, yMax, ImPlotCond_Always);
-                ImPlot::PlotLine("FPS", xSamples.data(), fpsHistory.data(), static_cast<int>(fpsHistory.size()));
+                ImPlot::PlotLine("FPS", secsAgo.data(), fpsHistory.data(), static_cast<int>(fpsHistory.size()));
                 ImPlot::EndPlot();
             }
         } else {
