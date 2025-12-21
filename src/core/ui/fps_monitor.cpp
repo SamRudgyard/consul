@@ -46,9 +46,19 @@ void FpsMonitor::draw()
         | ImGuiWindowFlags_NoFocusOnAppearing
         | ImGuiWindowFlags_NoNav;
 
-    if (ImGui::Begin("FPS Monitor", nullptr, flags))
-    {
+    if (ImGui::Begin("FPS Monitor", nullptr, flags)) {
         ImGui::Text("Frame: %.2f ms (%.0f FPS)", currentDeltaTime*SECONDS_TO_MILLISECONDS, currentFps);
+        ImGui::SetNextItemWidth(80.0f);
+        std::vector<const char*> rangeLabels;
+        std::vector<XLimit> rangeValues;
+        for (const auto& pair : xRanges) {
+            rangeLabels.push_back(pair.first);
+            rangeValues.push_back(pair.second);
+        }
+        int selectedIndex = std::distance(rangeValues.begin(), std::find(rangeValues.begin(), rangeValues.end(), selectedFpsRange));
+        ImGui::Combo("##fps_x_range", &selectedIndex, rangeLabels.data(), rangeLabels.size());
+        const char* selectedRange = rangeLabels.at(selectedIndex);
+        selectedFpsRange = xRanges.at(selectedRange);
 
         if (!fpsHistory.empty()) {
             float maxFps = *std::max_element(fpsHistory.begin(), fpsHistory.end());
@@ -64,7 +74,7 @@ void FpsMonitor::draw()
 
             if (ImPlot::BeginPlot("##fps_plot", ImVec2(-1, 120.0f), ImPlotFlags_NoLegend)) {
                 ImPlot::SetupAxes("Seconds Ago", "FPS", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoGridLines);
-                ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, MAX_SECONDS_RECORDED, ImPlotCond_Always);
+                ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, (float)selectedFpsRange, ImPlotCond_Always);
                 ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0, yMax, ImPlotCond_Always);
                 ImPlot::PlotLine("FPS", secsAgo.data(), fpsHistory.data(), fpsHistory.size());
                 ImPlot::EndPlot();
