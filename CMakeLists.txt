@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.24)
 project(Consul)
 
+# Options
+option(BUILD_TESTS "Build tests" OFF)
+
 # Prefer the NEW behavior for FetchContent extraction timestamps
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
@@ -145,3 +148,8 @@ target_link_libraries(${PROJECT_NAME}
 
 # Ensure includes for stb header-only are available (stb uses headers directly)
 target_include_directories(${PROJECT_NAME} PRIVATE ${stb_SOURCE_DIR})
+
+if(BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
