@@ -10,23 +10,19 @@
 #include "glad/glad.h"
 #include "utils.hpp"
 
-namespace {
-    std::unordered_map<std::string, std::shared_ptr<OpenGLTexture>> textureCache;
-
-    std::shared_ptr<OpenGLTexture> getCachedTexture(const Texture& texture)
-    {
-        const std::string& path = texture.getPath();
-        auto it = textureCache.find(path);
-        if (it != textureCache.end()) {
-            if (std::shared_ptr<OpenGLTexture> prevCachedTexture = it->second) {
-                return prevCachedTexture;
-            }
+std::shared_ptr<OpenGLTexture> OpenGLMesh::getCachedTexture(const Texture& texture)
+{
+    const std::string& path = texture.getPath();
+    auto it = textureCache.find(path);
+    if (it != textureCache.end()) {
+        if (std::shared_ptr<OpenGLTexture> prevCachedTexture = it->second) {
+            return prevCachedTexture;
         }
-
-        std::shared_ptr<OpenGLTexture> newlyCreatedTexture = std::make_shared<OpenGLTexture>(texture);
-        textureCache[path] = newlyCreatedTexture;
-        return newlyCreatedTexture;
     }
+
+    std::shared_ptr<OpenGLTexture> newlyCreatedTexture = std::make_shared<OpenGLTexture>(texture);
+    textureCache[path] = newlyCreatedTexture;
+    return newlyCreatedTexture;
 }
 
 OpenGLMesh::OpenGLMesh(Mesh& mesh)
