@@ -83,6 +83,7 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
     std::vector<Texture> meshTextures = this->mesh.getTextures();
     unsigned int numOfDiffuseTextures = 0;
     unsigned int numOfSpecularTextures = 0;
+    unsigned int numOfNormalTextures = 0;
     for (unsigned int it = 0; it < meshTextures.size(); ++it) {
         const Texture& texture = meshTextures[it];
         std::string nTextureType;
@@ -92,6 +93,9 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
                 break;
             case TextureType::SPECULAR:
                 nTextureType = std::to_string(numOfSpecularTextures++);
+                break;
+            case TextureType::NORMAL:
+                nTextureType = std::to_string(numOfNormalTextures++);
                 break;
             default:
                 Console::get().error("[OpenGLMesh::OpenGLMesh] Unsupported texture type");

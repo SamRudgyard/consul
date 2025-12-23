@@ -8,7 +8,8 @@
  */
 enum TextureType {
     DIFFUSE,
-    SPECULAR
+    SPECULAR,
+    NORMAL
 };
 
 class Texture
@@ -27,6 +28,7 @@ private:
     // Textures will be named "diffuse0", "diffuse1", "specular0", "specular1", etc.
     std::map <TextureType, const char*> textureTypeToString = {
         {TextureType::DIFFUSE, "diffuse"},
-        {TextureType::SPECULAR, "specular"}
+        {TextureType::SPECULAR, "specular"},
+        {TextureType::NORMAL, "normal"}
     };
 };

@@ -65,6 +65,14 @@ OpenGLTexture::OpenGLTexture(const Texture& textureData)
     glCheckError();
 }
 
+OpenGLTexture::~OpenGLTexture()
+{
+    if (id != 0) {
+        release();
+        id = 0;
+    }
+}
+
 void OpenGLTexture::bind() const {
     glActiveTexture(GL_TEXTURE0 + unit);
     glCheckError();
