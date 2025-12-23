@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 
 #include "../renderable_mesh.hpp"
 #include "../mesh.hpp"
@@ -17,7 +18,7 @@ public:
 private:
     unsigned int vao;
     unsigned int ebo;
-    std::map<std::string, OpenGLTexture> textures;
+    std::map<std::string, std::shared_ptr<OpenGLTexture>> textures;
 
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw);

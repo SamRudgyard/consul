@@ -39,11 +39,11 @@ public:
 private:
 	// Variables for easy access
 	std::string file;
+	std::string fileDirectory;
 	std::vector<unsigned char> binaryData;
 	json jsonContents;
 
 	std::vector<Mesh> meshes;
-	std::vector<Texture> loadedTextures;
 	std::vector<glm::mat4> transformationMatrices;
 
 	/**
@@ -74,9 +74,18 @@ private:
 	std::vector<unsigned int> readAccessorIndices(json accessor);
 
 	/**
-	 * Load textures used by the model.
+	 * Retreive a texture's full path from a glTF texture index.
+	 * @param textureIndex Index into the glTF textures array.
+	 * @returns Full texture path.
 	 */
-	void loadTextures();
+	std::string getTexturePathFromUri(unsigned int textureIndex) const;
+
+	/**
+	 * Collect textures referenced by a material.
+	 * @param materialIndex Index into the glTF materials array.
+	 * @returns Vector of textures referenced by the material.
+	 */
+	std::vector<Texture> getTexturesForMaterial(int materialIndex) const;
 
 	/**
 	 * Convert a float array to a vec2 array.

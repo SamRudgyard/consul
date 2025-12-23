@@ -1,11 +1,33 @@
 #include "opengl_mesh.hpp"
 
+#include <memory>
+#include <unordered_map>
+
 #include "core/console/console.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/shaders/shader.hpp"
 #include "graphics/textures/opengl/opengl_texture.hpp"
 #include "glad/glad.h"
 #include "utils.hpp"
+
+namespace {
+    std::unordered_map<std::string, std::shared_ptr<OpenGLTexture>> textureCache;
+
+    std::shared_ptr<OpenGLTexture> getCachedTexture(const Texture& texture)
+    {
+        const std::string& path = texture.getPath();
+        auto it = textureCache.find(path);
+        if (it != textureCache.end()) {
+            if (std::shared_ptr<OpenGLTexture> prevCachedTexture = it->second) {
+                return prevCachedTexture;
+            }
+        }
+
+        std::shared_ptr<OpenGLTexture> newlyCreatedTexture = std::make_shared<OpenGLTexture>(texture);
+        textureCache[path] = newlyCreatedTexture;
+        return newlyCreatedTexture;
+    }
+}
 
 OpenGLMesh::OpenGLMesh(Mesh& mesh)
     : RenderableMesh(mesh)
@@ -101,9 +123,12 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
                 Console::get().error("[OpenGLMesh::OpenGLMesh] Unsupported texture type");
                 continue;
         }
-        OpenGLTexture openglTexture(texture);
+        std::shared_ptr<OpenGLTexture> openglTexture = getCachedTexture(texture);
         textures.insert({texture.getTextureTypeAsString() + nTextureType, openglTexture});
     }
+
+    // Now that the mesh is uploaded to the GPU, we can drop the CPU-side vertex data
+    this->mesh.clear();
 }
 
 OpenGLMesh::~OpenGLMesh()
@@ -187,8 +212,8 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
     glCheckError();
 
     for (const auto& [name, texture] : textures) {
-        texture.bind();
-        texture.setTextureUnit(shader, name.c_str());
+        texture->bind();
+        texture->setTextureUnit(shader, name.c_str());
         glCheckError();
     }
 

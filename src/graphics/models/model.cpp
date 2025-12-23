@@ -23,11 +23,9 @@ Model::Model(const char* modelPath)
     // The uri (unique resource identifier) of the binary data
 	std::string uri = jsonContents["buffers"][0]["uri"];
 
-	std::string fileDirectory = file.substr(0, file.find_last_of('/') + 1);
+	fileDirectory = file.substr(0, file.find_last_of('/') + 1);
 	std::string binaryContents = readFile((fileDirectory + uri).c_str());
     binaryData = std::vector<unsigned char>(binaryContents.begin(), binaryContents.end());
-
-    loadTextures();
 
 	// Traverse all nodes
 	traverseNode(0);
@@ -51,12 +49,15 @@ void Model::loadMesh(unsigned int iMesh)
 	std::vector<float> normalFloats = readAccessorFloats(jsonContents["accessors"][normalAccessorIndex]);
 	std::vector<glm::vec3> normals = toVec3(normalFloats);
     std::vector<glm::vec4> colours; // Empty colours vector, TODO: implement reading colors if needed
-	std::vector<float> textureFloats = readAccessorFloats(jsonContents["accessors"][texCoordAccessorIndex]);
-	std::vector<glm::vec2> textureUVs = toVec2(textureFloats);
+    std::vector<float> textureFloats = readAccessorFloats(jsonContents["accessors"][texCoordAccessorIndex]);
+    std::vector<glm::vec2> textureUVs = toVec2(textureFloats);
     std::vector<glm::vec4> tangents; // Empty tangents vector, TODO: implement reading tangents if needed
 	std::vector<unsigned int> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
 
-    Mesh mesh(positions, normals, colours, textureUVs, tangents, indices, loadedTextures);
+    int materialIndex = primitives[0].value("material", -1);
+    std::vector<Texture> textures = getTexturesForMaterial(materialIndex);
+
+    Mesh mesh(positions, normals, colours, textureUVs, tangents, indices, textures);
     meshes.push_back(mesh); // TODO: Remove when we get rid of mesh owning its textures
 }
 
@@ -188,30 +189,69 @@ std::vector<unsigned int> Model::readAccessorIndices(json accessor)
 	return indices;
 }
 
-void Model::loadTextures()
+std::string Model::getTexturePathFromUri(unsigned int textureIndex) const
 {
-    const std::string fileDirectory = file.substr(0, file.find_last_of('/') + 1);
-
-    for (const auto& image : jsonContents["images"])
-    {
-        const std::string uri = image["uri"];
-
-        // Determine texture type based on URI naming convention
-        TextureType type;
-        if (uri.find("baseColor") != std::string::npos)
-            type = TextureType::DIFFUSE;
-        else if (uri.find("metallicRoughness") != std::string::npos)
-            type = TextureType::SPECULAR;
-        else
-        {
-            Console::get().warn("[Model::loadTextures] Unknown texture type for URI: '" + uri + "'");
-            continue;
-        }
-
-        // Load the new texture
-        std::string texturePath = fileDirectory + uri;
-        loadedTextures.emplace_back(Texture(texturePath.c_str(), type)); // So we can avoid reloading it later
+    if (!jsonContents.contains("textures") || textureIndex >= jsonContents["textures"].size()) {
+        Console::get().error("[Model::getTexturePathFromUri] Invalid texture index: '" + std::to_string(textureIndex) + "'");
     }
+
+    const json& texture = jsonContents["textures"][textureIndex];
+    if (!texture.contains("source")) {
+        Console::get().error("[Model::getTexturePathFromUri] Texture has no source: '" + std::to_string(textureIndex) + "'");
+    }
+
+    unsigned int imageIndex = texture["source"];
+    if (!jsonContents.contains("images") || imageIndex >= jsonContents["images"].size()) {
+        Console::get().error("[Model::getTexturePathFromUri] Invalid image index: '" + std::to_string(imageIndex) + "'");
+    }
+
+    const json& image = jsonContents["images"][imageIndex];
+    if (!image.contains("uri")) {
+        Console::get().error("[Model::getTexturePathFromUri] Image has no uri: '" + std::to_string(imageIndex) + "'");
+    }
+
+    std::string uri = image["uri"];
+    return fileDirectory + uri;
+}
+
+std::vector<Texture> Model::getTexturesForMaterial(int materialIndex) const
+{
+    std::vector<Texture> textures;
+
+    if (materialIndex < 0 || !jsonContents.contains("materials")) {
+        return textures;
+    }
+    if (materialIndex >= jsonContents["materials"].size()) {
+        Console::get().warn("[Model::getTexturesForMaterial] Invalid material index: '" + std::to_string(materialIndex) + "'");
+        return textures;
+    }
+
+    const json& material = jsonContents["materials"][materialIndex];
+
+    auto addTextureIfPresent = [&](const json& parent, const char* key, TextureType type) {
+        if (!parent.contains(key)) {
+            return;
+        }
+        const json& textureInfo = parent[key];
+        if (!textureInfo.contains("index")) {
+            return;
+        }
+        unsigned int textureIndex = textureInfo["index"];
+        std::string uri = getTexturePathFromUri(textureIndex);
+        if (!uri.empty()) {
+            textures.emplace_back(Texture(uri, type));
+        }
+    };
+
+    if (material.contains("pbrMetallicRoughness")) {
+        const json& pbr = material["pbrMetallicRoughness"];
+        addTextureIfPresent(pbr, "baseColorTexture", TextureType::DIFFUSE);
+        addTextureIfPresent(pbr, "metallicRoughnessTexture", TextureType::SPECULAR);
+    }
+
+    addTextureIfPresent(material, "normalTexture", TextureType::NORMAL);
+
+    return textures;
 }
 
 std::vector<glm::vec2> Model::toVec2(std::vector<float> floatVec)
