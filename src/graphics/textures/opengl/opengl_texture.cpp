@@ -9,8 +9,8 @@
 #endif
 #include <stb_image.h>
 
-OpenGLTexture::OpenGLTexture(const Texture& textureData)
-    : RenderableTexture(textureData)
+OpenGLTexture::OpenGLTexture(const Texture& textureData, const unsigned int unit)
+    : RenderableTexture(textureData), unit(unit)
 {
     glCheckError();
 

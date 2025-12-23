@@ -10,7 +10,7 @@
 #include "glad/glad.h"
 #include "utils.hpp"
 
-std::shared_ptr<OpenGLTexture> OpenGLMesh::getCachedTexture(const Texture& texture)
+std::shared_ptr<OpenGLTexture> OpenGLMesh::getCachedTexture(const Texture& texture, const unsigned int unit)
 {
     const std::string& path = texture.getPath();
     auto it = textureCache.find(path);
@@ -20,7 +20,7 @@ std::shared_ptr<OpenGLTexture> OpenGLMesh::getCachedTexture(const Texture& textu
         }
     }
 
-    std::shared_ptr<OpenGLTexture> newlyCreatedTexture = std::make_shared<OpenGLTexture>(texture);
+    std::shared_ptr<OpenGLTexture> newlyCreatedTexture = std::make_shared<OpenGLTexture>(texture, unit);
     textureCache[path] = newlyCreatedTexture;
     return newlyCreatedTexture;
 }
@@ -102,6 +102,7 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
     unsigned int numOfDiffuseTextures = 0;
     unsigned int numOfSpecularTextures = 0;
     unsigned int numOfNormalTextures = 0;
+    unsigned int textureUnit = 0;
     for (unsigned int it = 0; it < meshTextures.size(); ++it) {
         const Texture& texture = meshTextures[it];
         std::string nTextureType;
@@ -119,8 +120,9 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
                 Console::get().error("[OpenGLMesh::OpenGLMesh] Unsupported texture type");
                 continue;
         }
-        std::shared_ptr<OpenGLTexture> openglTexture = getCachedTexture(texture);
+        std::shared_ptr<OpenGLTexture> openglTexture = getCachedTexture(texture, textureUnit);
         textures.insert({texture.getTextureTypeAsString() + nTextureType, openglTexture});
+        textureUnit++;
     }
 
     // Now that the mesh is uploaded to the GPU, we can drop the CPU-side vertex data
