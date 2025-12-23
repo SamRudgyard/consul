@@ -33,10 +33,10 @@ public:
 
 	/**
 	 * Gets the transformation matrices for each mesh in the model, with the
-	 * model's runtime transform applied.
+	 * model's runtime transform applied. Recalculates when needed.
 	 * @returns Vector of transformation matrices.
 	 */
-	std::vector<glm::mat4> getTransformationMatrices() const;
+	std::vector<glm::mat4> getTransformationMatrices();
 
 	/**
 	 * Apply a translation to the model's runtime transform.
@@ -82,8 +82,10 @@ private:
 	json jsonContents;
 
 	std::vector<Mesh> meshes;
-	std::vector<glm::mat4> transformationMatrices;
+	std::vector<glm::mat4> initialTransformations;
+	std::vector<glm::mat4> combinedTransforms;
 	glm::mat4 modelTransform = glm::mat4(1.0f);
+	bool recalcTransformation = true;
 
 	/**
 	 * Load a single mesh.

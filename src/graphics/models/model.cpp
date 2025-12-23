@@ -52,39 +52,51 @@ Model::Model(const char* modelPath)
     }
 }
 
-std::vector<glm::mat4> Model::getTransformationMatrices() const
+std::vector<glm::mat4> Model::getTransformationMatrices()
 {
-    std::vector<glm::mat4> combinedTransforms;
-    combinedTransforms.reserve(transformationMatrices.size());
-    for (const glm::mat4& baseTransform : transformationMatrices) {
-        combinedTransforms.push_back(modelTransform * baseTransform);
+    if (!recalcTransformation) {
+        return combinedTransforms;
     }
+
+    // Recalculate the global transformation matrices
+    combinedTransforms.clear();
+    combinedTransforms.reserve(initialTransformations.size());
+    for (const glm::mat4& initialTransformation : initialTransformations) {
+        combinedTransforms.push_back(modelTransform * initialTransformation);
+    }
+    recalcTransformation = false;
+
     return combinedTransforms;
 }
 
 void Model::translate(const glm::vec3& delta)
 {
     modelTransform = glm::translate(modelTransform, delta);
+    recalcTransformation = true;
 }
 
 void Model::rotate(float angleRadians, const glm::vec3& axis)
 {
     modelTransform = glm::rotate(modelTransform, angleRadians, axis);
+    recalcTransformation = true;
 }
 
 void Model::scale(const glm::vec3& factor)
 {
     modelTransform = glm::scale(modelTransform, factor);
+    recalcTransformation = true;
 }
 
 void Model::setTransform(const glm::mat4& transform)
 {
     modelTransform = transform;
+    recalcTransformation = true;
 }
 
 void Model::resetTransform()
 {
     modelTransform = glm::mat4(1.0f);
+    recalcTransformation = true;
 }
 
 void Model::loadMesh(unsigned int iMesh)
@@ -145,7 +157,8 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
 	if (node.contains("mesh"))
 	{
         // Only store the transformation matrix if there is a mesh to go with it
-        transformationMatrices.push_back(transformationMatrix);
+        initialTransformations.push_back(transformationMatrix);
+        recalcTransformation = true;
 		loadMesh(node["mesh"]);
 	}
 
