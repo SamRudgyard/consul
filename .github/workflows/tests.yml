@@ -43,7 +43,7 @@ jobs:
             ${{ runner.os }}-cmake-
 
       - name: Configure
-        run: cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: cmake --build build --parallel
