@@ -52,6 +52,41 @@ Model::Model(const char* modelPath)
     }
 }
 
+std::vector<glm::mat4> Model::getTransformationMatrices() const
+{
+    std::vector<glm::mat4> combinedTransforms;
+    combinedTransforms.reserve(transformationMatrices.size());
+    for (const glm::mat4& baseTransform : transformationMatrices) {
+        combinedTransforms.push_back(modelTransform * baseTransform);
+    }
+    return combinedTransforms;
+}
+
+void Model::translate(const glm::vec3& delta)
+{
+    modelTransform = glm::translate(modelTransform, delta);
+}
+
+void Model::rotate(float angleRadians, const glm::vec3& axis)
+{
+    modelTransform = glm::rotate(modelTransform, angleRadians, axis);
+}
+
+void Model::scale(const glm::vec3& factor)
+{
+    modelTransform = glm::scale(modelTransform, factor);
+}
+
+void Model::setTransform(const glm::mat4& transform)
+{
+    modelTransform = transform;
+}
+
+void Model::resetTransform()
+{
+    modelTransform = glm::mat4(1.0f);
+}
+
 void Model::loadMesh(unsigned int iMesh)
 {
 	// Get all accessor indices

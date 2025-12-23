@@ -5,6 +5,7 @@
 #include "graphics/textures/texture.hpp"
 #include "glad/glad.h"
 #include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 #include <vector>
 #include <string>
@@ -31,10 +32,47 @@ public:
 	std::vector<Mesh> getMeshes() const { return meshes; }
 
 	/**
-	 * Gets the transformation matrices for each mesh in the model.
+	 * Gets the transformation matrices for each mesh in the model, with the
+	 * model's runtime transform applied.
 	 * @returns Vector of transformation matrices.
 	 */
-	std::vector<glm::mat4> getTransformationMatrices() const { return transformationMatrices; }
+	std::vector<glm::mat4> getTransformationMatrices() const;
+
+	/**
+	 * Apply a translation to the model's runtime transform.
+	 * @param delta Translation to apply.
+	 */
+	void translate(const glm::vec3& delta);
+
+	/**
+	 * Apply a rotation (in radians) around the given axis.
+	 * @param angleRadians Rotation angle in radians.
+	 * @param axis Axis to rotate around.
+	 */
+	void rotate(float angleRadians, const glm::vec3& axis);
+
+	/**
+	 * Apply a scale to the model's runtime transform.
+	 * @param factor Scale factor.
+	 */
+	void scale(const glm::vec3& factor);
+
+	/**
+	 * Set the model's runtime transform matrix directly.
+	 * @param transform New transform matrix.
+	 */
+	void setTransform(const glm::mat4& transform);
+
+	/**
+	 * Reset the model's runtime transform to identity.
+	 */
+	void resetTransform();
+
+	/**
+	 * Get the model's runtime transform matrix.
+	 * @returns Current runtime transform matrix.
+	 */
+	const glm::mat4& getTransform() const { return modelTransform; }
 
 private:
 	// Variables for easy access
@@ -45,6 +83,7 @@ private:
 
 	std::vector<Mesh> meshes;
 	std::vector<glm::mat4> transformationMatrices;
+	glm::mat4 modelTransform = glm::mat4(1.0f);
 
 	/**
 	 * Load a single mesh.
