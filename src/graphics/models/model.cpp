@@ -27,8 +27,29 @@ Model::Model(const char* modelPath)
 	std::string binaryContents = readFile((fileDirectory + uri).c_str());
     binaryData = std::vector<unsigned char>(binaryContents.begin(), binaryContents.end());
 
-	// Traverse all nodes
-	traverseNode(0);
+    unsigned int sceneIndex = 0;
+
+    if (!jsonContents.contains("scenes") || jsonContents["scenes"].empty()) {
+        Console::get().warn("[Model::Model] No scenes found in glTF file: '" + file + "'");
+        traverseNode(sceneIndex);
+        return;
+    }
+
+    sceneIndex = jsonContents.value("scene", 0);
+    if (sceneIndex >= jsonContents["scenes"].size()) {
+        Console::get().warn("[Model::Model] Default scene index out of range, using scene 0: '" + file + "'");
+        sceneIndex = 0;
+    }
+
+    const json& scene = jsonContents["scenes"][sceneIndex];
+    if (!scene.contains("nodes")) {
+        traverseNode(sceneIndex);
+        return;
+    }
+
+    for (const auto& nodeIndex : scene["nodes"]) {
+        traverseNode(nodeIndex);
+    }
 }
 
 void Model::loadMesh(unsigned int iMesh)

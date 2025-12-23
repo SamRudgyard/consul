@@ -55,6 +55,7 @@ public:
     const std::vector<glm::vec2>& getTextureCoords() const { return textureCoords; }
     const std::vector<glm::vec4>& getTangents() const { return tangents; }
     const std::vector<unsigned int>& getIndices() const { return indices; }
+    const unsigned int getIndexCount() const { return indexCount; }
     const std::vector<Texture>& getTextures() const { return textures; }
 
     void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }

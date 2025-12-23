@@ -87,9 +87,16 @@ public:
     void loadModel(Model& model)
     {
         std::vector<Mesh> meshes = model.getMeshes();
-        for (Mesh& mesh : meshes)
+        std::vector<glm::mat4> transforms = model.getTransformationMatrices();
+        for (size_t iMesh = 0; iMesh < meshes.size(); ++iMesh)
         {
+            Mesh& mesh = meshes[iMesh];
             RenderableMesh* renderableMesh = newMesh(mesh);
+            if (iMesh < transforms.size()) {
+                renderableMesh->setModelMatrix(transforms[iMesh]);
+            } else {
+                Console::get().warn("[Renderer::loadModel] Missing transform for mesh index: '" + std::to_string(iMesh) + "'");
+            }
             loadedMeshes.push_back(renderableMesh);
         }
     }

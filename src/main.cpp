@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 
     Consul consul(window);
 
-    Camera camera(glm::vec3(0.0f, -2.0f, 0.0f));
+    Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
 
     Renderer& renderer = consul.getRenderer();
 
