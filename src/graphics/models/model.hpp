@@ -5,6 +5,7 @@
 #include "graphics/textures/texture.hpp"
 #include "glad/glad.h"
 #include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 #include <vector>
 #include <string>
@@ -31,20 +32,60 @@ public:
 	std::vector<Mesh> getMeshes() const { return meshes; }
 
 	/**
-	 * Gets the transformation matrices for each mesh in the model.
+	 * Gets the transformation matrices for each mesh in the model, with the
+	 * model's runtime transform applied. Recalculates when needed.
 	 * @returns Vector of transformation matrices.
 	 */
-	std::vector<glm::mat4> getTransformationMatrices() const { return transformationMatrices; }
+	std::vector<glm::mat4> getTransformationMatrices();
+
+	/**
+	 * Apply a translation to the model's runtime transform.
+	 * @param delta Translation to apply.
+	 */
+	void translate(const glm::vec3& delta);
+
+	/**
+	 * Apply a rotation (in radians) around the given axis.
+	 * @param angleRadians Rotation angle in radians.
+	 * @param axis Axis to rotate around.
+	 */
+	void rotate(float angleRadians, const glm::vec3& axis);
+
+	/**
+	 * Apply a scale to the model's runtime transform.
+	 * @param factor Scale factor.
+	 */
+	void scale(const glm::vec3& factor);
+
+	/**
+	 * Set the model's runtime transform matrix directly.
+	 * @param transform New transform matrix.
+	 */
+	void setTransform(const glm::mat4& transform);
+
+	/**
+	 * Reset the model's runtime transform to identity.
+	 */
+	void resetTransform();
+
+	/**
+	 * Get the model's runtime transform matrix.
+	 * @returns Current runtime transform matrix.
+	 */
+	const glm::mat4& getTransform() const { return modelTransform; }
 
 private:
 	// Variables for easy access
 	std::string file;
+	std::string fileDirectory;
 	std::vector<unsigned char> binaryData;
 	json jsonContents;
 
 	std::vector<Mesh> meshes;
-	std::vector<Texture> loadedTextures;
-	std::vector<glm::mat4> transformationMatrices;
+	std::vector<glm::mat4> initialTransformations;
+	std::vector<glm::mat4> combinedTransforms;
+	glm::mat4 modelTransform = glm::mat4(1.0f);
+	bool recalcTransformation = true;
 
 	/**
 	 * Load a single mesh.
@@ -74,9 +115,18 @@ private:
 	std::vector<unsigned int> readAccessorIndices(json accessor);
 
 	/**
-	 * Load textures used by the model.
+	 * Retreive a texture's full path from a glTF texture index.
+	 * @param textureIndex Index into the glTF textures array.
+	 * @returns Full texture path.
 	 */
-	void loadTextures();
+	std::string getTexturePathFromUri(unsigned int textureIndex) const;
+
+	/**
+	 * Collect textures referenced by a material.
+	 * @param materialIndex Index into the glTF materials array.
+	 * @returns Vector of textures referenced by the material.
+	 */
+	std::vector<Texture> getTexturesForMaterial(int materialIndex) const;
 
 	/**
 	 * Convert a float array to a vec2 array.

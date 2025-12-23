@@ -33,10 +33,13 @@ public:
     ~Renderer() {
         delete gfxBackend;
 
-        for (RenderableMesh* mesh : loadedMeshes) {
-            delete mesh;
+        for (LoadedModel& loadedModel : loadedModels) {
+            for (RenderableMesh* mesh : loadedModel.meshes) {
+                delete mesh;
+            }
+            loadedModel.meshes.clear();
         }
-        loadedMeshes.clear();
+        loadedModels.clear();
     }
 
     void initialiseImGui()
@@ -87,24 +90,43 @@ public:
     void loadModel(Model& model)
     {
         std::vector<Mesh> meshes = model.getMeshes();
-        for (Mesh& mesh : meshes)
-        {
+        std::vector<glm::mat4> transforms = model.getTransformationMatrices();
+        LoadedModel loadedModel{&model, {}};
+        loadedModel.meshes.reserve(meshes.size());
+        for (unsigned int iMesh = 0; iMesh < meshes.size(); iMesh++) {
+            Mesh& mesh = meshes[iMesh];
             RenderableMesh* renderableMesh = newMesh(mesh);
-            loadedMeshes.push_back(renderableMesh);
+            if (iMesh < transforms.size()) {
+                renderableMesh->setModelMatrix(transforms[iMesh]);
+            } else {
+                Console::get().warn("[Renderer::loadModel] Missing transform for mesh index: '" + std::to_string(iMesh) + "'");
+            }
+            loadedModel.meshes.push_back(renderableMesh);
         }
+        loadedModels.push_back(loadedModel);
     }
 
     void render(const IShader* shader, const Camera& camera)
     {
-        for (RenderableMesh* mesh : loadedMeshes)
-        {
-            mesh->draw(shader, camera);
+        for (LoadedModel& loadedModel : loadedModels) {
+            std::vector<glm::mat4> transforms = loadedModel.model->getTransformationMatrices();
+            for (unsigned int iMesh = 0; iMesh < loadedModel.meshes.size(); iMesh++) {
+                if (iMesh < transforms.size()) {
+                    loadedModel.meshes[iMesh]->setModelMatrix(transforms[iMesh]);
+                }
+                loadedModel.meshes[iMesh]->draw(shader, camera);
+            }
         }
     }
 
     
 private:
+    struct LoadedModel {
+        Model* model;
+        std::vector<RenderableMesh*> meshes;
+    };
+
     IGraphics* gfxBackend = nullptr;
     GraphicsAPI gfxApi;
-    std::vector<RenderableMesh*> loadedMeshes;
+    std::vector<LoadedModel> loadedModels;
 };

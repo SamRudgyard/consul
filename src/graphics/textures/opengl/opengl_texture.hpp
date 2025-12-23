@@ -6,7 +6,8 @@
 class OpenGLTexture : public RenderableTexture
 {
 public:
-    OpenGLTexture(const Texture& textureData);
+    OpenGLTexture(const Texture& textureData, const unsigned int unit);
+    ~OpenGLTexture();
 
     void bind() const override;
     void unbind() const override;
@@ -14,6 +15,6 @@ public:
     void setTextureUnit(const IShader* shader, const char* uniform) const override;
 
 private:
-    unsigned int id;
-    unsigned int unit;
+    unsigned int id = 0;
+    unsigned int unit = 0;
 };

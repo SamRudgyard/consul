@@ -1,8 +1,6 @@
 #include "console.hpp"
 
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 #include "core/engine_context.hpp"
 #include "core/window.hpp"
 #include "utils.hpp"

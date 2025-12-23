@@ -36,7 +36,8 @@ public:
         textureCoords(textureCoords),
         tangents(tangents),
         indices(indices),
-        textures(textures) {}
+        textures(textures),
+        indexCount(indices.size()) {}
 
     void setVertexBuffer(unsigned int vbo, AttributeType type)
     {
@@ -54,12 +55,30 @@ public:
     const std::vector<glm::vec2>& getTextureCoords() const { return textureCoords; }
     const std::vector<glm::vec4>& getTangents() const { return tangents; }
     const std::vector<unsigned int>& getIndices() const { return indices; }
+    const unsigned int getIndexCount() const { return indexCount; }
     const std::vector<Texture>& getTextures() const { return textures; }
 
     void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }
     const glm::mat4& getModelMatrix() const { return modelMatrix; }
 
-    const unsigned int getNumIndices() const { return (unsigned int)indices.size(); }
+    const unsigned int getNumIndices() const { return (unsigned int)indexCount; }
+
+    void clear()
+    {
+        positions.clear();
+        normals.clear();
+        colours.clear();
+        textureCoords.clear();
+        tangents.clear();
+        indices.clear();
+
+        positions.shrink_to_fit();
+        normals.shrink_to_fit();
+        colours.shrink_to_fit();
+        textureCoords.shrink_to_fit();
+        tangents.shrink_to_fit();
+        indices.shrink_to_fit();
+    }
 
 private:
     glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -70,5 +89,6 @@ private:
     std::vector<glm::vec4> tangents; // TODO: Why vec4 for tangents?
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
+    unsigned int indexCount = 0;
     std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(6, 0);
 };

@@ -60,8 +60,8 @@ private:
     float FOVdeg = 45.0f;
     float nearPlane = 0.1f;
     float farPlane = 100.0f;
-    glm::vec3 orientation = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 up = glm::vec3(0.0f, 0.0f, 1.0f);
+    glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 viewMatrix = glm::mat4(1.0f);
     glm::mat4 projectionMatrix = glm::mat4(1.0f);
 
