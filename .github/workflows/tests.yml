@@ -6,13 +6,19 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install dependencies
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -37,10 +43,10 @@ jobs:
             ${{ runner.os }}-cmake-
 
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DBUILD_TESTS=ON
+        run: cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --parallel
 
       - name: Test
         run: ctest --test-dir build --output-on-failure
