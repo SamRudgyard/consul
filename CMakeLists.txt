@@ -28,6 +28,7 @@ FetchContent_Declare(
 )
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glfw)
 
@@ -73,7 +74,6 @@ FetchContent_MakeAvailable(imgui)
 # Build ImGui as a static lib from the sources we need
 set(IMGUI_SRC
   ${imgui_SOURCE_DIR}/imgui.cpp
-  ${imgui_SOURCE_DIR}/imgui_demo.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
   ${imgui_SOURCE_DIR}/imgui_widgets.cpp
@@ -133,11 +133,13 @@ file(GLOB_RECURSE H_HEADERS "${SRC_DIR}/*.h")
 # Add all source files to the project
 include_directories(${SRC_DIR})
 
-add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${C_SOURCES} ${HPP_HEADERS} ${H_HEADERS})
+set(ENGINE_CPP_SOURCES ${CPP_SOURCES})
+list(REMOVE_ITEM ENGINE_CPP_SOURCES "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
-# Link the library targets created above:
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
+add_library(consul_engine STATIC ${ENGINE_CPP_SOURCES} ${C_SOURCES} ${HPP_HEADERS} ${H_HEADERS})
+target_include_directories(consul_engine PUBLIC ${SRC_DIR} ${stb_SOURCE_DIR})
+target_link_libraries(consul_engine
+  PUBLIC
     glfw
     glad
     imgui
@@ -146,8 +148,8 @@ target_link_libraries(${PROJECT_NAME}
     nlohmann_json::nlohmann_json
 )
 
-# Ensure includes for stb header-only are available (stb uses headers directly)
-target_include_directories(${PROJECT_NAME} PRIVATE ${stb_SOURCE_DIR})
+add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE consul_engine)
 
 if(BUILD_TESTS)
   enable_testing()
