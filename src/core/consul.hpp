@@ -39,6 +39,19 @@ public:
     void terminate();
 
     /**
+     * Sets the target FPS.
+     * @param fps Target frames per second.
+     */
+    void setTargetFPS(unsigned int fps)
+    {
+        if (fps <= 0) {
+            return;
+        }
+
+        context->time.targetFrameTime = 1.0 / (double)fps;
+    }
+
+    /**
      * Gets the renderer instance.
      * @returns Reference to the renderer.
     */
