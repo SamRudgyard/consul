@@ -55,16 +55,6 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
 
     glCheckError();
     
-    if (this->mesh.getColours().empty()) {
-        // Mesh doesn't have colours => use default white colour
-        glVertexAttrib4fv((unsigned int)(AttributeType::COLOUR), glm::value_ptr(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)));
-    } else {
-        unsigned int colourVBO = enableVertexBuffer(this->mesh.getColours(), AttributeType::COLOUR, false);
-        this->mesh.setVertexBuffer(colourVBO, AttributeType::COLOUR);
-    }
-
-    glCheckError();
-
     if (this->mesh.getTextureCoords().empty()) {
         // Mesh doesn't have texture coordinates => use default (0, 0)
         glVertexAttrib2fv((unsigned int)(AttributeType::TEXCOORD), glm::value_ptr(glm::vec2(0.0f, 0.0f)));
@@ -142,11 +132,6 @@ OpenGLMesh::~OpenGLMesh()
         glDeleteBuffers(1, &normalVBO);
     }
 
-    unsigned int colourVBO = this->mesh.getVertexBuffer(AttributeType::COLOUR);
-    if (colourVBO != 0) {
-        glDeleteBuffers(1, &colourVBO);
-    }
-
     unsigned int texCoordVBO = this->mesh.getVertexBuffer(AttributeType::TEXCOORD);
     if (texCoordVBO != 0) {
         glDeleteBuffers(1, &texCoordVBO);
@@ -207,6 +192,10 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
 {
     shader->use();
     glBindVertexArray(vao);
+    glCheckError();
+
+    const Colour tint = this->mesh.getTint();
+    shader->setUniformVec4("meshTint", (float)tint.r/255.0f, (float)tint.g/255.0f, (float)tint.b/255.0f, (float)tint.alpha/255.0f);
     glCheckError();
 
     for (const auto& [name, texture] : textures) {
