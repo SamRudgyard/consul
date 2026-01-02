@@ -211,6 +211,8 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
     glCheckError();
     shader->setUniformVec3("lightColour", 1.0f, 1.0f, 1.0f);
     glCheckError();
+    shader->setUniformVec3("ambientColour", 0.15f, 0.15f, 0.15f);
+    glCheckError();
     shader->setUniformMat4("model", getModelMatrix());
     glCheckError();
 

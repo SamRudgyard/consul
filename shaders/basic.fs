@@ -14,6 +14,7 @@ uniform vec4 meshTint;
 uniform vec3 cameraPosition;
 uniform vec3 lightPosition;
 uniform vec3 lightColour;
+uniform vec3 ambientColour;
 
 void main()
 {
@@ -31,6 +32,8 @@ void main()
     float specStrength = texture(specular0, fragTexCoords).r; // usually grayscale
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0) * specStrength;
 
-    vec3 lighting = lightColour * (diff * diffuseColour + spec);
+    vec3 ambient = ambientColour * diffuseColour;
+    vec3 lighting = ambient + lightColour * (diff * diffuseColour + spec);
+    
     fragmentColour = vec4(lighting, meshTint.a);
 }
