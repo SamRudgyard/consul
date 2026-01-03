@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 
     Renderer& renderer = consul.getRenderer();
 
-    IShader* shader = renderer.newShader("shaders/basic.vs", "shaders/basic.fs");
+    IShader* shader = renderer.newShader("shaders/default_vert.glsl", "shaders/default_frag.glsl");
 
     Model model("assets/shiba/scene.gltf");
     renderer.loadModel(model);
