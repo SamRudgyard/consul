@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cstdint>
 #include <vector>
+#include <unordered_map>
+#include <cmath>
 
 #include "core/console/console.hpp"
 #include "maths/constants.hpp"
@@ -12,6 +14,170 @@
 Mesh Geometry::cube(float width)
 {
     return cuboid(width, width, width);
+}
+
+Mesh Geometry::cone(float radius, float height, unsigned int sides)
+{
+    return cylinder(0.f, radius, height, sides);
+}
+
+Mesh Geometry::cylinder(float radiusTop, float radiusBottom, float height, unsigned int sides)
+{
+    constexpr float eps = 1e-6f;
+
+    if (radiusTop < 0.f) {
+        Console::get().error("[Geometry::cylinder] Invalid radiusTop " + std::to_string(radiusTop) + ", must be >= 0.");
+    }
+    if (radiusBottom <= 0.f) {
+        Console::get().error("[Geometry::cylinder] Invalid radiusBottom " + std::to_string(radiusBottom) + ", must be +ve real.");
+    }
+    if (height <= 0.f) {
+        Console::get().error("[Geometry::cylinder] Invalid height " + std::to_string(height) + ", must be +ve real.");
+    }
+
+    sides = std::max(3u, sides); // We require at least 3 sides
+    const float halfHeight = 0.5f*height;
+    const float yTop = halfHeight;
+    const float yBottom = -halfHeight;
+    const float slope = (radiusBottom - radiusTop)/height;
+    const bool hasTopSurface = radiusTop > eps;
+
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec4> tangents;
+    std::vector<unsigned int> indices;
+
+    // Precompute angles
+    std::vector<float> cosThetas(sides + 1), sinThetas(sides + 1);
+    for (unsigned int iSide = 0; iSide <= sides; iSide++) {
+        float theta = TWO_PI*float(iSide)/float(sides);
+        cosThetas[iSide] = std::cos(theta);
+        sinThetas[iSide] = std::sin(theta);
+    }
+
+    // ==================================================
+    // 1) Side surfaces
+    // ==================================================
+    const unsigned int sideStart = (unsigned int)positions.size();
+
+    for (unsigned int iSide = 0; iSide <= sides; iSide++) {
+        const float c = cosThetas[iSide];
+        const float s = sinThetas[iSide];
+
+        const glm::vec3 normal = glm::normalize(glm::vec3(c, slope, s));
+        const glm::vec3 tangent3 = glm::normalize(glm::vec3(-s, 0.f, c));
+        const glm::vec4 tangent(tangent3, 1.f);
+
+        const float u = float(iSide)/float(sides);
+
+        // top (or apex if radiusTop == 0)
+        positions.emplace_back(radiusTop*c, yTop, radiusTop*s);
+        normals.push_back(normal);
+        uvs.emplace_back(u, 1.f);
+        tangents.push_back(tangent);
+
+        // bottom
+        positions.emplace_back(radiusBottom*c, yBottom, radiusBottom*s);
+        normals.push_back(normal);
+        uvs.emplace_back(u, 0.f);
+        tangents.push_back(tangent);
+    }
+
+    // Side indices (CCW from outside)
+    for (unsigned int iSide = 0; iSide < sides; iSide++) {
+        // Note that we construct the sides from "inside" its surface,
+        // hence indices are CW here so they are CCW from "outside".
+        const unsigned int topL = sideStart + 2u*iSide;
+        const unsigned int botL = topL + 1u;
+        const unsigned int topR = sideStart + 2u*(iSide + 1u);
+        const unsigned int botR = topR + 1u;
+
+        indices.push_back(topL);
+        indices.push_back(topR);
+        indices.push_back(botL);
+
+        indices.push_back(topR);
+        indices.push_back(botR);
+        indices.push_back(botL);
+    }
+
+    // ==================================================
+    // 2) Top Surface
+    // ==================================================
+    if (hasTopSurface) {
+        const unsigned int capStart = (unsigned int)positions.size();
+
+        // center
+        positions.emplace_back(0.f, yTop, 0.f);
+        normals.emplace_back(0.f, 1.f, 0.f);
+        uvs.emplace_back(0.5f, 0.5f);
+        tangents.emplace_back(1.f, 0.f, 0.f, 1.f);
+
+        // ring
+        for (unsigned int iSide = 0; iSide <= sides; iSide++) {
+            const float c = cosThetas[iSide];
+            const float s = sinThetas[iSide];
+
+            const float x = radiusTop*c;
+            const float z = radiusTop*s;
+
+            positions.emplace_back(x, yTop, z);
+            normals.emplace_back(0.f, 1.f, 0.f);
+            uvs.emplace_back(0.5f + 0.5f*c, 0.5f + 0.5f*s);
+            tangents.emplace_back(1.f, 0.f, 0.f, 1.f);
+        }
+
+        for (unsigned int i = 0; i < sides; ++i) {
+            const unsigned int center = capStart;
+            const unsigned int a = capStart + 1u + i;
+            const unsigned int b = capStart + 1u + (i + 1u);
+
+            indices.push_back(center);
+            indices.push_back(b);
+            indices.push_back(a);
+        }
+    }
+
+    // ==================================================
+    // 3) Bottom Surface
+    // ==================================================
+    const unsigned int capStart = (unsigned int)positions.size();
+
+    // center
+    positions.emplace_back(0.f, yBottom, 0.f);
+    normals.emplace_back(0.f, -1.f, 0.f);
+    uvs.emplace_back(0.5f, 0.5f);
+    tangents.emplace_back(1.f, 0.f, 0.f, 1.f);
+
+    // ring
+    for (unsigned int iSide = 0; iSide <= sides; iSide++) {
+        const float c = cosThetas[iSide];
+        const float s = sinThetas[iSide];
+
+        const float x = radiusBottom*c;
+        const float z = radiusBottom*s;
+
+        positions.emplace_back(x, yBottom, z);
+        normals.emplace_back(0.f, -1.f, 0.f);
+        uvs.emplace_back(0.5f + 0.5f*c, 0.5f + 0.5f*s);
+        tangents.emplace_back(1.f, 0.f, 0.f, 1.f);
+    }
+
+    for (unsigned int iSide = 0; iSide < sides; iSide++) {
+        const unsigned int center = capStart;
+        const unsigned int a = capStart + 1u + iSide;
+        const unsigned int b = capStart + 1u + (iSide + 1u);
+
+        indices.push_back(center);
+        indices.push_back(a);
+        indices.push_back(b);
+    }
+
+    std::vector<Texture> textures;
+    textures.emplace_back(Texture());
+
+    return Mesh(positions, normals, uvs, tangents, indices, textures);
 }
 
 Mesh Geometry::cuboid(float width, float height, float depth)

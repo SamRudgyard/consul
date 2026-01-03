@@ -14,8 +14,11 @@ public:
         return &instance;
     }
 
+    Mesh cone(float radius, float height, unsigned int sides);
+    Mesh cylinder(float radiusTop, float radiusBottom, float height, unsigned int sides);
     Mesh cube(float width);
     Mesh cuboid(float width, float height, float depth);
+    Mesh pyramidSquare();
     Mesh sphereUV(float radius, unsigned int nLatitudes, unsigned int nLongitudes);
     Mesh sphereIcosphere(float radius, unsigned int nDivisions);
 
