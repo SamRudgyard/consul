@@ -11,18 +11,31 @@
 
 Mesh Geometry::cube(float width)
 {
+    return cuboid(width, width, width);
+}
+
+Mesh Geometry::cuboid(float width, float height, float depth)
+{
     if (width <= 0.f) {
-        Console::get().error("[Geometry::cube] Invalid width " + std::to_string(width) + ", must be +ve real.");
+        Console::get().error("[Geometry::cuboid] Invalid width " + std::to_string(width) + ", must be +ve real.");
+    }
+    if (height <= 0.f) {
+        Console::get().error("[Geometry::cuboid] Invalid height " + std::to_string(height) + ", must be +ve real.");
+    }
+    if (depth <= 0.f) {
+        Console::get().error("[Geometry::cuboid] Invalid depth " + std::to_string(depth) + ", must be +ve real.");
     }
 
-    const float half = width * 0.5f;
+    const float halfWidth = 0.5f*width;
+    const float halfHeight = 0.5f*height;
+    const float halfDepth = 0.5f*depth;
     std::vector<glm::vec3> positions = {
-        {  half, -half, -half }, {  half, -half,  half }, {  half,  half,  half }, {  half,  half, -half },
-        { -half, -half,  half }, { -half, -half, -half }, { -half,  half, -half }, { -half,  half,  half },
-        { -half,  half, -half }, {  half,  half, -half }, {  half,  half,  half }, { -half,  half,  half },
-        { -half, -half,  half }, {  half, -half,  half }, {  half, -half, -half }, { -half, -half, -half },
-        {  half, -half,  half }, { -half, -half,  half }, { -half,  half,  half }, {  half,  half,  half },
-        { -half, -half, -half }, {  half, -half, -half }, {  half,  half, -half }, { -half,  half, -half },
+        {  halfWidth, -halfHeight, -halfDepth }, {  halfWidth, -halfHeight,  halfDepth }, {  halfWidth,  halfHeight,  halfDepth }, {  halfWidth,  halfHeight, -halfDepth },
+        { -halfWidth, -halfHeight,  halfDepth }, { -halfWidth, -halfHeight, -halfDepth }, { -halfWidth,  halfHeight, -halfDepth }, { -halfWidth,  halfHeight,  halfDepth },
+        { -halfWidth,  halfHeight, -halfDepth }, {  halfWidth,  halfHeight, -halfDepth }, {  halfWidth,  halfHeight,  halfDepth }, { -halfWidth,  halfHeight,  halfDepth },
+        { -halfWidth, -halfHeight,  halfDepth }, {  halfWidth, -halfHeight,  halfDepth }, {  halfWidth, -halfHeight, -halfDepth }, { -halfWidth, -halfHeight, -halfDepth },
+        {  halfWidth, -halfHeight,  halfDepth }, { -halfWidth, -halfHeight,  halfDepth }, { -halfWidth,  halfHeight,  halfDepth }, {  halfWidth,  halfHeight,  halfDepth },
+        { -halfWidth, -halfHeight, -halfDepth }, {  halfWidth, -halfHeight, -halfDepth }, {  halfWidth,  halfHeight, -halfDepth }, { -halfWidth,  halfHeight, -halfDepth },
     };
 
     std::vector<glm::vec3> normals = {
