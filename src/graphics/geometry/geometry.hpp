@@ -18,7 +18,7 @@ public:
     Mesh cylinder(float radiusTop, float radiusBottom, float height, unsigned int sides);
     Mesh cube(float width);
     Mesh cuboid(float width, float height, float depth);
-    Mesh pyramidSquare();
+    Mesh pyramidSquare(float baseSize, float height);
     Mesh sphereUV(float radius, unsigned int nLatitudes, unsigned int nLongitudes);
     Mesh sphereIcosphere(float radius, unsigned int nDivisions);
 

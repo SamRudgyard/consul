@@ -247,6 +247,126 @@ Mesh Geometry::cuboid(float width, float height, float depth)
     return Mesh(positions, normals, uvs, tangents, indices, textures);
 }
 
+Mesh Geometry::pyramidSquare(float baseSize, float height)
+{
+    const float eps = 1e-6f;
+
+    if (baseSize <= eps) {
+        throw std::invalid_argument("[Geometry::pyramidSquare] baseSize must be > 0.");
+    }
+    if (height <= eps) {
+        throw std::invalid_argument("[Geometry::pyramidSquare] height must be > 0.");
+    }
+
+    const float halfHeight = 0.5f * height;
+    const float yTop    =  halfHeight;
+    const float yBottom = -halfHeight;
+
+    const float a = 0.5f * baseSize;
+
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec4> tangents;
+    std::vector<unsigned int> indices;
+
+    // Hard edges => no vertex sharing between side faces.
+    // Build 4 side triangles * 3 vertices = 12 verts
+    // plus base cap 4 verts = 16 verts total.
+    positions.reserve(16);
+    normals.reserve(16);
+    uvs.reserve(16);
+    tangents.reserve(16);
+    indices.reserve(4 * 3 + 2 * 3);
+
+    const glm::vec3 apex(0.f, yTop, 0.f);
+    const glm::vec3 c0(-a, yBottom, -a);
+    const glm::vec3 c1( a, yBottom, -a);
+    const glm::vec3 c2( a, yBottom,  a);
+    const glm::vec3 c3(-a, yBottom,  a);
+    const glm::vec3 corners[4] = { c0, c1, c2, c3 };
+
+    // -------------
+    // Side faces
+    // -------------
+    // For each face i, use corners[i] -> corners[i+1] plus apex.
+    // We emit triangle vertices as (apex, next, curr) to match GL_CCW from outside.
+    for (unsigned int i = 0; i < 4; ++i) {
+        const glm::vec3& curr = corners[i];
+        const glm::vec3& next = corners[(i + 1u) % 4u];
+
+        // Face normal from winding (apex, next, curr)
+        const glm::vec3 faceN = glm::normalize(glm::cross(next - apex, curr - apex));
+
+        // Per-face tangent: along edge apex->next (any consistent tangent works for hard edges)
+        glm::vec3 t3 = next - apex;
+        if (glm::length2(t3) < eps) t3 = glm::vec3(1.f, 0.f, 0.f);
+        t3 = glm::normalize(t3);
+        const glm::vec4 faceT(t3, 1.f);
+
+        // Simple per-face UVs: map each triangular face to [0,1]
+        // (apex at top center, base edge spans U 0..1)
+        const glm::vec2 uvApex(0.5f, 1.f);
+        const glm::vec2 uvNext(1.f, 0.f);
+        const glm::vec2 uvCurr(0.f, 0.f);
+
+        const unsigned int baseIdx = (unsigned int)positions.size();
+
+        positions.push_back(apex);
+        normals.push_back(faceN);
+        uvs.push_back(uvApex);
+        tangents.push_back(faceT);
+
+        positions.push_back(next);
+        normals.push_back(faceN);
+        uvs.push_back(uvNext);
+        tangents.push_back(faceT);
+
+        positions.push_back(curr);
+        normals.push_back(faceN);
+        uvs.push_back(uvCurr);
+        tangents.push_back(faceT);
+
+        indices.push_back(baseIdx + 0u);
+        indices.push_back(baseIdx + 1u);
+        indices.push_back(baseIdx + 2u);
+    }
+
+    // -------------
+    // Base cap (flat)
+    // -------------
+    const unsigned int baseStart = (unsigned int)positions.size();
+    const glm::vec3 down(0.f, -1.f, 0.f);
+    const glm::vec4 baseTangent(1.f, 0.f, 0.f, 1.f);
+
+    auto baseUV = [&](const glm::vec3& p) -> glm::vec2 {
+        // Map x,z from [-a,a] to [0,1]
+        return glm::vec2((p.x / (2.f * a)) + 0.5f, (p.z / (2.f * a)) + 0.5f);
+    };
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        const glm::vec3& p = corners[i];
+        positions.push_back(p);
+        normals.push_back(down);
+        uvs.push_back(baseUV(p));
+        tangents.push_back(baseTangent);
+    }
+
+    // Keep base winding so normal points -Y (outside)
+    indices.push_back(baseStart + 0u);
+    indices.push_back(baseStart + 1u);
+    indices.push_back(baseStart + 2u);
+
+    indices.push_back(baseStart + 0u);
+    indices.push_back(baseStart + 2u);
+    indices.push_back(baseStart + 3u);
+
+    std::vector<Texture> textures;
+    textures.emplace_back(Texture());
+
+    return Mesh(positions, normals, uvs, tangents, indices, textures);
+}
+
 Mesh Geometry::sphereUV(float radius, unsigned int nLatitudes, unsigned int nLongitudes)
 {
     if (radius <= 0.f) {
