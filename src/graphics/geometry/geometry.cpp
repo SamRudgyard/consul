@@ -441,6 +441,65 @@ Mesh Geometry::cuboid(float width, float height, float depth)
     return Mesh(positions, normals, uvs, tangents, indices, textures);
 }
 
+Mesh Geometry::plane(float width, float depth)
+{
+    if (width <= 0.f) {
+        Console::get().error("[Geometry::plane] Invalid width " + std::to_string(width) + ", must be +ve real.");
+    }
+    if (depth <= 0.f) {
+        Console::get().error("[Geometry::plane] Invalid depth " + std::to_string(depth) + ", must be +ve real.");
+    }
+
+    const float halfWidth = 0.5f*width;
+    const float halfDepth = 0.5f*depth;
+
+    // XY-plane, centered at origin, facing +Z (CCW winding when viewed from +Z).
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec4> tangents;
+    std::vector<unsigned int> indices;
+
+    positions.reserve(4);
+    normals.reserve(4);
+    uvs.reserve(4);
+    tangents.reserve(4);
+    indices.reserve(6);
+
+    const glm::vec3 normal(0.f, 1.f, 0.f);
+    const glm::vec4 tangent(1.f, 0.f, 0.f, 1.f);
+
+    positions.emplace_back(-halfWidth, 0.f, -halfDepth);
+    uvs.emplace_back(0.f, 0.f);
+
+    positions.emplace_back(+halfWidth, 0.f, -halfDepth);
+    uvs.emplace_back(1.f, 0.f);
+
+    positions.emplace_back(-halfWidth, 0.f, halfDepth);
+    uvs.emplace_back(0.f, 1.f);
+
+    positions.emplace_back(+halfWidth, 0.f, halfDepth);
+    uvs.emplace_back(1.f, 1.f);
+
+    for (int i = 0; i < 4; ++i) {
+        normals.push_back(normal);
+        tangents.push_back(tangent);
+    }
+
+    indices.push_back(0);
+    indices.push_back(2);
+    indices.push_back(1);
+
+    indices.push_back(1);
+    indices.push_back(2);
+    indices.push_back(3);
+
+    std::vector<Texture> textures;
+    textures.emplace_back(Texture());
+
+    return Mesh(positions, normals, uvs, tangents, indices, textures);
+}
+
 Mesh Geometry::pyramidSquare(float baseSize, float height)
 {
     const float eps = 1e-6f;

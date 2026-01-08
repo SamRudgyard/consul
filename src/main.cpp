@@ -47,6 +47,9 @@ int main(int argc, char **argv) {
     Mesh capsule = geometry->capsule(0.5f, 2.0f, 10, 10);
     renderer.addMesh(capsule, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f)));
 
+    Mesh plane = geometry->plane(10.f, 10.f);
+    renderer.addMesh(plane, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+
     while (consul.run()) {
         EngineContext* context = EngineContext::get();
         camera.handleInputs(context->time.deltaTime);
