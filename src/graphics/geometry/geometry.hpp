@@ -14,6 +14,7 @@ public:
         return &instance;
     }
 
+    Mesh capsule(float radius, float height, unsigned int nLatitudes, unsigned int nLongitudes);
     Mesh cone(float radius, float height, unsigned int sides);
     Mesh cylinder(float radiusTop, float radiusBottom, float height, unsigned int sides);
     Mesh cube(float width);

@@ -44,6 +44,9 @@ int main(int argc, char **argv) {
     pyramid.setTint(Colour(191, 66, 245));
     renderer.addMesh(pyramid, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f)));
 
+    Mesh capsule = geometry->capsule(0.5f, 2.0f, 10, 10);
+    renderer.addMesh(capsule, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f)));
+
     while (consul.run()) {
         EngineContext* context = EngineContext::get();
         camera.handleInputs(context->time.deltaTime);

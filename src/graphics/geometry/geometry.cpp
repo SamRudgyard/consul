@@ -11,6 +11,216 @@
 #include "glm/gtc/constants.hpp"
 #include "glm/geometric.hpp"
 
+Mesh Geometry::capsule(float radius, float height, unsigned int nLatitudes, unsigned int nLongitudes)
+{
+    // Capsule = cylinder of height (height - 2r) + two hemispheres of radius r.
+    // Here, "height" is total end-to-end height of the capsule (including hemispheres).
+    // If height <= 2r, it degenerates to a sphere of radius r.
+
+    constexpr float eps = 1e-6f;
+
+    if (radius <= 0.f) {
+        Console::get().error("[Geometry::capsule] Invalid radius " + std::to_string(radius) + ", must be +ve real.");
+    }
+    if (height <= 0.f) {
+        Console::get().error("[Geometry::capsule] Invalid height " + std::to_string(height) + ", must be +ve real.");
+    }
+
+    nLatitudes  = std::max(2u, nLatitudes);   // hemispheres will use at least 2 stacks
+    nLongitudes = std::max(3u, nLongitudes);  // at least a triangle around
+
+    const float halfHeight = 0.5f * height;
+    const float halfCyl = std::max(0.0f, halfHeight - radius); // half of cylinder section height
+    const bool hasCylinder = halfCyl > eps;
+
+    // We build as 3 stitched parts with shared seam in positions, but duplicated vertices where normals differ:
+    // - Top hemisphere:   lat = 0..nLatitudes/2  (inclusive) -> from +Y pole down to equator
+    // - (Optional) Cylinder rings: 2 rings (top & bottom) at y=+halfCyl and y=-halfCyl, with radial normals
+    // - Bottom hemisphere: lat = nLatitudes/2..nLatitudes (inclusive) -> from equator down to -Y pole
+    //
+    // To keep it simple and consistent with your sphereUV/cylinder:
+    // - Use (nLongitudes + 1) vertices per ring (seam duplicated).
+    // - Use triangle strips as two triangles per quad (6 indices per cell).
+    //
+    // UVs:
+    // - u wraps like sphere/cylinder: u = iLongitude / nLongitudes
+    // - v is mapped along total height with a simple linear mapping by y (works well enough, not equal-area)
+
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec4> tangents;
+    std::vector<unsigned int> indices;
+
+    // Precompute longitudes (like your cylinder)
+    std::vector<float> cosThetas(nLongitudes + 1), sinThetas(nLongitudes + 1);
+    for (unsigned int i = 0; i <= nLongitudes; ++i) {
+        float theta = TWO_PI * float(i) / float(nLongitudes);
+        cosThetas[i] = std::cos(theta);
+        sinThetas[i] = std::sin(theta);
+    }
+
+    auto pushVertex = [&](const glm::vec3& p, const glm::vec3& n, const glm::vec2& uv, const glm::vec4& t) {
+        positions.push_back(p);
+        normals.push_back(n);
+        uvs.push_back(uv);
+        tangents.push_back(t);
+    };
+
+    auto addQuad = [&](unsigned int i0, unsigned int i1, unsigned int i2, unsigned int i3) {
+        // (i0,i1,i2) + (i2,i1,i3) matches your sphereUV winding
+        indices.push_back(i0);
+        indices.push_back(i1);
+        indices.push_back(i2);
+        indices.push_back(i2);
+        indices.push_back(i1);
+        indices.push_back(i3);
+    };
+
+    auto vFromY = [&](float y) -> float {
+        // Map y in [-halfHeight, +halfHeight] to v in [0,1], with v=1 at top like your sphereUV uses (1-v).
+        // We'll follow your sphereUV convention of storing uv.y = 1 - v, so here we return already flipped.
+        float v = (y + halfHeight) / std::max(height, eps); // 0..1
+        return 1.0f - v;
+    };
+
+    // Helper to emit a ring at given y with a given ring radius and normal function
+    auto emitRing = [&](float y, float ringRadius, const glm::vec3& centerOffset, bool normalsFromSphereCenter) {
+        const unsigned int ringStart = (unsigned int)positions.size();
+        for (unsigned int iLon = 0; iLon <= nLongitudes; ++iLon) {
+            float u = float(iLon) / float(nLongitudes);
+            float c = cosThetas[iLon];
+            float s = sinThetas[iLon];
+
+            glm::vec3 pos(ringRadius * c, y, ringRadius * s);
+
+            glm::vec3 n;
+            if (normalsFromSphereCenter) {
+                // For hemispheres: normal points away from the sphere center
+                glm::vec3 fromCenter = pos - centerOffset;
+                n = glm::normalize(fromCenter);
+            } else {
+                // For cylinder: purely radial
+                n = glm::normalize(glm::vec3(c, 0.f, s));
+            }
+
+            glm::vec3 tangent3 = glm::normalize(glm::vec3(-s, 0.f, c));
+            glm::vec4 tangent(tangent3, 1.f);
+
+            pushVertex(pos, n, glm::vec2(u, vFromY(y)), tangent);
+        }
+        return ringStart;
+    };
+
+    // ==================================================
+    // 1) Top hemisphere (including equator ring at y=+halfCyl)
+    // ==================================================
+    // Parameterize hemisphere using phi from 0 (north pole) to PI/2 (equator).
+    const unsigned int hemiStacks = nLatitudes; // reuse your sphere stack count style
+    const unsigned int topStacks = hemiStacks / 2; // number of "cells" in top hemi
+    const glm::vec3 topCenter(0.f, +halfCyl, 0.f);
+
+    std::vector<unsigned int> ringStarts;
+
+    // rings: i = 0..topStacks (inclusive)
+    for (unsigned int i = 0; i <= topStacks; ++i) {
+        float t = float(i) / float(topStacks); // 0..1
+        float phi = (PI * 0.5f) * t;           // 0..PI/2
+        float sinPhi = std::sin(phi);
+        float cosPhi = std::cos(phi);
+
+        float y = topCenter.y + radius * cosPhi;
+        float ringR = radius * sinPhi;
+
+        ringStarts.push_back(emitRing(y, ringR, topCenter, true));
+    }
+
+    // indices for top hemisphere
+    for (unsigned int i = 0; i < topStacks; ++i) {
+        unsigned int aStart = ringStarts[i];
+        unsigned int bStart = ringStarts[i + 1];
+        for (unsigned int j = 0; j < nLongitudes; ++j) {
+            unsigned int i0 = aStart + j;
+            unsigned int i1 = aStart + j + 1;
+            unsigned int i2 = bStart + j;
+            unsigned int i3 = bStart + j + 1;
+            addQuad(i0, i1, i2, i3);
+        }
+    }
+
+    // ==================================================
+    // 2) Cylinder section (optional): connect equator rings with radial normals
+    // ==================================================
+    unsigned int cylTopRingStart = 0;
+    unsigned int cylBotRingStart = 0;
+
+    if (hasCylinder) {
+        // Duplicate the equator rings for the cylinder so the normals are radial (hard edge).
+        cylTopRingStart = emitRing(+halfCyl, radius, glm::vec3(0.f), false);
+        cylBotRingStart = emitRing(-halfCyl, radius, glm::vec3(0.f), false);
+
+        for (unsigned int j = 0; j < nLongitudes; ++j) {
+            unsigned int i0 = cylTopRingStart + j;
+            unsigned int i1 = cylTopRingStart + j + 1;
+            unsigned int i2 = cylBotRingStart + j;
+            unsigned int i3 = cylBotRingStart + j + 1;
+            addQuad(i0, i1, i2, i3);
+        }
+    } else {
+        // No cylinder: the capsule is a sphere; the "equator" is at y=0 and already present.
+        // We'll just treat the bottom hemisphere as continuing from the last top ring.
+    }
+
+    // ==================================================
+    // 3) Bottom hemisphere (including equator ring at y=-halfCyl)
+    // ==================================================
+    const unsigned int bottomStacks = hemiStacks - topStacks; // remaining cells
+    const glm::vec3 botCenter(0.f, -halfCyl, 0.f);
+
+    std::vector<unsigned int> botRingStarts;
+    // rings: i = 0..bottomStacks (inclusive)
+    // Parameterize phi from PI/2 (equator) to PI (south pole).
+    for (unsigned int i = 0; i <= bottomStacks; ++i) {
+        float t = float(i) / float(bottomStacks);       // 0..1
+        float phi = (PI * 0.5f) + (PI * 0.5f) * t;      // PI/2..PI
+        float sinPhi = std::sin(phi);
+        float cosPhi = std::cos(phi);
+
+        float y = botCenter.y + radius * cosPhi;
+        float ringR = radius * sinPhi;
+
+        botRingStarts.push_back(emitRing(y, ringR, botCenter, true));
+    }
+
+    // indices for bottom hemisphere
+    for (unsigned int i = 0; i < bottomStacks; ++i) {
+        unsigned int aStart = botRingStarts[i];
+        unsigned int bStart = botRingStarts[i + 1];
+        for (unsigned int j = 0; j < nLongitudes; ++j) {
+            unsigned int i0 = aStart + j;
+            unsigned int i1 = aStart + j + 1;
+            unsigned int i2 = bStart + j;
+            unsigned int i3 = bStart + j + 1;
+            addQuad(i0, i1, i2, i3);
+        }
+    }
+
+    // ==================================================
+    // 4) Stitching between parts
+    // ==================================================
+    // We intentionally duplicated the equator rings when hasCylinder==true to get correct normals:
+    // - Top hemisphere equator ring (sphere normals) is already connected to top hemi.
+    // - Cylinder rings (radial normals) are connected to each other.
+    // - Bottom hemisphere equator ring (sphere normals) is connected to bottom hemi.
+    // There is no need to stitch by indices because they are separate vertex rings with different normals.
+
+    // Default texture
+    std::vector<Texture> textures;
+    textures.emplace_back(Texture());
+
+    return Mesh(positions, normals, uvs, tangents, indices, textures);
+}
+
 Mesh Geometry::cube(float width)
 {
     return cuboid(width, width, width);
