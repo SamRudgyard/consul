@@ -4,10 +4,12 @@
 #include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/textures/renderable_texture.hpp"
+#include "glad/glad.h"
 
 #include <string>
 #include <vector>
 #include <iostream>
+#include <utility>
 
 class RenderableTexture;
 
@@ -20,8 +22,22 @@ enum class AttributeType
     INDICES     = 4,
 };
 
+enum class DrawMode
+{
+    TRIANGLES,
+    LINES
+};
+
 class Mesh {
 public:
+    Mesh(
+        std::vector<glm::vec3> positions,
+        std::vector<unsigned int> indices,
+        std::vector<Texture> textures = {},
+        Colour tint = Colour(255, 255, 255, 255),
+        DrawMode drawMode = DrawMode::TRIANGLES
+    ) : Mesh(std::move(positions), {}, {}, {}, std::move(indices), std::move(textures), tint, drawMode) {}
+
     Mesh(
         std::vector<glm::vec3> positions,
         std::vector<glm::vec3> normals,
@@ -29,7 +45,8 @@ public:
         std::vector<glm::vec4> tangents,
         std::vector<unsigned int> indices,
         std::vector<Texture> textures,
-        Colour tint = Colour(255, 255, 255, 255)
+        Colour tint = Colour(255, 255, 255, 255),
+        DrawMode drawMode = DrawMode::TRIANGLES
     ) : positions(positions),
         normals(normals),
         textureCoords(textureCoords),
@@ -37,6 +54,7 @@ public:
         indices(indices),
         textures(textures),
         tint(tint),
+        drawMode(drawMode),
         indexCount(indices.size()) {}
 
     void setVertexBuffer(unsigned int vbo, AttributeType type)
@@ -59,10 +77,30 @@ public:
     Colour getTint() const { return tint; }
     void setTint(const Colour& value) { tint = value; }
 
+    DrawMode getDrawMode() const { return drawMode; }
+
     void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }
     const glm::mat4& getModelMatrix() const { return modelMatrix; }
 
     const unsigned int getNumIndices() const { return (unsigned int)indexCount; }
+
+    bool hasAttribute(AttributeType type) const
+    {
+        switch (type) {
+            case AttributeType::POSITION:
+                return !positions.empty();
+            case AttributeType::NORMAL:
+                return !normals.empty();
+            case AttributeType::TEXCOORD:
+                return !textureCoords.empty();
+            case AttributeType::TANGENT:
+                return !tangents.empty();
+            case AttributeType::INDICES:
+                return !indices.empty();
+            default:
+                return false;
+        }
+    }
 
     void clear()
     {
@@ -88,6 +126,7 @@ private:
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
     Colour tint = Colour(255, 255, 255, 255);
+    DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
     std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(5, 0);
 };
