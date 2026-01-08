@@ -195,6 +195,9 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
     shader->setUniformVec4("meshTint", (float)tint.r/255.0f, (float)tint.g/255.0f, (float)tint.b/255.0f, (float)tint.alpha/255.0f);
     glCheckError();
 
+    shader->setUniformInt("useLighting", this->mesh.getDrawMode() == DrawMode::LINES ? 0 : 1);
+    glCheckError();
+
     for (const auto& [name, texture] : textures) {
         texture->bind();
         texture->setTextureUnit(shader, name.c_str());

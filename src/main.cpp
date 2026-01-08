@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
     renderer.addMesh(pyramid, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f)));
 
     Mesh capsule = geometry->capsule(0.5f, 2.0f, 10, 10);
+    capsule.setDrawMode(DrawMode::LINES);
     renderer.addMesh(capsule, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f)));
 
     Mesh plane = geometry->plane(10.f, 10.f);

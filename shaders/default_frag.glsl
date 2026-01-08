@@ -15,9 +15,16 @@ uniform vec3 cameraPosition;
 uniform vec3 lightPosition;
 uniform vec3 lightColour;
 uniform vec3 ambientColour;
+uniform int useLighting;
 
 void main()
 {
+    vec3 diffuseColour = texture(diffuse0, fragTexCoords).rgb * meshTint.rgb;
+    if (useLighting == 0) {
+        fragmentColour = vec4(diffuseColour, meshTint.a);
+        return;
+    }
+
     // Normalise interpolated normal
     vec3 normal = normalize(fragNormal);
     vec3 lightDir = normalize(lightPosition - fragPosition);
@@ -26,7 +33,6 @@ void main()
 
     // Diffuse component
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuseColour = texture(diffuse0, fragTexCoords).rgb * meshTint.rgb;
 
     // Specular component
     float specStrength = texture(specular0, fragTexCoords).r; // usually grayscale

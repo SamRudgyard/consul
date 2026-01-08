@@ -78,6 +78,7 @@ public:
     void setTint(const Colour& value) { tint = value; }
 
     DrawMode getDrawMode() const { return drawMode; }
+    void setDrawMode(DrawMode mode) { drawMode = mode; }
 
     void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }
     const glm::mat4& getModelMatrix() const { return modelMatrix; }
