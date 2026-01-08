@@ -33,26 +33,13 @@ Mesh Geometry::capsule(float radius, float height, unsigned int nLatitudes, unsi
     const float halfCyl = std::max(0.0f, halfHeight - radius); // half of cylinder section height
     const bool hasCylinder = halfCyl > eps;
 
-    // We build as 3 stitched parts with shared seam in positions, but duplicated vertices where normals differ:
-    // - Top hemisphere:   lat = 0..nLatitudes/2  (inclusive) -> from +Y pole down to equator
-    // - (Optional) Cylinder rings: 2 rings (top & bottom) at y=+halfCyl and y=-halfCyl, with radial normals
-    // - Bottom hemisphere: lat = nLatitudes/2..nLatitudes (inclusive) -> from equator down to -Y pole
-    //
-    // To keep it simple and consistent with your sphereUV/cylinder:
-    // - Use (nLongitudes + 1) vertices per ring (seam duplicated).
-    // - Use triangle strips as two triangles per quad (6 indices per cell).
-    //
-    // UVs:
-    // - u wraps like sphere/cylinder: u = iLongitude / nLongitudes
-    // - v is mapped along total height with a simple linear mapping by y (works well enough, not equal-area)
-
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec4> tangents;
     std::vector<unsigned int> indices;
 
-    // Precompute longitudes (like your cylinder)
+    // Precompute
     std::vector<float> cosThetas(nLongitudes + 1), sinThetas(nLongitudes + 1);
     for (unsigned int i = 0; i <= nLongitudes; ++i) {
         float theta = TWO_PI * float(i) / float(nLongitudes);
@@ -68,7 +55,6 @@ Mesh Geometry::capsule(float radius, float height, unsigned int nLatitudes, unsi
     };
 
     auto addQuad = [&](unsigned int i0, unsigned int i1, unsigned int i2, unsigned int i3) {
-        // (i0,i1,i2) + (i2,i1,i3) matches your sphereUV winding
         indices.push_back(i0);
         indices.push_back(i1);
         indices.push_back(i2);
@@ -78,8 +64,6 @@ Mesh Geometry::capsule(float radius, float height, unsigned int nLatitudes, unsi
     };
 
     auto vFromY = [&](float y) -> float {
-        // Map y in [-halfHeight, +halfHeight] to v in [0,1], with v=1 at top like your sphereUV uses (1-v).
-        // We'll follow your sphereUV convention of storing uv.y = 1 - v, so here we return already flipped.
         float v = (y + halfHeight) / std::max(height, eps); // 0..1
         return 1.0f - v;
     };
@@ -116,7 +100,7 @@ Mesh Geometry::capsule(float radius, float height, unsigned int nLatitudes, unsi
     // 1) Top hemisphere (including equator ring at y=+halfCyl)
     // ==================================================
     // Parameterize hemisphere using phi from 0 (north pole) to PI/2 (equator).
-    const unsigned int hemiStacks = nLatitudes; // reuse your sphere stack count style
+    const unsigned int hemiStacks = nLatitudes;
     const unsigned int topStacks = hemiStacks / 2; // number of "cells" in top hemi
     const glm::vec3 topCenter(0.f, +halfCyl, 0.f);
 
