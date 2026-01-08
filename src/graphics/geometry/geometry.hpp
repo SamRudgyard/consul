@@ -19,6 +19,7 @@ public:
     Mesh cylinder(float radiusTop, float radiusBottom, float height, unsigned int sides);
     Mesh cube(float width);
     Mesh cuboid(float width, float height, float depth);
+    Mesh line(glm::vec3 startPosition, glm::vec3 endPosition);
     Mesh plane(float width, float depth);
     Mesh pyramidSquare(float baseSize, float height);
     Mesh sphereUV(float radius, unsigned int nLatitudes, unsigned int nLongitudes);

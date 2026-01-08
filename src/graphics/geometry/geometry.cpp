@@ -210,6 +210,16 @@ Mesh Geometry::cube(float width)
     return cuboid(width, width, width);
 }
 
+Mesh Geometry::line(glm::vec3 startPosition, glm::vec3 endPosition)
+{
+    std::vector<glm::vec3> positions = {startPosition, endPosition};
+    std::vector<unsigned int> indices = {0, 1};
+    std::vector<Texture> textures;
+    textures.emplace_back(Texture());
+
+    return Mesh(std::move(positions), std::move(indices), std::move(textures), Colour(255, 255, 255, 255), DrawMode::LINES);
+}
+
 Mesh Geometry::cone(float radius, float height, unsigned int sides)
 {
     return cylinder(0.f, radius, height, sides);

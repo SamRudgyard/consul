@@ -50,6 +50,9 @@ int main(int argc, char **argv) {
 
     Mesh plane = geometry->plane(10.f, 10.f);
     renderer.addMesh(plane, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+    
+    Mesh line = geometry->line({0.f, 0.f, 0.f}, {2.0f, 5.0f, 0.f});
+    renderer.addMesh(line);
 
     while (consul.run()) {
         EngineContext* context = EngineContext::get();
