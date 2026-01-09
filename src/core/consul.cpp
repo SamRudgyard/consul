@@ -1,134 +1,139 @@
 #include "consul.hpp"
+
+#include "platforms/platform_glfw.hpp"
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
+#include "implot.h"
 #include "imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
 #include "utils.hpp"
 
-Consul::Consul(const char* title, unsigned int width, unsigned int height, bool isFullscreen)
+void Consul::initialiseEngine()
 {
-    console.Log("[Consul] Initialising Game Engine...");
+    // Prepare console
+    console.clearLog();
+    console.log("---- CONSUL ----");
 
-    Window::title = title;
-    Window::width = width;
-    Window::height = height;
-    Window::isFullscreen = isFullscreen;
+    console.log("[Consul] Initialising Consul...");
+    initialiseWindow(PlatformType::GLFW);
+    console.log("[Consul] Windowing platform initialised.");
 
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-    glfwWindowHint(GLFW_RESIZABLE, true);
+    GraphicsAPI gfxApi = GraphicsAPI::OpenGL;
+    initialiseRenderer(gfxApi);
+    console.log("[Consul] Graphics renderer initialised.");
 
-    GLFWmonitor* monitor = nullptr;
-    if (isFullscreen) {
-        monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        width = mode->width;
-        height = mode->height;
-    }
-
-    Window::handle = glfwCreateWindow(width, height, title, monitor, nullptr);
-
-    if (!Window::handle) {
-        glfwTerminate();
-        console.Error("[Consul] Failed to create GLFW window");
-    }
-
-    glfwMakeContextCurrent(Window::handle);
-
-    glfwSwapInterval(Window::vsyncEnabled ? 1 : 0);
-
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) console.Error("[Consul] Failed to initialize GLAD");
-    glfwSetKeyCallback(Window::handle, Keyboard::KeyCallback);
-    glfwSetWindowSizeCallback(Window::handle, Window::WindowSizeCallback);
-    // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    // Initialise OpenGL with our default settings
-    // --------------------
-    glDepthFunc(GL_LESS);                                   // Type of depth testing to apply
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      // Colour blending, determines how pixel colours are combined
-    glEnable(GL_BLEND);                                     // Enable colour blending (required for transparencies)
-    glCullFace(GL_BACK);                                    // Cull back faces
-    glFrontFace(GL_CCW);                                    // Front faces are counter clockwise
-    glEnable(GL_CULL_FACE);                                 // Enable backface culling
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);                 // Enable seamless cubemap texture
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                   // Set clear colour to black
-    glClearDepth(1.0f);                                     // Set clear depth to farthest possible depth when glClear(GL_DEPTH_BUFFER_BIT) is called
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);     // Clear colour and depth buffers
-   
-    Window::SetupViewport(width, height);
-
-    console.Log("[Consul] OpenGL initialised successfully");
-
+    // Setup ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = NULL; // Disable saving .ini file
-    io.LogFilename = NULL; // Disable logging to file
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // IF using Docking Branch
+    io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange; // Don't let ImGui move the mouse
+    ImGui::StyleColorsDark();
+    platform->initialiseImGui(gfxApi);
+    renderer->initialiseImGui();
+    console.log("[Consul] ImGui initialised.");
 
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(Window::handle, true);     // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
-    ImGui_ImplOpenGL3_Init();
-
-    console.Log("[Consul] ImGui initialised successfully");
-
-    Time::frameCount = 0;
-    Window::shouldClose = false;
-}
-void Consul::VSync(bool enabled)
-{
-    Window::SetVSync(enabled);
+    context->ui.registerWindow("Console", [this](const std::string& name, bool* open) { console.draw(name, open); }, &consoleWindowOpen);
+    context->ui.registerWindow("FPS Monitor", [this](const std::string& name, bool* open) { context->fpsMonitor.draw(name, open); }, &fpsMonitorWindowOpen);
 }
 
-bool Consul::Run()
+void Consul::initialiseWindow(PlatformType platformType)
 {
-    Time::NewFrame();
+    switch (platformType) {
+        case PlatformType::GLFW:
+            platform = new PlatformGLFW();
+            break;
+        default:
+            console.error("[Consul] Unknown windowing platform!");
+            break;
+    }
 
-    glfwPollEvents();
+    if (platform) {
+        platform->initialiseWindow();
+    }
+}
+
+void Consul::initialiseRenderer(GraphicsAPI gfxApi)
+{
+    renderer = new Renderer(platform, gfxApi);
+}
+
+Consul::~Consul()
+{
+    terminate();
+}
+
+bool Consul::run()
+{
+    endTick();
+    beginTick();
+
+    if (context->window.shouldClose) {
+        return false;
+    }
+
+    return !(context->window.shouldClose && platform->shouldClose());
+}
+
+void Consul::beginTick()
+{
+    platform->pollEvents();
+
+    renderer->clearBackground(glm::vec4(0.f, 0.f, 0.f, 1.f));
+    renderer->setViewport(0, 0, (int)context->window.framebufferSize.x, (int)context->window.framebufferSize.y);
+
+    context->inputSystem.beginTick();
+}
+
+void Consul::endTick()
+{
+    Time& time = context->time;
+    time.currentTime = platform->getTime();
+    time.deltaTime = time.currentTime - time.previousTime;
+    if (time.deltaTime < time.targetFrameTime) {
+        waitTime(time.targetFrameTime - time.deltaTime);
+    }
+    time.currentTime = platform->getTime();
+    time.deltaTime = time.currentTime - time.previousTime;
+    time.frameCount++;
+    time.previousTime = time.currentTime;
 
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    console.Draw("Console");
+    context->fpsMonitor.update(context->time.deltaTime);
+    context->ui.render();
 
     ImGui::Render();
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // ImGui::UpdatePlatformWindows();
 
-    Window::SwapBuffers();
-
-    return !Window::ShouldClose();
+    platform->swapBuffers();
+    context->window.shouldClose = platform->shouldClose();
+    
+    context->inputSystem.endTick();
 }
 
-void Consul::Close()
+void Consul::terminate()
 {
-    console.Log("[Consul] Shutting down Game Engine...");
+    console.log("[Consul] Shutting down Game Engine...");
+    context->ui.unregisterWindow("Console");
+    context->ui.unregisterWindow("FPS Monitor");
 
-    glfwDestroyWindow(Window::handle);
-    glfwTerminate();
-
-    console.Log("[Consul] GLFW terminated.");
+    ImGui_ImplGlfw_Shutdown();
+    platform->terminate();
+    console.log("[Consul] Windowing platform terminated.");
 
     ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
     ImGui::DestroyContext();
 
-    console.Log("[Consul] ImGui terminated.");
+    console.log("[Consul] ImGui terminated.");
 
-    console.Log("[Consul] Shutdown complete.");
+    console.log("[Consul] Shutdown complete.");
 }

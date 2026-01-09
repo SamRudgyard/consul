@@ -1,45 +1,74 @@
 #include "console.hpp"
 
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include "core/engine_context.hpp"
+#include "core/window.hpp"
 #include "utils.hpp"
-
-Console::Console()
-{
-    ClearLog();
-    Log("---- CONSUL ----");
-}
 
 Console::~Console()
 {
-    ClearLog();
+    clearLog();
 }
 
-void Console::Log(const char* message)
+void Console::log(const std::string& message)
 {
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
     items.push_back(message);
 }
 
-void Console::Error(const char* message)
+void Console::logOnDebug(const std::string& message)
 {
-    items.push_back(std::string("[ERROR] ") + message);
+#ifndef NDEBUG
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
+    items.push_back("[DEBUG] " + message);
+#endif
 }
 
-void Console::Warn(const char* message)
+void Console::error(const std::string& message)
 {
-    items.push_back(std::string("[WARNING] ") + message);
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
+    items.push_back("[ERROR] " + message);
+
+    throw std::runtime_error(message);
 }
 
-void Console::Info(const char* message)
+void Console::warn(const std::string& message)
 {
-    items.push_back(std::string("[INFO] ") + message);
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
+    items.push_back("[WARNING] " + message);
 }
 
-void Console::Draw(const char* title, bool* open)
+void Console::info(const std::string& message)
 {
-    ImGui::SetNextWindowSize({500, 300}, ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin(title, open))
+    if (items.size() > MAX_CONSOLE_SIZE) {
+        items.pop_front();
+    }
+    items.push_back("[INFO] " + message);
+}
+
+void Console::draw(const std::string& title, bool* open)
+{
+    EngineContext* context = EngineContext::get();
+    Window& window = context->window; // We'll fallback to window size if viewport is unavailable
+
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImVec2 viewportSize = viewport ? viewport->WorkSize : ImVec2(window.windowSize.x, window.windowSize.y);
+    float consoleWidth = 0.2f * viewportSize.x;
+    float consoleHeight = 0.3f * viewportSize.y;
+    ImVec2 bottomRight = viewport ? ImVec2(viewport->WorkPos.x + viewportSize.x, viewport->WorkPos.y + viewportSize.y)
+                                  : ImVec2(window.windowSize.x, window.windowSize.y);
+
+    ImGui::SetNextWindowSize({consoleWidth, consoleHeight}, ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos({bottomRight.x - consoleWidth, bottomRight.y - consoleHeight}, ImGuiCond_Appearing);
+    if (!ImGui::Begin(title.c_str(), open))
     {
         ImGui::End();
         return;
@@ -67,7 +96,7 @@ void Console::Draw(const char* title, bool* open)
 
     if (ImGui::BeginPopupContextWindow())
     {
-        if (ImGui::Selectable("Clear")) ClearLog();
+        if (ImGui::Selectable("Clear")) clearLog();
         ImGui::EndPopup();
     }
 
@@ -80,17 +109,17 @@ void Console::Draw(const char* title, bool* open)
         {
             ImVec4 colour;
             bool hasColour = false;
-            if (IsSubstring(item, "[ERROR]"))
+            if (isSubstring(item, "[ERROR]"))
             {
                 colour = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
                 hasColour = true;
             }
-            else if (IsSubstring(item, "[WARNING]"))
+            else if (isSubstring(item, "[WARNING]"))
             {
                 colour = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
                 hasColour = true;
             }
-            else if (IsSubstring(item, "[INFO]"))
+            else if (isSubstring(item, "[INFO]"))
             {
                 colour = ImVec4(0.4f, 0.4f, 1.0f, 1.0f);
                 hasColour = true;

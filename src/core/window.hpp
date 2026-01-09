@@ -1,51 +1,27 @@
 #pragma once
 
 #include "glm/glm.hpp"
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
 
-// #include "imgui.h"
-// #include "imgui_impl_glfw.h"
-// #include "imgui_impl_opengl3.h"
-
-enum WindowFlags
+struct Window
 {
-    WINDOW_RESIZABLE = 1 << 0,
-    WINDOW_FULLSCREEN = 1 << 1,
-    WINDOW_HIDDEN = 1 << 2,
-    WINDOW_HIGH_DPI = 1 << 3
-};
+    glm::vec2 position = glm::vec2(0.f, 0.f);             // Top-left position of the window
+    glm::vec2 monitorSize = glm::vec2(0.f, 0.f);          // Size (pixels) of the monitor the window is on
+    glm::vec2 windowSize = glm::vec2(1280.f, 720.f);      // Size (pixels) of the window
+    glm::vec2 framebufferSize = glm::vec2(1280.f, 720.f); // Size (pixels) of the framebuffer
+    glm::vec2 contentScale = glm::vec2(1.f, 1.f);         // Content scale (for high-DPI displays)
 
-class Window
-{
-public:
-    static const char* title;
-    static unsigned int width;
-    static unsigned int height;
-    static unsigned int flags;
-    static bool isFullscreen;
-    static bool shouldClose;
-    static bool resizedLastFrame;
+    const char* title = "Consul Application";
 
-    static bool vsyncEnabled;
-
-    static int screen;
-    static int prevScreen;
-
-    static glm::vec2 position;
-    static glm::vec2 prevPosition;
-    static glm::vec2 displaySize;
-    static glm::vec2 screenSize;
-    static glm::vec2 screenSizeLastFrame;
-
-    static GLFWwindow* handle;
-    // static ImGuiIO* io;
-
-    static void ToggleFullscreen();
-    static void SetupViewport(unsigned int width, unsigned int height);
-    static glm::vec2 GetWindowScaleDPI();
-    static void WindowSizeCallback(GLFWwindow* window, int width, int height);
-    static bool ShouldClose();
-    static void SwapBuffers() { glfwSwapBuffers(handle); };
-    static void SetVSync(bool enabled);
+    bool isFullscreen = false;      // Fullscreen window
+    bool isVisible = true;          // Window is visible
+    bool isResizable = true;        // Window can be resized
+    bool isDecorated = true;        // Window has decorations (title bar, borders, etc.)
+    bool isMinimised = false;       // Window is minimised
+    bool isMaximised = false;       // Window is maximised
+    bool shouldClose = false;       // Window should be closed
+    bool useVSync = true;           // VSync enabled
+    bool isFocused = true;          // Focused on creation
+    bool isFloating = false;        // Always on top
+    bool isTransparent = false;     // Window is transparent
+    bool useMSAA = true;            // Use multisample anti-aliasing
 };

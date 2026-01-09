@@ -1,83 +1,89 @@
 #include "utils.hpp"
 
-// void Error_(const std::string& message, const char* file, int line)
-// {
-//     std::cout << TEXT_RED << "[ERROR] " << TEXT_YELLOW << message << TEXT_RESET << " | " << file << " (" << line << ")" << std::endl;
-//     throw std::exception();
-// }
+#include <thread>
+#include <chrono>
 
-// void Log_(const std::string& message)
-// {
-//     std::cout << TEXT_GREEN << "[LOG] " << TEXT_RESET << message << std::endl;
-// }
+#include "glad/glad.h"
+#include "core/console/console.hpp"
 
-// void LogOnDebug_(const std::string& message)
-// {
-//     #ifndef NDEBUG
-//     std::cout << TEXT_BLUE << "[DEBUG] " << TEXT_RESET << message << std::endl;
-//     #endif
-// }
+#include "maths/unit_conversions.hpp"
 
-bool DoesFileExist(const char* filePath)
+#if defined(__APPLE__)
+#include <unistd.h>
+#endif
+
+bool doesFileExist(const char* filePath)
 {
     std::ifstream file(filePath);
     return file.good();
 }
 
-/**
- * @brief Reads the entire contents of a file into a dynamically allocated C-string.
- *
- * This function attempts to open the given file, reads its contents,
- * and returns a pointer to a character array containing the file data.
- *
- * @param filePath The path to the file to be read.
- * @return A pointer to a character array containing the file contents,
- *         or nullptr on failure.
- */
-char* ReadFile(const char* filePath)
+const std::string readFile(const char* filePath)
 {
-    // if (!filePath) Error("[ReadFile] Provided file path is null");
+    if (!filePath) Console::get().error("[readFile] Provided file path is null");
 
-    // if (!DoesFileExist(filePath)) Error("[ReadFile] File does not exist: '" + std::string(filePath) + "'");
+    if (!doesFileExist(filePath)) Console::get().error("[readFile] File does not exist: '" + std::string(filePath) + "'");
 
     // Read the file contents
-    std::ifstream file(filePath);
-    // if (!file) Error("[ReadFile] File could not be read: '" + std::string(filePath) + "'");
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file) Console::get().error("[readFile] File could not be read: '" + std::string(filePath) + "'");
 
-    // Get the file size
-    file.seekg(0, std::ios::end);
-    std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string contents = buffer.str();
 
-    // Allocate memory for the file contents
-    char* text = new char[size + 1];
-    // if (!text) Error("[ReadFile] Memory allocation failed for file: '" + std::string(filePath) + "'");
+    Console::get().logOnDebug("[readFile] Successfully read file: '" + std::string(filePath) + "'");
 
-   // Read the file contents into the allocated memory
-   file.read(text, size);
-   text[size] = '\0';  // Null-terminate the C-string, making it safe for external use
-
-   file.close();
-
-    // LogOnDebug("[ReadFile] Successfully read file: '" + std::string(filePath) + "'");
-
-   return text;
+    return contents;
 }
 
-/**
- * @brief Frees memory previously allocated for a text buffer.
- *
- * @param text Pointer to the text buffer to be freed.
- */
-void UnloadFileText(char* text) {
+const std::string getFileExtension(const char* filePath) {
+    std::string pathStr(filePath);
+    size_t dotPos = pathStr.find_last_of('.');
+    if (dotPos == std::string::npos || dotPos == pathStr.length() - 1) {
+        Console::get().logOnDebug("[getFileExtension] No file extension found in path: '" + std::string(filePath) + "'");
+        return "";
+    }
+    return pathStr.substr(dotPos);
+}
+
+void unloadFileText(char* text) {
     if (!text) {
-        // LogOnDebug("[UnloadFile] Unnecessary call to unload text");
+        Console::get().logOnDebug("[unloadFileText] Unnecessary call to unload text");
         return;
     }
 
     delete[] text;
 }
 
-bool IsSubstring(const std::string& str, const std::string& substr) {
+bool isSubstring(const std::string& str, const std::string& substr) {
     return str.find(substr) != std::string::npos;
+}
+
+void waitTime(double seconds)
+{
+    if (seconds <= 0.0) {
+        return;
+    }
+    std::this_thread::sleep_for(std::chrono::duration<double>(seconds));
+}
+
+void glCheckError_(const char* file, int line) {
+#ifndef NDEBUG
+    Console& console = Console::get();
+    
+    GLenum errorCode;
+    while ((errorCode = glGetError()) != GL_NO_ERROR) {
+        std::string error;
+        switch (errorCode) {
+            case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+            case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+            case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+            case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+            default:                               error = "UNKNOWN_ERROR"; break;
+        }
+        console.error("[OpenGL] " + error + " at " + std::string(file) + " (line " + std::to_string(line) + ")");
+    }
+#endif
 }
