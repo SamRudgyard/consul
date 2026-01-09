@@ -1,4 +1,4 @@
-#include "graphics/geometry/geometry.hpp"
+#include "graphics/geometry/geometry_3d.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -11,7 +11,7 @@
 #include "glm/gtc/constants.hpp"
 #include "glm/geometric.hpp"
 
-Mesh Geometry::capsule(float radius, float height, unsigned int nLatitudes, unsigned int nLongitudes)
+Mesh Geometry3D::capsule(float radius, float height, unsigned int nLatitudes, unsigned int nLongitudes)
 {
     // Capsule = cylinder of height (height - 2r) + two hemispheres of radius r.
     // Here, "height" is total end-to-end height of the capsule (including hemispheres).
@@ -20,10 +20,10 @@ Mesh Geometry::capsule(float radius, float height, unsigned int nLatitudes, unsi
     constexpr float eps = 1e-6f;
 
     if (radius <= 0.f) {
-        Console::get().error("[Geometry::capsule] Invalid radius " + std::to_string(radius) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::capsule] Invalid radius " + std::to_string(radius) + ", must be +ve real.");
     }
     if (height <= 0.f) {
-        Console::get().error("[Geometry::capsule] Invalid height " + std::to_string(height) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::capsule] Invalid height " + std::to_string(height) + ", must be +ve real.");
     }
 
     nLatitudes  = std::max(2u, nLatitudes);   // hemispheres will use at least 2 stacks
@@ -205,12 +205,12 @@ Mesh Geometry::capsule(float radius, float height, unsigned int nLatitudes, unsi
     return Mesh(positions, normals, uvs, tangents, indices, textures);
 }
 
-Mesh Geometry::cube(float width)
+Mesh Geometry3D::cube(float width)
 {
     return cuboid(width, width, width);
 }
 
-Mesh Geometry::line(glm::vec3 startPosition, glm::vec3 endPosition)
+Mesh Geometry3D::line(glm::vec3 startPosition, glm::vec3 endPosition)
 {
     std::vector<glm::vec3> positions = {startPosition, endPosition};
     std::vector<unsigned int> indices = {0, 1};
@@ -220,23 +220,23 @@ Mesh Geometry::line(glm::vec3 startPosition, glm::vec3 endPosition)
     return Mesh(std::move(positions), std::move(indices), std::move(textures), Colour(255, 255, 255, 255), DrawMode::LINES);
 }
 
-Mesh Geometry::cone(float radius, float height, unsigned int sides)
+Mesh Geometry3D::cone(float radius, float height, unsigned int sides)
 {
     return cylinder(0.f, radius, height, sides);
 }
 
-Mesh Geometry::cylinder(float radiusTop, float radiusBottom, float height, unsigned int sides)
+Mesh Geometry3D::cylinder(float radiusTop, float radiusBottom, float height, unsigned int sides)
 {
     constexpr float eps = 1e-6f;
 
     if (radiusTop < 0.f) {
-        Console::get().error("[Geometry::cylinder] Invalid radiusTop " + std::to_string(radiusTop) + ", must be >= 0.");
+        Console::get().error("[Geometry3D::cylinder] Invalid radiusTop " + std::to_string(radiusTop) + ", must be >= 0.");
     }
     if (radiusBottom <= 0.f) {
-        Console::get().error("[Geometry::cylinder] Invalid radiusBottom " + std::to_string(radiusBottom) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::cylinder] Invalid radiusBottom " + std::to_string(radiusBottom) + ", must be +ve real.");
     }
     if (height <= 0.f) {
-        Console::get().error("[Geometry::cylinder] Invalid height " + std::to_string(height) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::cylinder] Invalid height " + std::to_string(height) + ", must be +ve real.");
     }
 
     sides = std::max(3u, sides); // We require at least 3 sides
@@ -384,16 +384,16 @@ Mesh Geometry::cylinder(float radiusTop, float radiusBottom, float height, unsig
     return Mesh(positions, normals, uvs, tangents, indices, textures);
 }
 
-Mesh Geometry::cuboid(float width, float height, float depth)
+Mesh Geometry3D::cuboid(float width, float height, float depth)
 {
     if (width <= 0.f) {
-        Console::get().error("[Geometry::cuboid] Invalid width " + std::to_string(width) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::cuboid] Invalid width " + std::to_string(width) + ", must be +ve real.");
     }
     if (height <= 0.f) {
-        Console::get().error("[Geometry::cuboid] Invalid height " + std::to_string(height) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::cuboid] Invalid height " + std::to_string(height) + ", must be +ve real.");
     }
     if (depth <= 0.f) {
-        Console::get().error("[Geometry::cuboid] Invalid depth " + std::to_string(depth) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::cuboid] Invalid depth " + std::to_string(depth) + ", must be +ve real.");
     }
 
     const float halfWidth = 0.5f*width;
@@ -451,19 +451,19 @@ Mesh Geometry::cuboid(float width, float height, float depth)
     return Mesh(positions, normals, uvs, tangents, indices, textures);
 }
 
-Mesh Geometry::plane(float width, float depth)
+Mesh Geometry3D::plane(float width, float depth)
 {
     if (width <= 0.f) {
-        Console::get().error("[Geometry::plane] Invalid width " + std::to_string(width) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::plane] Invalid width " + std::to_string(width) + ", must be +ve real.");
     }
     if (depth <= 0.f) {
-        Console::get().error("[Geometry::plane] Invalid depth " + std::to_string(depth) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::plane] Invalid depth " + std::to_string(depth) + ", must be +ve real.");
     }
 
     const float halfWidth = 0.5f*width;
     const float halfDepth = 0.5f*depth;
 
-    // XY-plane, centered at origin, facing +Z (CCW winding when viewed from +Z).
+    // XZ-plane, centered at origin, facing +Y (CCW winding when viewed from +Y).
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> uvs;
@@ -510,15 +510,15 @@ Mesh Geometry::plane(float width, float depth)
     return Mesh(positions, normals, uvs, tangents, indices, textures);
 }
 
-Mesh Geometry::pyramidSquare(float baseSize, float height)
+Mesh Geometry3D::pyramidSquare(float baseSize, float height)
 {
     const float eps = 1e-6f;
 
     if (baseSize <= eps) {
-        throw std::invalid_argument("[Geometry::pyramidSquare] baseSize must be > 0.");
+        throw std::invalid_argument("[Geometry3D::pyramidSquare] baseSize must be > 0.");
     }
     if (height <= eps) {
-        throw std::invalid_argument("[Geometry::pyramidSquare] height must be > 0.");
+        throw std::invalid_argument("[Geometry3D::pyramidSquare] height must be > 0.");
     }
 
     const float halfHeight = 0.5f * height;
@@ -630,10 +630,10 @@ Mesh Geometry::pyramidSquare(float baseSize, float height)
     return Mesh(positions, normals, uvs, tangents, indices, textures);
 }
 
-Mesh Geometry::sphereUV(float radius, unsigned int nLatitudes, unsigned int nLongitudes)
+Mesh Geometry3D::sphereUV(float radius, unsigned int nLatitudes, unsigned int nLongitudes)
 {
     if (radius <= 0.f) {
-        Console::get().error("[Geometry::sphereUV] Invalid radius " + std::to_string(radius) + ", must be +ve real.");
+        Console::get().error("[Geometry3D::sphereUV] Invalid radius " + std::to_string(radius) + ", must be +ve real.");
     }
 
     nLatitudes = std::max(2u, nLatitudes);
@@ -696,10 +696,10 @@ Mesh Geometry::sphereUV(float radius, unsigned int nLatitudes, unsigned int nLon
     return Mesh(positions, normals, uvs, tangents, indices, textures);
 }
 
-Mesh Geometry::sphereIcosphere(float radius, unsigned int nDivisions)
+Mesh Geometry3D::sphereIcosphere(float radius, unsigned int nDivisions)
 {
     if (radius < 0.f) {
-        Console::get().error("[Geometry::sphereIcosphere] Invalid radius " + std::to_string(radius) + ", must be >= 0.");
+        Console::get().error("[Geometry3D::sphereIcosphere] Invalid radius " + std::to_string(radius) + ", must be >= 0.");
     }
 
     const float t = GOLDEN_RATIO;

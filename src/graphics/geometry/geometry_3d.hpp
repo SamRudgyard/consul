@@ -5,12 +5,12 @@
 
 #include "glm/vec4.hpp"
 
-class Geometry
+class Geometry3D
 {
 public:
-    static Geometry* get()
+    static Geometry3D* get()
     {
-        static Geometry instance;
+        static Geometry3D instance;
         return &instance;
     }
 
@@ -26,6 +26,6 @@ public:
     Mesh sphereIcosphere(float radius, unsigned int nDivisions);
 
 private:
-    Geometry() {}
-    ~Geometry() {}
+    Geometry3D() {}
+    ~Geometry3D() {}
 };
