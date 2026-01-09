@@ -698,7 +698,7 @@ Mesh Geometry3D::sphereUV(float radius, unsigned int nLatitudes, unsigned int nL
 
 Mesh Geometry3D::sphereIcosphere(float radius, unsigned int nDivisions)
 {
-    if (radius < 0.f) {
+    if (radius <= 0.f) {
         Console::get().error("[Geometry3D::sphereIcosphere] Invalid radius " + std::to_string(radius) + ", must be >= 0.");
     }
 
@@ -777,8 +777,8 @@ Mesh Geometry3D::sphereIcosphere(float radius, unsigned int nDivisions)
 
     for (const glm::vec3& position : positions) {
         const glm::vec3 normal = glm::normalize(position);
-        const float u = 0.5f + std::atan2(normal.z, normal.x) / TWO_PI;
-        const float v = 0.5f - std::asin(normal.y) / PI;
+        const float u = 0.5f + std::atan2(normal.z, normal.x)/TWO_PI;
+        const float v = 0.5f - std::asin(normal.y)/PI;
         normals.push_back(normal);
         uvs.push_back({u, v});
         tangents.push_back({1.0f, 0.0f, 0.0f, 1.0f});
