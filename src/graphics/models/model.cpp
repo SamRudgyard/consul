@@ -116,7 +116,6 @@ void Model::loadMesh(unsigned int iMesh)
 	std::vector<glm::vec3> positions = toVec3(positionFloats);
 	std::vector<float> normalFloats = readAccessorFloats(jsonContents["accessors"][normalAccessorIndex]);
 	std::vector<glm::vec3> normals = toVec3(normalFloats);
-    std::vector<glm::vec4> colours; // Empty colours vector, TODO: implement reading colors if needed
     std::vector<float> textureFloats = readAccessorFloats(jsonContents["accessors"][texCoordAccessorIndex]);
     std::vector<glm::vec2> textureUVs = toVec2(textureFloats);
     std::vector<glm::vec4> tangents; // Empty tangents vector, TODO: implement reading tangents if needed
@@ -125,7 +124,7 @@ void Model::loadMesh(unsigned int iMesh)
     int materialIndex = primitives[0].value("material", -1);
     std::vector<Texture> textures = getTexturesForMaterial(materialIndex);
 
-    Mesh mesh(positions, normals, colours, textureUVs, tangents, indices, textures);
+    Mesh mesh(positions, normals, textureUVs, tangents, indices, textures);
     meshes.push_back(mesh); // TODO: Remove when we get rid of mesh owning its textures
 }
 

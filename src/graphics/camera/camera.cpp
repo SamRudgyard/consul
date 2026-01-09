@@ -2,6 +2,7 @@
 #include "maths/unit_conversions.hpp"
 #include "core/engine_context.hpp"
 #include "graphics/shaders/shader.hpp"
+#include "core/console/console.hpp"
 
 Camera::Camera(glm::vec3 position)
     : position(position)
@@ -12,24 +13,48 @@ Camera::Camera(glm::vec3 position)
 
 void Camera::setFieldOfView(float FOVdeg)
 {
+    if (projectionType != ProjectionType::Perspective) {
+        Console::get().warn("[Camera::setFieldOfView] Can only set FoV with perspective projection");
+        return;
+    }
+
     this->FOVdeg = FOVdeg;
     updateProjectionMatrix();
 }
 
-void Camera::setNearPlane(float nearPlane)
+void Camera::setNearPlane(float near)
 {
-    this->nearPlane = nearPlane;
+    this->near = near;
     updateProjectionMatrix();
 }
 
-void Camera::setFarPlane(float farPlane)
+void Camera::setFarPlane(float far)
 {
-    this->farPlane = farPlane;
+    this->far = far;
+    updateProjectionMatrix();
+}
+
+void Camera::setOrthographic(float left, float right, float bottom, float top)
+{
+    if (projectionType != ProjectionType::Orthographic) {
+        Console::get().warn("[Camera::setFieldOfView] Can only set FoV with perspective projection");
+        return;
+    }
+
+    this->left = left;
+    this->right = right;
+    this->bottom = bottom;
+    this->top = top;
     updateProjectionMatrix();
 }
 
 void Camera::updateProjectionMatrix()
 {
+    if (projectionType == ProjectionType::Orthographic) {
+        projectionMatrix = glm::ortho(left, right, bottom, top, near, far);
+        return;
+    }
+
     glm::mat4 projection = glm::mat4(1.0f);
 
     // Use FoV angle from larger dimension, see https://stackoverflow.com/questions/26997631/limiting-fov-both-horizontally-and-vertically
@@ -49,12 +74,12 @@ void Camera::updateProjectionMatrix()
 
     projection[2][0] = 0.0f;
     projection[2][1] = 0.0f;
-    projection[2][2] = (nearPlane + farPlane) / (nearPlane - farPlane);
+    projection[2][2] = (near + far) / (near - far);
     projection[2][3] = -1.0f;
 
     projection[3][0] = 0.0f;
     projection[3][1] = 0.0f;
-    projection[3][2] = 2.0f * nearPlane * farPlane / (nearPlane - farPlane);
+    projection[3][2] = 2.0f * near * far / (near - far);
     projection[3][3] = 0.0f;
 
     projectionMatrix = projection;

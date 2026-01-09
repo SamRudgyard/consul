@@ -15,7 +15,10 @@ enum TextureType {
 class Texture
 {
 public:
-    Texture(std::string texturePath, TextureType textureType) 
+    Texture()
+        : path("assets/default/default.png"), type(TextureType::DIFFUSE) {};
+
+    Texture(std::string texturePath, TextureType textureType)
         : path(texturePath), type(textureType) {};
 
     const std::string& getPath() const { return path; }

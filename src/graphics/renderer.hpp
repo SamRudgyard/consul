@@ -40,6 +40,11 @@ public:
             loadedModel.meshes.clear();
         }
         loadedModels.clear();
+
+        for (RenderableMesh* mesh : standaloneMeshes) {
+            delete mesh;
+        }
+        standaloneMeshes.clear();
     }
 
     void initialiseImGui()
@@ -87,6 +92,16 @@ public:
         return renderableMesh;
     }
 
+    RenderableMesh* addMesh(Mesh& mesh, const glm::mat4& modelMatrix = glm::mat4(1.0f))
+    {
+        RenderableMesh* renderableMesh = newMesh(mesh);
+        if (renderableMesh) {
+            renderableMesh->setModelMatrix(modelMatrix);
+            standaloneMeshes.push_back(renderableMesh);
+        }
+        return renderableMesh;
+    }
+
     void loadModel(Model& model)
     {
         std::vector<Mesh> meshes = model.getMeshes();
@@ -108,6 +123,10 @@ public:
 
     void render(const IShader* shader, const Camera& camera)
     {
+        for (RenderableMesh* mesh : standaloneMeshes) {
+            mesh->draw(shader, camera);
+        }
+
         for (LoadedModel& loadedModel : loadedModels) {
             std::vector<glm::mat4> transforms = loadedModel.model->getTransformationMatrices();
             for (unsigned int iMesh = 0; iMesh < loadedModel.meshes.size(); iMesh++) {
@@ -129,4 +148,5 @@ private:
     IGraphics* gfxBackend = nullptr;
     GraphicsAPI gfxApi;
     std::vector<LoadedModel> loadedModels;
+    std::vector<RenderableMesh*> standaloneMeshes;
 };

@@ -35,7 +35,7 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
 
     glCheckError();
 
-    if (this->mesh.getPositions().empty()) {
+    if (!this->mesh.hasAttribute(AttributeType::POSITION)) {
         Console::get().error("[OpenGLMesh::OpenGLMesh] Provided Mesh has no position data");
         return;
     }
@@ -45,42 +45,29 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
 
     glCheckError();
 
-    if (this->mesh.getNormals().empty()) {
-        // Mesh doesn't have normals => use default normals
-        glVertexAttrib3fv((unsigned int)(AttributeType::NORMAL), glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f)));
-    } else {
+    if (this->mesh.hasAttribute(AttributeType::NORMAL)) {
         unsigned int normalVBO = enableVertexBuffer(this->mesh.getNormals(), AttributeType::NORMAL, false);
         this->mesh.setVertexBuffer(normalVBO, AttributeType::NORMAL);
+    } else {
+        glVertexAttrib3fv((unsigned int)(AttributeType::NORMAL), glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f)));
     }
 
     glCheckError();
     
-    if (this->mesh.getColours().empty()) {
-        // Mesh doesn't have colours => use default white colour
-        glVertexAttrib4fv((unsigned int)(AttributeType::COLOUR), glm::value_ptr(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)));
-    } else {
-        unsigned int colourVBO = enableVertexBuffer(this->mesh.getColours(), AttributeType::COLOUR, false);
-        this->mesh.setVertexBuffer(colourVBO, AttributeType::COLOUR);
-    }
-
-    glCheckError();
-
-    if (this->mesh.getTextureCoords().empty()) {
-        // Mesh doesn't have texture coordinates => use default (0, 0)
-        glVertexAttrib2fv((unsigned int)(AttributeType::TEXCOORD), glm::value_ptr(glm::vec2(0.0f, 0.0f)));
-    } else {
+    if (this->mesh.hasAttribute(AttributeType::TEXCOORD)) {
         unsigned int texCoordVBO = enableVertexBuffer(this->mesh.getTextureCoords(), AttributeType::TEXCOORD, false);
         this->mesh.setVertexBuffer(texCoordVBO, AttributeType::TEXCOORD);
+    } else {
+        glVertexAttrib2fv((unsigned int)(AttributeType::TEXCOORD), glm::value_ptr(glm::vec2(0.0f, 0.0f)));
     }
 
     glCheckError();
 
-    if (this->mesh.getTangents().empty()) {
-        // Mesh doesn't have tangents => use default tangent
-        glVertexAttrib4fv((unsigned int)(AttributeType::TANGENT), glm::value_ptr(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)));
-    } else {
+    if (this->mesh.hasAttribute(AttributeType::TANGENT)) {
         unsigned int tangentVBO = enableVertexBuffer(this->mesh.getTangents(), AttributeType::TANGENT, false);
         this->mesh.setVertexBuffer(tangentVBO, AttributeType::TANGENT);
+    } else {
+        glVertexAttrib4fv((unsigned int)(AttributeType::TANGENT), glm::value_ptr(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)));
     }
 
     glCheckError();
@@ -140,11 +127,6 @@ OpenGLMesh::~OpenGLMesh()
     unsigned int normalVBO = this->mesh.getVertexBuffer(AttributeType::NORMAL);
     if (normalVBO != 0) {
         glDeleteBuffers(1, &normalVBO);
-    }
-
-    unsigned int colourVBO = this->mesh.getVertexBuffer(AttributeType::COLOUR);
-    if (colourVBO != 0) {
-        glDeleteBuffers(1, &colourVBO);
     }
 
     unsigned int texCoordVBO = this->mesh.getVertexBuffer(AttributeType::TEXCOORD);
@@ -209,6 +191,13 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
     glBindVertexArray(vao);
     glCheckError();
 
+    const Colour tint = this->mesh.getTint();
+    shader->setUniformVec4("meshTint", (float)tint.r/255.0f, (float)tint.g/255.0f, (float)tint.b/255.0f, (float)tint.alpha/255.0f);
+    glCheckError();
+
+    shader->setUniformInt("useLighting", this->mesh.getDrawMode() == DrawMode::LINES ? 0 : 1);
+    glCheckError();
+
     for (const auto& [name, texture] : textures) {
         texture->bind();
         texture->setTextureUnit(shader, name.c_str());
@@ -222,12 +211,29 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
     glCheckError();
     shader->setUniformVec3("lightColour", 1.0f, 1.0f, 1.0f);
     glCheckError();
+    shader->setUniformVec3("ambientColour", 0.15f, 0.15f, 0.15f);
+    glCheckError();
     shader->setUniformMat4("model", getModelMatrix());
     glCheckError();
 
     camera.sendToShader(shader);
     glCheckError();
 
-    glDrawElements(GL_TRIANGLES, this->mesh.getNumIndices(), GL_UNSIGNED_INT, 0);
+    int glDrawMode;
+    switch (this->mesh.getDrawMode())
+    {
+    case DrawMode::TRIANGLES:
+        glDrawMode = GL_TRIANGLES;
+        break;
+    case DrawMode::LINES:
+        glDrawMode = GL_LINES;
+        break;
+    
+    default:
+        Console::get().warn("[OpenGLMesh::draw] Unexpected draw mode");
+        return;
+    }
+
+    glDrawElements(glDrawMode, this->mesh.getNumIndices(), GL_UNSIGNED_INT, 0);
     glCheckError();
 }

@@ -123,12 +123,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/$<CONFIG>)
 set(SRC_DIR src)
 
 # Recursively find all source files
-file(GLOB_RECURSE CPP_SOURCES "${SRC_DIR}/*.cpp")
-file(GLOB_RECURSE C_SOURCES "${SRC_DIR}/*.c")
+file(GLOB_RECURSE CPP_SOURCES CONFIGURE_DEPENDS "${SRC_DIR}/*.cpp")
+file(GLOB_RECURSE C_SOURCES CONFIGURE_DEPENDS "${SRC_DIR}/*.c")
 
 # Recursively find all header files
-file(GLOB_RECURSE HPP_HEADERS "${SRC_DIR}/*.hpp")
-file(GLOB_RECURSE H_HEADERS "${SRC_DIR}/*.h")
+file(GLOB_RECURSE HPP_HEADERS CONFIGURE_DEPENDS "${SRC_DIR}/*.hpp")
+file(GLOB_RECURSE H_HEADERS CONFIGURE_DEPENDS "${SRC_DIR}/*.h")
 
 # Add all source files to the project
 include_directories(${SRC_DIR})
