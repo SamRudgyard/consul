@@ -29,7 +29,7 @@ Mesh Geometry3D::capsule(float radius, float height, unsigned int nLatitudes, un
     nLatitudes  = std::max(2u, nLatitudes);   // hemispheres will use at least 2 stacks
     nLongitudes = std::max(3u, nLongitudes);  // at least a triangle around
 
-    const float halfHeight = 0.5f * height;
+    const float halfHeight = 0.5f*height;
     const float halfCyl = std::max(0.0f, halfHeight - radius); // half of cylinder section height
     const bool hasCylinder = halfCyl > eps;
 
@@ -41,8 +41,8 @@ Mesh Geometry3D::capsule(float radius, float height, unsigned int nLatitudes, un
 
     // Precompute
     std::vector<float> cosThetas(nLongitudes + 1), sinThetas(nLongitudes + 1);
-    for (unsigned int i = 0; i <= nLongitudes; ++i) {
-        float theta = TWO_PI * float(i) / float(nLongitudes);
+    for (unsigned int i = 0; i <= nLongitudes; i++) {
+        float theta = TWO_PI*float(i)/float(nLongitudes);
         cosThetas[i] = std::cos(theta);
         sinThetas[i] = std::sin(theta);
     }
@@ -64,8 +64,8 @@ Mesh Geometry3D::capsule(float radius, float height, unsigned int nLatitudes, un
     };
 
     auto vFromY = [&](float y) -> float {
-        float v = (y + halfHeight) / std::max(height, eps); // 0..1
-        return 1.0f - v;
+        float v = std::max(std::min((y + halfHeight)/std::max(height, eps), 1.f), 0.f);
+        return 1.f - v;
     };
 
     // Helper to emit a ring at given y with a given ring radius and normal function
