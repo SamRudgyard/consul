@@ -31,7 +31,9 @@ public:
     }
 
     ~Renderer() {
-        delete gfxBackend;
+        if (gfxBackend) {
+            delete gfxBackend;
+        }
 
         for (LoadedModel& loadedModel : loadedModels) {
             for (RenderableMesh* mesh : loadedModel.meshes) {

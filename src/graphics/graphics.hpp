@@ -14,6 +14,7 @@ enum class GraphicsAPI
 class IGraphics
 {
 public:
+    virtual ~IGraphics() = default;
     virtual void loadGraphics(void* loaderFunc) = 0;
     virtual void clearColour(const glm::vec4& colour) = 0;
     virtual void clearScreenBuffer() = 0;
