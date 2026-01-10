@@ -64,16 +64,38 @@ Consul::~Consul()
     terminate();
 }
 
-bool Consul::run()
+void Consul::loadScene(Scene* newScene)
 {
-    endTick();
-    beginTick();
-
-    if (context->window.shouldClose) {
-        return false;
+    if (scene == newScene) {
+        return;
     }
 
-    return !(context->window.shouldClose && platform->shouldClose());
+    if (scene) {
+        scene->shutdown();
+    }
+
+    scene = newScene;
+}
+
+void Consul::run()
+{
+    if (scene) {
+        if (!scene->isInitialised) {
+            scene->initialise(*renderer);
+        }
+    }
+
+    while (!close) {
+        endTick();
+        beginTick();
+
+        if (scene) {
+            scene->update((float)context->time.deltaTime);
+            scene->render(*renderer);
+        }
+
+        close = context->window.shouldClose && platform->shouldClose();
+    }
 }
 
 void Consul::beginTick()
@@ -124,6 +146,10 @@ void Consul::terminate()
     console.log("[Consul] Shutting down Game Engine...");
     context->ui.unregisterWindow("Console");
     context->ui.unregisterWindow("FPS Monitor");
+
+    if (scene) {
+        scene->shutdown();
+    }
 
     ImGui_ImplGlfw_Shutdown();
     platform->terminate();
