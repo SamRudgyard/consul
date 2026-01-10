@@ -19,5 +19,6 @@ public:
     virtual void setUniformVec3(const char* name, const glm::vec3& value) const = 0;
     virtual void setUniformVec4(const char* name, float x, float y, float z, float w) const = 0;
     virtual void setUniformVec4(const char* name, const glm::vec4& value) const = 0;
+    virtual void setUniformMat3(const char* name, const glm::mat3& matrix) const = 0;
     virtual void setUniformMat4(const char* name, const glm::mat4& matrix) const = 0;
 };

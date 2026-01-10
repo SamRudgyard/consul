@@ -20,6 +20,7 @@ public:
     void setUniformVec3(const char* name, const glm::vec3& value) const override;
     void setUniformVec4(const char* name, float x, float y, float z, float w) const override;
     void setUniformVec4(const char* name, const glm::vec4& value) const override;
+    void setUniformMat3(const char* name, const glm::mat3& matrix) const override;
     void setUniformMat4(const char* name, const glm::mat4& matrix) const override;
 
 private:

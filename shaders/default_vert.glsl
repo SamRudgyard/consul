@@ -9,12 +9,13 @@ out vec3 fragNormal;
 out vec2 fragTexCoords;
 
 uniform mat4 model;
+uniform mat3 normalMatrix;
 uniform mat4 cameraMatrix;
 
 void main()
 {
     fragPosition = vec3(model * vec4(inputPosition, 1.0));
-    fragNormal = inputNormal;
+    fragNormal = normalize(normalMatrix * inputNormal);
     fragTexCoords = mat2(1.0, 0.0, 0.0, -1.0)*inputTexCoords;
 
     gl_Position = cameraMatrix * vec4(fragPosition, 1.0);
