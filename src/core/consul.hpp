@@ -3,6 +3,7 @@
 #include "core/console/console.hpp"
 #include "core/engine_context.hpp"
 #include "core/scene.hpp"
+#include "core/scene_manager.hpp"
 #include "platforms/platform.hpp"
 #include "graphics/renderer.hpp"
 #include "time.hpp"
@@ -70,8 +71,8 @@ private:
     Renderer* renderer = nullptr;
     bool consoleWindowOpen = true;
     bool fpsMonitorWindowOpen = true;
-    Scene* scene = nullptr;
     bool close = false;
+    SceneManager sceneManager;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);

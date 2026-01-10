@@ -66,33 +66,16 @@ Consul::~Consul()
 
 void Consul::loadScene(Scene* newScene)
 {
-    if (scene == newScene) {
-        return;
-    }
-
-    if (scene) {
-        scene->shutdown();
-    }
-
-    scene = newScene;
+    sceneManager.loadScene(newScene, *renderer);
 }
 
 void Consul::run()
 {
-    if (scene) {
-        if (!scene->isInitialised) {
-            scene->initialise(*renderer);
-        }
-    }
-
     while (!close) {
         endTick();
         beginTick();
 
-        if (scene) {
-            scene->update((float)context->time.deltaTime);
-            scene->render(*renderer);
-        }
+        sceneManager.update(*renderer, (float)context->time.deltaTime);
 
         close = context->window.shouldClose && platform->shouldClose();
     }
@@ -147,9 +130,7 @@ void Consul::terminate()
     context->ui.unregisterWindow("Console");
     context->ui.unregisterWindow("FPS Monitor");
 
-    if (scene) {
-        scene->shutdown();
-    }
+    sceneManager.shutdown();
 
     ImGui_ImplGlfw_Shutdown();
     platform->terminate();

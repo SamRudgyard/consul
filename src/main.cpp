@@ -48,8 +48,6 @@ public:
         
         Mesh line = geometry3d->line({0.f, 0.f, 0.f}, {2.0f, 5.0f, 0.f});
         renderer.addMesh(line);
-
-        isInitialised = true;
     }
 
     void update(float deltaTime) override
