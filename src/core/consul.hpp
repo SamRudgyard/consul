@@ -60,9 +60,10 @@ public:
     Renderer& getRenderer() { return *renderer; }
 
     /**
-     * Loads a scene. The previous scene (if any) will be shut down.
+     * Loads a scene. Ownership is transferred to the engine.
+     * The previous scene (if any) will be shut down.
      */
-    void loadScene(Scene* newScene);
+    void loadScene(std::unique_ptr<Scene> newScene);
 
 private:
     Console& console = Console::get();

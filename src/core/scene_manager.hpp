@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "core/scene.hpp"
 
 class Renderer;
@@ -10,13 +12,11 @@ public:
     SceneManager() = default;
     ~SceneManager() = default;
 
-    void loadScene(Scene* newScene, Renderer& renderer);
+    void loadScene(std::unique_ptr<Scene> newScene, Renderer& renderer);
 
     void update(Renderer& renderer, float deltaTime);
     void shutdown();
 
-    Scene* getScene() const { return currentScene; }
-
 private:
-    Scene* currentScene = nullptr;
+    std::unique_ptr<Scene> currentScene;
 };

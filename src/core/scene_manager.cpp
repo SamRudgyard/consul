@@ -2,36 +2,25 @@
 
 #include "graphics/renderer.hpp"
 
-void SceneManager::loadScene(Scene* newScene, Renderer& renderer)
+void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)
 {
-    if (currentScene == newScene) {
-        return;
-    }
-
+    // Close previous scene
     if (currentScene && currentScene->isInitialised) {
         currentScene->shutdown();
         currentScene->isInitialised = false;
     }
 
-    currentScene = newScene;
+    currentScene = std::move(scene);
+    assert(currentScene);
 
-    if (currentScene) {
-        currentScene->isInitialised = false;
-        currentScene->initialise(renderer);
-        currentScene->isInitialised = true;
-    }
+    currentScene->initialise(renderer);
+    currentScene->isInitialised = true;
 }
 
 void SceneManager::update(Renderer& renderer, float deltaTime)
 {
-    if (!currentScene) {
-        return;
-    }
-
-    if (!currentScene->isInitialised) {
-        currentScene->initialise(renderer);
-        currentScene->isInitialised = true;
-    }
+    assert(currentScene);
+    assert(currentScene->isInitialised);
 
     currentScene->update(deltaTime);
     currentScene->render(renderer);
@@ -39,10 +28,10 @@ void SceneManager::update(Renderer& renderer, float deltaTime)
 
 void SceneManager::shutdown()
 {
-    if (currentScene && currentScene->isInitialised) {
+    assert(currentScene);
+
+    if (currentScene->isInitialised) {
         currentScene->shutdown();
         currentScene->isInitialised = false;
     }
-
-    currentScene = nullptr;
 }

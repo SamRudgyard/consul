@@ -1,5 +1,7 @@
 #include "consul.hpp"
 
+#include <memory>
+
 #include "platforms/platform_glfw.hpp"
 #include "imgui.h"
 #include "implot.h"
@@ -64,9 +66,9 @@ Consul::~Consul()
     terminate();
 }
 
-void Consul::loadScene(Scene* newScene)
+void Consul::loadScene(std::unique_ptr<Scene> newScene)
 {
-    sceneManager.loadScene(newScene, *renderer);
+    sceneManager.loadScene(std::move(newScene), *renderer);
 }
 
 void Consul::run()
@@ -133,7 +135,11 @@ void Consul::terminate()
     sceneManager.shutdown();
 
     ImGui_ImplGlfw_Shutdown();
-    platform->terminate();
+
+    if (platform) {
+        platform->terminate();
+    }
+
     console.log("[Consul] Windowing platform terminated.");
 
     ImGui_ImplOpenGL3_Shutdown();
