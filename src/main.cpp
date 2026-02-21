@@ -49,23 +49,17 @@ private:
 class ExampleScene : public Scene
 {
 public:
-    ExampleScene()
-        : camera(glm::vec3(0.0f, 0.0f, 2.0f)), model("assets/shiba/scene.gltf") {}
+    ExampleScene() : model("assets/shiba/scene.gltf") {};
 
     void initialise(Renderer& renderer) override
     {
+        camera.setPosition({0.0f, 0.0f, 2.0f});
         shader = renderer.newShader("shaders/default_vert.glsl", "shaders/default_frag.glsl");
         renderer.loadModel(model);
 
         std::unique_ptr<CubeNode> rotatingCube = std::make_unique<CubeNode>();
         rotatingCube->createRenderResources(renderer);
         getRoot().addChild(std::move(rotatingCube));
-    }
-
-    void update(float deltaTime) override
-    {
-        camera.handleInputs(deltaTime);
-        updateSceneGraph(deltaTime);
     }
 
     void render(Renderer& renderer) override
@@ -81,7 +75,6 @@ public:
     }
 
 private:
-    Camera camera;
     IShader* shader = nullptr;
     Model model;
 };

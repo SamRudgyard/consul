@@ -1,18 +1,21 @@
 #pragma once
 
 #include "core/node.hpp"
+#include "graphics/camera/camera.hpp"
 
 class Renderer;
 
 class Scene
 {
 public:
+    Scene() = default;
     virtual ~Scene() = default;
 
+    Camera camera;
     bool isInitialised = false;
 
     virtual void initialise(Renderer& renderer) = 0;
-    virtual void update(float deltaTime) = 0;
+    void update(float deltaTime);
     virtual void render(Renderer& renderer) = 0;
     virtual void shutdown() = 0;
 

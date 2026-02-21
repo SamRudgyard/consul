@@ -25,6 +25,8 @@ public:
     float speed = 0.1f;
     float sensitivity = 0.1f;
 
+    Camera() = default;
+
     /**
      * A camera with given viewport width/height and world position.
      * @param position World space position of the camera.
@@ -36,6 +38,12 @@ public:
      * @param projectionType New projection type.
      */
     void setProjectionType(ProjectionType projectionType) { this->projectionType = projectionType; }
+
+    /**
+     * Set the world space position of the camera.
+     * @param position New world space position of the camera.
+     */
+    void setPosition(const glm::vec3& position) { this->position = position; }
 
     /**
      * Set the field of view in degrees.
