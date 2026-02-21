@@ -54,36 +54,26 @@ const glm::mat4& Node::getWorldTransform() const
     return worldTransform;
 }
 
-void Node::setUpdateCallback(UpdateCallback callback)
-{
-    onUpdate = std::move(callback);
-}
-
-void Node::setRenderCallback(RenderCallback callback)
-{
-    onRender = std::move(callback);
-}
-
-void Node::update(float deltaTime, const glm::mat4& parentTransform)
+void Node::update(float dt, const glm::mat4& parentTransform)
 {
     worldTransform = parentTransform*localTransform;
+    
+    onUpdate(dt);
 
-    if (onUpdate) {
-        onUpdate(*this, deltaTime);
-    }
-
-    for (const std::unique_ptr<Node>& child : children) {
-        child->update(deltaTime, worldTransform);
+    for (const auto& child : children) {
+        child->update(dt, worldTransform);
     }
 }
 
 void Node::render(Renderer& renderer)
 {
-    if (onRender) {
-        onRender(*this, renderer);
+    if (!isVisible) {
+        return;
     }
 
-    for (const std::unique_ptr<Node>& child : children) {
+    onRender(renderer);
+
+    for (const auto& child : children) {
         child->render(renderer);
     }
 }

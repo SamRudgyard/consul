@@ -16,6 +16,7 @@ public:
 
     Node() = default;
     explicit Node(const glm::mat4& localTransform);
+    virtual ~Node() = default;
 
     Node* createChild();
     void addChild(std::unique_ptr<Node> child);
@@ -28,11 +29,12 @@ public:
     const glm::mat4& getLocalTransform() const;
     const glm::mat4& getWorldTransform() const;
 
-    void setUpdateCallback(UpdateCallback callback);
-    void setRenderCallback(RenderCallback callback);
-
-    void update(float deltaTime, const glm::mat4& parentTransform);
+    void update(float dt, const glm::mat4& parentTransform);
     void render(Renderer& renderer);
+
+protected:
+    virtual void onUpdate(float dt) {}
+    virtual void onRender(Renderer& renderer) {}
 
 private:
     glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -42,9 +44,7 @@ private:
     glm::mat4 localTransform = glm::mat4(1.0f);
     glm::mat4 worldTransform = glm::mat4(1.0f);
     std::vector<std::unique_ptr<Node>> children;
-    UpdateCallback onUpdate;
-    RenderCallback onRender;
-    bool isVisible;
+    bool isVisible = true;
 
     void recalcLocalTransformation();
 };
