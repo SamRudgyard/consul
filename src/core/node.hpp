@@ -2,6 +2,8 @@
 
 #include <functional>
 #include <memory>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "glm/glm.hpp"
@@ -18,7 +20,23 @@ public:
     explicit Node(const glm::mat4& localTransform);
     virtual ~Node() = default;
 
-    Node* createChild();
+    /**
+     * Create a child node of type `T` with the given constructor arguments, and add it to this node's children.
+      * @tparam T Type of the child node (must inherit from `Node`).
+      * @param args Arguments to forward to `T`'s constructor.
+      * @return Pointer to the newly created child node.
+     */
+    template <typename T, typename... Args>
+    T* createChild(Args&&... args)
+    {
+        static_assert(std::is_base_of<Node, T>::value, "T must inherit from Node");
+
+        std::unique_ptr<T> child = std::make_unique<T>(std::forward<Args>(args)...);
+        T* childPtr = child.get();
+        children.emplace_back(std::move(child));
+        return childPtr;
+    }
+
     void addChild(std::unique_ptr<Node> child);
     const std::vector<std::unique_ptr<Node>>& getChildren() const;
 

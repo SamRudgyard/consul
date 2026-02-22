@@ -55,9 +55,8 @@ public:
         shader = renderer.newShader("shaders/default_vert.glsl", "shaders/default_frag.glsl");
         renderer.loadModel(model);
 
-        std::unique_ptr<CubeNode> rotatingCube = std::make_unique<CubeNode>();
+        CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
         rotatingCube->initRendering(renderer);
-        getRoot().addChild(std::move(rotatingCube));
     }
 
     void onRender(Renderer& renderer) override

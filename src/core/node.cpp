@@ -5,14 +5,6 @@
 Node::Node(const glm::mat4& localTransform)
     : localTransform(localTransform) {}
 
-Node* Node::createChild()
-{
-    std::unique_ptr<Node> child = std::make_unique<Node>();
-    Node* childPtr = child.get();
-    children.emplace_back(std::move(child));
-    return childPtr;
-}
-
 void Node::addChild(std::unique_ptr<Node> child)
 {
     if (!child) {
