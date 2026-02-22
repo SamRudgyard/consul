@@ -1,26 +1,24 @@
+#include <memory>
+
 #include "core/consul.hpp"
 #include "core/window.hpp"
 #include "core/scene.hpp"
 #include "graphics/renderable.hpp"
 #include "graphics/models/model.hpp"
-#include "graphics/camera/camera.hpp"
 #include "graphics/geometry/geometry_3d.hpp"
 #include "graphics/mesh/renderable_mesh.hpp"
-
-#include "glm/gtc/matrix_transform.hpp"
-#include <memory>
 
 class CubeNode : public Node, public Renderable
 {
 public:
-    void createRenderResources(Renderer& renderer) override
+    void initRendering(Renderer& renderer) override
     {
         Mesh cube = Geometry3D::get()->cube(0.4f);
         cube.setTint(Colour(20, 200, 200));
         mesh = renderer.addMesh(cube);
     }
 
-    void syncRenderState() override
+    void syncToRenderer() override
     {
         if (mesh) {
             mesh->setModelMatrix(getWorldTransform());
@@ -38,7 +36,7 @@ protected:
 
     void onRender(Renderer&) override
     {
-        syncRenderState();
+        syncToRenderer();
     }
 
 private:
@@ -58,7 +56,7 @@ public:
         renderer.loadModel(model);
 
         std::unique_ptr<CubeNode> rotatingCube = std::make_unique<CubeNode>();
-        rotatingCube->createRenderResources(renderer);
+        rotatingCube->initRendering(renderer);
         getRoot().addChild(std::move(rotatingCube));
     }
 

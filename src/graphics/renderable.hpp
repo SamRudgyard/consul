@@ -5,6 +5,17 @@
 class Renderable {
 public:
     virtual ~Renderable() = default;
-    virtual void createRenderResources(Renderer& renderer) = 0;
-    virtual void syncRenderState() = 0; // usually sets model matrix
+
+    /**
+     * Initialise any rendering resources required for this renderable
+     * (e.g. create a `RenderableMesh` from a `Mesh`).
+     * @param renderer Renderer to use for resource creation.
+     */
+    virtual void initRendering(Renderer& renderer) = 0;
+
+    /**
+     * Sync any relevant data to the renderer (e.g. update model matrix).
+     * Called every frame before rendering.
+     */
+    virtual void syncToRenderer() = 0; // usually sets model matrix
 };
