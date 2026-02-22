@@ -1,5 +1,7 @@
 #include "consul.hpp"
 
+#include <memory>
+
 #include "platforms/platform_glfw.hpp"
 #include "imgui.h"
 #include "implot.h"
@@ -64,16 +66,21 @@ Consul::~Consul()
     terminate();
 }
 
-bool Consul::run()
+void Consul::loadScene(std::unique_ptr<Scene> newScene)
 {
-    endTick();
-    beginTick();
+    sceneManager.loadScene(std::move(newScene), *renderer);
+}
 
-    if (context->window.shouldClose) {
-        return false;
+void Consul::run()
+{
+    while (!close) {
+        endTick();
+        beginTick();
+
+        sceneManager.update(*renderer, (float)context->time.deltaTime);
+
+        close = context->window.shouldClose && platform->shouldClose();
     }
-
-    return !(context->window.shouldClose && platform->shouldClose());
 }
 
 void Consul::beginTick()
@@ -125,8 +132,14 @@ void Consul::terminate()
     context->ui.unregisterWindow("Console");
     context->ui.unregisterWindow("FPS Monitor");
 
+    sceneManager.shutdown(*renderer);
+
     ImGui_ImplGlfw_Shutdown();
-    platform->terminate();
+
+    if (platform) {
+        platform->terminate();
+    }
+
     console.log("[Consul] Windowing platform terminated.");
 
     ImGui_ImplOpenGL3_Shutdown();

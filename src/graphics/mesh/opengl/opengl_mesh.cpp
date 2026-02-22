@@ -8,6 +8,7 @@
 #include "graphics/shaders/shader.hpp"
 #include "graphics/textures/opengl/opengl_texture.hpp"
 #include "glad/glad.h"
+#include "glm/gtc/matrix_inverse.hpp"
 #include "utils.hpp"
 
 std::shared_ptr<OpenGLTexture> OpenGLMesh::getCachedTexture(const Texture& texture, const unsigned int unit)
@@ -214,6 +215,9 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
     shader->setUniformVec3("ambientColour", 0.15f, 0.15f, 0.15f);
     glCheckError();
     shader->setUniformMat4("model", getModelMatrix());
+    glCheckError();
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(getModelMatrix())));
+    shader->setUniformMat3("normalMatrix", normalMatrix);
     glCheckError();
 
     camera.sendToShader(shader);
