@@ -8,6 +8,7 @@ void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)
     if (currentScene && currentScene->isInitialised) {
         currentScene->shutdown();
         currentScene->isInitialised = false;
+        renderer.clearSceneResources();
     }
 
     currentScene = std::move(scene);
@@ -26,7 +27,7 @@ void SceneManager::update(Renderer& renderer, float deltaTime)
     currentScene->render(renderer);
 }
 
-void SceneManager::shutdown()
+void SceneManager::shutdown(Renderer& renderer)
 {
     assert(currentScene);
 
@@ -34,4 +35,6 @@ void SceneManager::shutdown()
         currentScene->shutdown();
         currentScene->isInitialised = false;
     }
+
+    renderer.clearSceneResources();
 }

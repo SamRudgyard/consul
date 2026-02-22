@@ -132,7 +132,7 @@ void Consul::terminate()
     context->ui.unregisterWindow("Console");
     context->ui.unregisterWindow("FPS Monitor");
 
-    sceneManager.shutdown();
+    sceneManager.shutdown(*renderer);
 
     ImGui_ImplGlfw_Shutdown();
 
