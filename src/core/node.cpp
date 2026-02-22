@@ -56,9 +56,9 @@ const glm::mat4& Node::getWorldTransform() const
 
 void Node::update(float dt, const glm::mat4& parentTransform)
 {
-    worldTransform = parentTransform*localTransform;
-    
     onUpdate(dt);
+
+    worldTransform = parentTransform*localTransform;
 
     for (const auto& child : children) {
         child->update(dt, worldTransform);
