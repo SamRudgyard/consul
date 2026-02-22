@@ -29,12 +29,14 @@ void SceneManager::update(Renderer& renderer, float deltaTime)
 
 void SceneManager::shutdown(Renderer& renderer)
 {
-    assert(currentScene);
+    renderer.clearSceneResources();
+
+    if (!currentScene) {
+        return;
+    }
 
     if (currentScene->isInitialised) {
         currentScene->shutdown();
         currentScene->isInitialised = false;
     }
-
-    renderer.clearSceneResources();
 }
