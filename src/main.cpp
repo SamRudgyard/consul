@@ -49,7 +49,7 @@ class ExampleScene : public Scene
 public:
     ExampleScene() : model("assets/shiba/scene.gltf") {};
 
-    void initialise(Renderer& renderer) override
+    void onInit(Renderer& renderer) override
     {
         camera.setPosition({0.0f, 0.0f, 2.0f});
         shader = renderer.newShader("shaders/default_vert.glsl", "shaders/default_frag.glsl");
@@ -60,13 +60,12 @@ public:
         getRoot().addChild(std::move(rotatingCube));
     }
 
-    void render(Renderer& renderer) override
+    void onRender(Renderer& renderer) override
     {
-        renderSceneGraph(renderer);
         renderer.render(shader, camera);
     }
 
-    void shutdown() override
+    void onShutdown() override
     {
         delete shader;
         shader = nullptr;

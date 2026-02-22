@@ -4,17 +4,15 @@
 
 void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)
 {
-    // Close previous scene
-    if (currentScene && currentScene->isInitialised) {
-        currentScene->shutdown();
-        currentScene->isInitialised = false;
+    // Close previous scene's resources
+    if (currentScene) {
         renderer.clearSceneResources();
     }
 
     currentScene = std::move(scene);
     assert(currentScene);
 
-    currentScene->initialise(renderer);
+    currentScene->init(renderer);
     currentScene->isInitialised = true;
 }
 
