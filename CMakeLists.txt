@@ -3,6 +3,7 @@ project(Consul)
 
 # Options
 option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_CONSUL_APP "Build the Consul demo application" ${PROJECT_IS_TOP_LEVEL})
 
 # Prefer the NEW behavior for FetchContent extraction timestamps
 if(POLICY CMP0135)
@@ -117,10 +118,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # Set bin directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/$<CONFIG>)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/$<CONFIG>)
 
 # Set source directory
-set(SRC_DIR src)
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Recursively find all source files
 file(GLOB_RECURSE CPP_SOURCES CONFIGURE_DEPENDS "${SRC_DIR}/*.cpp")
@@ -134,11 +135,14 @@ file(GLOB_RECURSE H_HEADERS CONFIGURE_DEPENDS "${SRC_DIR}/*.h")
 include_directories(${SRC_DIR})
 
 set(ENGINE_CPP_SOURCES ${CPP_SOURCES})
-list(REMOVE_ITEM ENGINE_CPP_SOURCES "${CMAKE_SOURCE_DIR}/src/main.cpp")
+list(REMOVE_ITEM ENGINE_CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
-add_library(consul_engine STATIC ${ENGINE_CPP_SOURCES} ${C_SOURCES} ${HPP_HEADERS} ${H_HEADERS})
-target_include_directories(consul_engine PUBLIC ${SRC_DIR} ${stb_SOURCE_DIR})
-target_link_libraries(consul_engine
+add_library(consul STATIC ${ENGINE_CPP_SOURCES} ${C_SOURCES} ${HPP_HEADERS} ${H_HEADERS})
+add_library(consul::consul ALIAS consul)
+
+target_include_directories(consul PUBLIC ${SRC_DIR} ${stb_SOURCE_DIR})
+target_compile_definitions(consul PUBLIC NOMINMAX)
+target_link_libraries(consul
   PUBLIC
     glfw
     glad
@@ -148,8 +152,10 @@ target_link_libraries(consul_engine
     nlohmann_json::nlohmann_json
 )
 
-add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE consul_engine)
+if(BUILD_CONSUL_APP)
+  add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+  target_link_libraries(${PROJECT_NAME} PRIVATE consul)
+endif()
 
 if(BUILD_TESTS)
   enable_testing()
