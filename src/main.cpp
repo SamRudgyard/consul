@@ -13,15 +13,21 @@ class CubeNode : public Node, public Renderable
 public:
     void initRendering(Renderer& renderer) override
     {
-        Mesh cube = Geometry3D::get()->cube(0.4f);
-        cube.setTint(Colour(20, 200, 200));
-        mesh = renderer.addMesh(cube);
+        Mesh icosphere = Geometry3D::get()->sphereIcosphere(0.5f, 2);
+        Mesh icosphereOutline = Geometry3D::get()->sphereIcosphere(0.5f, 2);
+        icosphereOutline.setDrawMode(DrawMode::LINES);
+        icosphere.setTint(Colour(20, 200, 200));
+        mesh = renderer.addMesh(icosphere);
+        outlineMesh = renderer.addMesh(icosphereOutline);
     }
 
     void syncToRenderer() override
     {
         if (mesh) {
             mesh->setModelMatrix(getWorldTransform());
+        }
+        if (outlineMesh) {
+            outlineMesh->setModelMatrix(getWorldTransform());
         }
     }
 
@@ -41,6 +47,7 @@ protected:
 
 private:
     RenderableMesh* mesh = nullptr;
+    RenderableMesh* outlineMesh = nullptr;
     float angle = 0.0f;
 };
 

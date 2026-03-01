@@ -73,8 +73,9 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
 
     glCheckError();
 
-    // Generate elemnt buffer object (EBO) for indices
-    const std::vector<unsigned int>& indices = this->mesh.getIndices();
+    // Generate element buffer object (EBO) for indices
+    std::vector<unsigned int> indices = this->mesh.getIndices();
+
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
