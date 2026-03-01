@@ -78,6 +78,13 @@ public:
         }
 
         std::vector<unsigned int> lineIndices;
+
+        if (indexCount < 3) {
+            // A point or line doesn't require conversion
+            // from triangles to lines, so return
+            return indices;
+        }
+
         // Each triangle (i0, i1, i2) becomes lines (i0, i1), (i1, i2), (i2, i0)
         // => x2 number of indices
         lineIndices.reserve(2*indexCount);
