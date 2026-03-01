@@ -11,6 +11,12 @@ Camera::Camera(glm::vec3 position)
     updateViewMatrix();
 }
 
+void Camera::setPosition(const glm::vec3& position)
+{
+    this->position = position;
+    updateViewMatrix();
+}
+
 void Camera::setFieldOfView(float FOVdeg)
 {
     if (projectionType != ProjectionType::Perspective) {

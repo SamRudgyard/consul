@@ -43,7 +43,7 @@ public:
      * Set the world space position of the camera.
      * @param position New world space position of the camera.
      */
-    void setPosition(const glm::vec3& position) { this->position = position; }
+    void setPosition(const glm::vec3& position);
 
     /**
      * Set the field of view in degrees.
