@@ -18,7 +18,6 @@ public:
 private:
     unsigned int vao;
     unsigned int ebo;
-    unsigned int uploadedIndexCount = 0;
     std::map<std::string, std::shared_ptr<OpenGLTexture>> textures;
     inline static std::map<std::string, std::shared_ptr<OpenGLTexture>> textureCache;
 

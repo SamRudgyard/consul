@@ -11,31 +11,6 @@
 #include "glm/gtc/matrix_inverse.hpp"
 #include "utils.hpp"
 
-std::vector<unsigned int> buildLineIndices(const std::vector<unsigned int>& triangleIndices)
-{
-    if (triangleIndices.size() % 3 != 0) {
-        return triangleIndices;
-    }
-
-    std::vector<unsigned int> lineIndices;
-    lineIndices.reserve((triangleIndices.size() / 3) * 6);
-
-    for (size_t i = 0; i < triangleIndices.size(); i += 3) {
-        const unsigned int i0 = triangleIndices[i];
-        const unsigned int i1 = triangleIndices[i + 1];
-        const unsigned int i2 = triangleIndices[i + 2];
-
-        lineIndices.push_back(i0);
-        lineIndices.push_back(i1);
-        lineIndices.push_back(i1);
-        lineIndices.push_back(i2);
-        lineIndices.push_back(i2);
-        lineIndices.push_back(i0);
-    }
-
-    return lineIndices;
-}
-
 std::shared_ptr<OpenGLTexture> OpenGLMesh::getCachedTexture(const Texture& texture, const unsigned int unit)
 {
     const std::string& path = texture.getPath();
@@ -100,14 +75,10 @@ OpenGLMesh::OpenGLMesh(Mesh& mesh)
 
     // Generate element buffer object (EBO) for indices
     std::vector<unsigned int> indices = this->mesh.getIndices();
-    if (this->mesh.getDrawMode() == DrawMode::LINES) {
-        indices = buildLineIndices(indices);
-    }
 
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
-    uploadedIndexCount = static_cast<unsigned int>(indices.size());
     this->mesh.setVertexBuffer(ebo, AttributeType::INDICES);
     // Unbind all to prevent accidental modification
     glBindVertexArray(0);                       // Unbind VAO first
@@ -268,6 +239,6 @@ void OpenGLMesh::draw(const IShader* shader, const Camera& camera) const
         return;
     }
 
-    glDrawElements(glDrawMode, uploadedIndexCount, GL_UNSIGNED_INT, 0);
+    glDrawElements(glDrawMode, this->mesh.getNumIndices(), GL_UNSIGNED_INT, 0);
     glCheckError();
 }
