@@ -1,26 +1,26 @@
-#include "graphics/camera/camera.hpp"
+#include "graphics/camera/camera_3d.hpp"
 #include "maths/unit_conversions.hpp"
 #include "core/engine_context.hpp"
 #include "graphics/shaders/shader.hpp"
 #include "core/console/console.hpp"
 
-Camera::Camera(glm::vec3 position)
+Camera3D::Camera3D(glm::vec3 position)
     : position(position)
 {
     updateProjectionMatrix();
     updateViewMatrix();
 }
 
-void Camera::setPosition(const glm::vec3& position)
+void Camera3D::setPosition(const glm::vec3& position)
 {
     this->position = position;
     updateViewMatrix();
 }
 
-void Camera::setFieldOfView(float FOVdeg)
+void Camera3D::setFieldOfView(float FOVdeg)
 {
-    if (projectionType != ProjectionType::Perspective) {
-        Console::get().warn("[Camera::setFieldOfView] Can only set FoV with perspective projection");
+    if (projectionType != ProjectionType::PERSPECTIVE) {
+        Console::get().warn("[Camera3D::setFieldOfView] Can only set FoV with perspective projection");
         return;
     }
 
@@ -28,22 +28,22 @@ void Camera::setFieldOfView(float FOVdeg)
     updateProjectionMatrix();
 }
 
-void Camera::setNearPlane(float near)
+void Camera3D::setNearPlane(float near)
 {
     this->near = near;
     updateProjectionMatrix();
 }
 
-void Camera::setFarPlane(float far)
+void Camera3D::setFarPlane(float far)
 {
     this->far = far;
     updateProjectionMatrix();
 }
 
-void Camera::setOrthographic(float left, float right, float bottom, float top)
+void Camera3D::setOrthographic(float left, float right, float bottom, float top)
 {
-    if (projectionType != ProjectionType::Orthographic) {
-        Console::get().warn("[Camera::setFieldOfView] Can only set FoV with perspective projection");
+    if (projectionType != ProjectionType::ORTHOGRAPHIC) {
+        Console::get().warn("[Camera3D::setOrthographic] Attempting to set orthographic volume on non-orthographic camera");
         return;
     }
 
@@ -54,9 +54,9 @@ void Camera::setOrthographic(float left, float right, float bottom, float top)
     updateProjectionMatrix();
 }
 
-void Camera::updateProjectionMatrix()
+void Camera3D::updateProjectionMatrix()
 {
-    if (projectionType == ProjectionType::Orthographic) {
+    if (projectionType == ProjectionType::ORTHOGRAPHIC) {
         projectionMatrix = glm::ortho(left, right, bottom, top, near, far);
         return;
     }
@@ -91,14 +91,14 @@ void Camera::updateProjectionMatrix()
     projectionMatrix = projection;
 }
 
-void Camera::updateViewMatrix()
+void Camera3D::updateViewMatrix()
 {
     glm::mat4 view = glm::mat4(1.0f);
     view = glm::lookAt(position, position + orientation, up);
     viewMatrix = view;
 }
 
-void Camera::handleInputs(float deltaTime) {
+void Camera3D::handleInputs(float deltaTime) {
     InputSystem& input = EngineContext::get()->inputSystem;
 
     if (input.isKeyDown(KeyboardKey::KEY_W)) {
@@ -148,7 +148,7 @@ void Camera::handleInputs(float deltaTime) {
     updateProjectionMatrix();
 }
 
-void Camera::sendToShader(const IShader* shader) const
+void Camera3D::sendToShader(const IShader* shader) const
 {
     shader->setUniformVec3("cameraPosition", position);
     shader->setUniformMat4("cameraMatrix", projectionMatrix * viewMatrix);

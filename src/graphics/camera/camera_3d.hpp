@@ -16,22 +16,22 @@ class IShader;
 
 enum class ProjectionType
 {
-    Perspective,
-    Orthographic
+    PERSPECTIVE,
+    ORTHOGRAPHIC
 };
 
-class Camera {
+class Camera3D {
 public:
     float speed = 0.1f;
     float sensitivity = 0.1f;
 
-    Camera() = default;
+    Camera3D() = default;
 
     /**
      * A camera with given viewport width/height and world position.
      * @param position World space position of the camera.
      */
-    Camera(glm::vec3 position);
+    Camera3D(glm::vec3 position);
 
     /**
      * Set the projection type (see `ProjectionType`).
@@ -83,7 +83,7 @@ public:
 private:
     EngineContext* context = EngineContext::get();
     glm::vec3 position;
-    ProjectionType projectionType = ProjectionType::Perspective;
+    ProjectionType projectionType = ProjectionType::PERSPECTIVE;
     float near = 0.1f;
     float far = 100.0f;
     float left = -1.0f;
