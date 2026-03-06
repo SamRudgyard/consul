@@ -14,6 +14,12 @@ Camera3D::Camera3D(glm::vec3 position)
     updateViewMatrix();
 }
 
+void Camera3D::setProjectionType(ProjectionType projectionType)
+{
+    Camera::setProjectionType(projectionType);
+    updateProjectionMatrix();
+}
+
 void Camera3D::setPosition(const glm::vec3& position)
 {
     this->position = position;

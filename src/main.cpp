@@ -59,12 +59,18 @@ public:
 
     void onInit(Renderer& renderer) override
     {
+        camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
         shader = renderer.newShader("shaders/default_vert.glsl", "shaders/default_frag.glsl");
         renderer.loadModel(model);
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
         rotatingCube->initRendering(renderer);
+    }
+
+    void onUpdate(float deltaTime) override
+    {
+        camera.handleInputs(deltaTime);
     }
 
     void onRender(Renderer& renderer) override

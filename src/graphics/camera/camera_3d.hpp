@@ -28,6 +28,12 @@ public:
     Camera3D(glm::vec3 position);
 
     /**
+     * Set the projection type (see `ProjectionType`).
+     * @param projectionType New projection type.
+     */
+    void setProjectionType(ProjectionType projectionType) override;
+
+    /**
      * Set the world space position of the camera.
      * @param position New world space position of the camera.
      */

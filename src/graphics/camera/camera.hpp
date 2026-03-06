@@ -17,7 +17,7 @@ public:
      * Set the projection type (see `ProjectionType`).
      * @param projectionType New projection type.
      */
-    void setProjectionType(ProjectionType projectionType) { this->projectionType = projectionType; }
+    virtual void setProjectionType(ProjectionType projectionType) { this->projectionType = projectionType; }
 
     virtual void handleInputs(float deltaTime) = 0;
 
@@ -25,5 +25,5 @@ public:
 
 protected:
     EngineContext* context = EngineContext::get();
-    ProjectionType projectionType;
+    ProjectionType projectionType = ProjectionType::PERSPECTIVE;
 };
