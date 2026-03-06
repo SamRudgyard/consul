@@ -1,4 +1,7 @@
 #include "graphics/camera/camera_3d.hpp"
+
+#include <algorithm>
+
 #include "maths/unit_conversions.hpp"
 #include "core/engine_context.hpp"
 #include "graphics/shaders/shader.hpp"
@@ -66,7 +69,8 @@ void Camera3D::updateProjectionMatrix()
     // Use FoV angle from larger dimension, see https://stackoverflow.com/questions/26997631/limiting-fov-both-horizontally-and-vertically
     Window& window = EngineContext::get()->window;
     float tanFov = tan(0.5f*FOVdeg*DEG_TO_RAD);
-    float aspRat = (float)window.windowSize.x / (float)window.windowSize.y;
+    const float safeHeight = std::max(window.framebufferSize.y, 1.0f);
+    float aspRat = window.framebufferSize.x / safeHeight;
 
     projection[0][0] = 1.0f / (aspRat * tanFov);
     projection[0][1] = 0.0f;
@@ -128,10 +132,6 @@ void Camera3D::handleInputs(float deltaTime) {
 
     if (input.isMouseButtonDown(MouseButton::BUTTON_RIGHT)) {
         input.setMouseVisibility(false);
-
-        Window& window = EngineContext::get()->window;
-        float width = (float)window.windowSize.x;
-        float height = (float)window.windowSize.y;
 
         glm::vec2 mousePos = input.getMousePosition();
         glm::vec2 prevMousePos = input.getPreviousMousePosition();
