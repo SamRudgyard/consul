@@ -8,6 +8,7 @@ class CubeNode : public Node, public Renderable {
 public:
     void initRendering(Renderer& renderer) override {
         Mesh meshData = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
+        meshData.setTint(Colour(20, 200, 200));
         mesh = renderer.addMesh(meshData);
     }
 
@@ -32,7 +33,7 @@ public:
 
     void onInit(Renderer& renderer) override {
         camera.setPosition({0.0f, 0.0f});
-        shader = renderer.newShader("shaders/default_vert.glsl", "shaders/default_frag.glsl");
+        shader = renderer.newShader("shaders/2d_vert.glsl", "shaders/2d_frag.glsl");
 
         CubeNode* cubeNode = getRoot().createChild<CubeNode>();
         cubeNode->setPosition({0.0f, 0.0f, 0.0f});
