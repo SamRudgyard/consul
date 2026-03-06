@@ -14,12 +14,6 @@
 
 class IShader;
 
-enum class ProjectionType
-{
-    PERSPECTIVE,
-    ORTHOGRAPHIC
-};
-
 class Camera3D : public Camera {
 public:
     float speed = 0.1f;
@@ -32,12 +26,6 @@ public:
      * @param position World space position of the camera.
      */
     Camera3D(glm::vec3 position);
-
-    /**
-     * Set the projection type (see `ProjectionType`).
-     * @param projectionType New projection type.
-     */
-    void setProjectionType(ProjectionType projectionType) { this->projectionType = projectionType; }
 
     /**
      * Set the world space position of the camera.
@@ -82,7 +70,6 @@ public:
     void sendToShader(const IShader* shader) const override;
 private:
     glm::vec3 position;
-    ProjectionType projectionType = ProjectionType::PERSPECTIVE;
     float near = 0.1f;
     float far = 100.0f;
     float left = -1.0f;

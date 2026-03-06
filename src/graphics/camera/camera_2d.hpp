@@ -7,7 +7,7 @@
 
 class Camera2D : public Camera {
 public:
-    Camera2D() = default;
+    Camera2D() { setProjectionType(ProjectionType::ORTHOGRAPHIC); }
 
      /**
      * Set the world space position of the camera.
