@@ -3,6 +3,7 @@
 #include "core/consul.hpp"
 #include "core/window.hpp"
 #include "core/scene.hpp"
+#include "graphics/camera/camera_3d.hpp"
 #include "graphics/renderable.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/geometry/geometry_3d.hpp"
@@ -78,6 +79,7 @@ public:
     }
 
 private:
+    Camera3D camera;
     IShader* shader = nullptr;
     Model model;
 };

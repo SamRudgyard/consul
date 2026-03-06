@@ -10,7 +10,7 @@
 #include "glm/gtx/rotate_vector.hpp"
 #include "glm/gtx/vector_angle.hpp"
 
-#include "core/engine_context.hpp"
+#include "graphics/camera/camera.hpp"
 
 class IShader;
 
@@ -20,7 +20,7 @@ enum class ProjectionType
     ORTHOGRAPHIC
 };
 
-class Camera3D {
+class Camera3D : public Camera {
 public:
     float speed = 0.1f;
     float sensitivity = 0.1f;
@@ -73,15 +73,14 @@ public:
      * Handle basic WASD + space/ctrl movement and RMB-look input.
      * @param deltaTime Time (s) since last frame.
      */
-    void handleInputs(float deltaTime);
+    void handleInputs(float deltaTime) override;
 
     /**
      * Sends the camera matrix (projection * view) to the given shader uniform.
      * @param shader  Shader to send the matrix to.
      */
-    void sendToShader(const IShader* shader) const;
+    void sendToShader(const IShader* shader) const override;
 private:
-    EngineContext* context = EngineContext::get();
     glm::vec3 position;
     ProjectionType projectionType = ProjectionType::PERSPECTIVE;
     float near = 0.1f;

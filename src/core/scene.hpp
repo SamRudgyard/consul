@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/node.hpp"
-#include "graphics/camera/camera.hpp"
 
 class Renderer;
 
@@ -11,7 +10,6 @@ public:
     Scene() = default;
     ~Scene() { shutdown(); };
 
-    Camera camera;
     bool isInitialised = false;
 
     void init(Renderer& renderer);

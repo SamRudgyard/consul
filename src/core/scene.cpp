@@ -11,7 +11,6 @@ void Scene::init(Renderer& renderer)
 
 void Scene::update(float deltaTime)
 {
-    camera.handleInputs(deltaTime);
     onUpdate(deltaTime);
     updateNodes(deltaTime);
 }

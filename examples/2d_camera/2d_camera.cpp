@@ -1,13 +1,13 @@
 #include "core/consul.hpp"
 #include "core/scene.hpp"
-#include "graphics/camera/camera.hpp"
-#include "graphics/geometry/geometry_3d.hpp"
+#include "graphics/camera/camera_2d.hpp"
+#include "graphics/geometry/geometry_2d.hpp"
 #include "graphics/renderable.hpp"
 
 class CubeNode : public Node, public Renderable {
 public:
     void initRendering(Renderer& renderer) override {
-        Mesh meshData = Geometry3D::get()->cube(1.0f);
+        Mesh meshData = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
         mesh = renderer.addMesh(meshData);
     }
 
@@ -31,14 +31,16 @@ public:
     ExampleScene() {}
 
     void onInit(Renderer& renderer) override {
-        camera.setPosition({0.0f, 0.0f, 2.0f});
-        camera.setProjectionType(ProjectionType::Orthographic);
-        camera.setOrthographic(-2.0f, 2.0f, -2.0f, 2.0f);
+        camera.setPosition({0.0f, 0.0f});
         shader = renderer.newShader("shaders/default_vert.glsl", "shaders/default_frag.glsl");
 
         CubeNode* cubeNode = getRoot().createChild<CubeNode>();
         cubeNode->setPosition({0.0f, 0.0f, 0.0f});
         cubeNode->initRendering(renderer);
+    }
+
+    void onUpdate(float deltaTime) override {
+        camera.handleInputs(deltaTime);
     }
 
     void onRender(Renderer& renderer) override {
@@ -52,6 +54,7 @@ public:
 
 private:
     IShader* shader = nullptr;
+    Camera2D camera;
 };
 
 int main()

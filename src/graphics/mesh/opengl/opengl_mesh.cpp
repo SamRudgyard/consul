@@ -9,6 +9,7 @@
 #include "graphics/textures/opengl/opengl_texture.hpp"
 #include "glad/glad.h"
 #include "glm/gtc/matrix_inverse.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "utils.hpp"
 
 std::shared_ptr<OpenGLTexture> OpenGLMesh::getCachedTexture(const Texture& texture, const unsigned int unit)
