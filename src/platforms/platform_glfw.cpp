@@ -6,6 +6,7 @@
 
 #include "imgui_impl_glfw.h"
 
+#include <algorithm>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -119,7 +120,6 @@ void PlatformGLFW::initialiseWindow()
     toggleVisible(window.isVisible);
     toggleFocused(window.isFocused);
     toggleFloating(window.isFloating);
-    toggleTransparent(window.isTransparent);
 
     // Initialise window event callbacks
     glfwSetFramebufferSizeCallback(handle, onFramebufferResized);
