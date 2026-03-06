@@ -35,4 +35,5 @@ private:
     glm::vec2 position = glm::vec2(0.0f, 0.0f);
     float rotationDeg = 0.0f;
     float zoom = 1.0f;
+    float viewHeight = 2.0f;
 };
