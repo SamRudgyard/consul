@@ -153,8 +153,10 @@ target_link_libraries(consul
 )
 
 if(BUILD_CONSUL_APP)
-  add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-  target_link_libraries(${PROJECT_NAME} PRIVATE consul)
+  set(CONSUL_APP_TARGET consul_app)
+  add_executable(${CONSUL_APP_TARGET} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+  set_target_properties(${CONSUL_APP_TARGET} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+  target_link_libraries(${CONSUL_APP_TARGET} PRIVATE consul)
 endif()
 
 if(BUILD_TESTS)
