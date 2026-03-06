@@ -33,13 +33,13 @@ void Camera3D::setFieldOfView(float FOVdeg)
 
 void Camera3D::setNearPlane(float near)
 {
-    this->near = near;
+    this->nearPlane = near;
     updateProjectionMatrix();
 }
 
 void Camera3D::setFarPlane(float far)
 {
-    this->far = far;
+    this->farPlane = far;
     updateProjectionMatrix();
 }
 
@@ -60,7 +60,7 @@ void Camera3D::setOrthographic(float left, float right, float bottom, float top)
 void Camera3D::updateProjectionMatrix()
 {
     if (projectionType == ProjectionType::ORTHOGRAPHIC) {
-        projectionMatrix = glm::ortho(left, right, bottom, top, near, far);
+        projectionMatrix = glm::ortho(left, right, bottom, top, nearPlane, farPlane);
         return;
     }
 
@@ -84,12 +84,12 @@ void Camera3D::updateProjectionMatrix()
 
     projection[2][0] = 0.0f;
     projection[2][1] = 0.0f;
-    projection[2][2] = (near + far) / (near - far);
+    projection[2][2] = (nearPlane + farPlane) / (nearPlane - farPlane);
     projection[2][3] = -1.0f;
 
     projection[3][0] = 0.0f;
     projection[3][1] = 0.0f;
-    projection[3][2] = 2.0f * near * far / (near - far);
+    projection[3][2] = 2.0f * nearPlane * farPlane / (nearPlane - farPlane);
     projection[3][3] = 0.0f;
 
     projectionMatrix = projection;

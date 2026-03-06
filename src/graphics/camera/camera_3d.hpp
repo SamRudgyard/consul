@@ -70,8 +70,8 @@ public:
     void sendToShader(const IShader* shader) const override;
 private:
     glm::vec3 position;
-    float near = 0.1f;
-    float far = 100.0f;
+    float nearPlane = 0.1f;
+    float farPlane = 100.0f;
     float left = -1.0f;
     float right = 1.0f;
     float bottom = -1.0f;
