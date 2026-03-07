@@ -61,7 +61,7 @@ public:
     {
         camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
-        shader = renderer.newShader("shaders/default_vert.glsl", "shaders/default_frag.glsl");
+        shader = renderer.newShader("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl");
         renderer.loadModel(model);
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
