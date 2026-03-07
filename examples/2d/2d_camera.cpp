@@ -60,7 +60,9 @@ private:
 
 int main()
 {
-    Consul consul;
+    Window window;
+    window.title = "2D Example - Default Camera Movement";
+    Consul consul(window);
     consul.loadScene(std::make_unique<ExampleScene>());
     consul.run();
     return 0;
