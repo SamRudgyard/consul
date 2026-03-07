@@ -26,7 +26,7 @@ void Camera2D::sendToShader(const IShader* shader) const {
     shader->setUniformMat4("cameraMatrix", projection * view);
 }
 
-void Camera2D::handleInputs(float deltaTime) {
+void Camera2D::handleInputs(double deltaTime) {
     InputSystem& input = EngineContext::get()->inputSystem;
 
     if (input.isKeyDown(KeyboardKey::KEY_W)) {

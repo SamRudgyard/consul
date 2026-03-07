@@ -29,7 +29,7 @@ public:
 
     void sendToShader(const IShader* shader) const override;
 
-    void handleInputs(float deltaTime) override;
+    void handleInputs(double deltaTime) override;
 
 private:
     glm::vec2 position = glm::vec2(0.0f, 0.0f);

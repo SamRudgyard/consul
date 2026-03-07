@@ -67,7 +67,7 @@ public:
      * Handle basic WASD + space/ctrl movement and RMB-look input.
      * @param deltaTime Time (s) since last frame.
      */
-    void handleInputs(float deltaTime) override;
+    void handleInputs(double deltaTime) override;
 
     /**
      * Sends the camera matrix (projection * view) to the given shader uniform.

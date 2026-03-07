@@ -19,7 +19,7 @@ public:
      */
     virtual void setProjectionType(ProjectionType projectionType) { this->projectionType = projectionType; }
 
-    virtual void handleInputs(float deltaTime) = 0;
+    virtual void handleInputs(double deltaTime) = 0;
 
     virtual void sendToShader(const IShader* shader) const = 0;
 

@@ -13,7 +13,7 @@ public:
     bool isInitialised = false;
 
     void init(Renderer& renderer);
-    void update(float deltaTime);
+    void update(double deltaTime);
     void render(Renderer& renderer);
     void shutdown();
 
@@ -22,11 +22,11 @@ public:
 
 protected:
     virtual void onInit(Renderer& renderer) {} // User hook for scene-specific initialization logic
-    virtual void onUpdate(float deltaTime) {} // User hook for scene-specific update logic
+    virtual void onUpdate(double deltaTime) {} // User hook for scene-specific update logic
     virtual void onRender(Renderer& renderer) {} // User hook for scene-specific render logic
     virtual void onShutdown() {} // User hook for scene-specific shutdown logic
 
-    void updateNodes(float deltaTime) { root.update(deltaTime, glm::mat4(1.0f)); }
+    void updateNodes(double deltaTime) { root.update(deltaTime, glm::mat4(1.0f)); }
     void renderNodes(Renderer& renderer) { root.render(renderer); }
 
 private:

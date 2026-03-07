@@ -7,7 +7,7 @@
 
 class RotatingCamera2D : public Camera2D {
 public:
-    void handleInputs(float deltaTime) override
+    void handleInputs(double deltaTime) override
     {
         InputSystem& input = EngineContext::get()->inputSystem;
 
@@ -71,7 +71,7 @@ public:
         createQuad(renderer, {0.0f, -1.15f, 0.0f}, Colour(170, 120, 230));
     }
 
-    void onUpdate(float deltaTime) override
+    void onUpdate(double deltaTime) override
     {
         camera.handleInputs(deltaTime);
     }

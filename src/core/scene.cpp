@@ -9,7 +9,7 @@ void Scene::init(Renderer& renderer)
     }
 }
 
-void Scene::update(float deltaTime)
+void Scene::update(double deltaTime)
 {
     onUpdate(deltaTime);
     updateNodes(deltaTime);
@@ -17,8 +17,8 @@ void Scene::update(float deltaTime)
 
 void Scene::render(Renderer& renderer)
 {
-    onRender(renderer);
     renderNodes(renderer);
+    onRender(renderer);
 }
 
 void Scene::shutdown()

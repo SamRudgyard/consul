@@ -14,7 +14,7 @@ public:
 
     void loadScene(std::unique_ptr<Scene> newScene, Renderer& renderer);
 
-    void update(Renderer& renderer, float deltaTime);
+    void update(Renderer& renderer, double deltaTime);
     void shutdown(Renderer& renderer);
 
 private:

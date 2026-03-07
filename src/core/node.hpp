@@ -51,7 +51,7 @@ public:
     void render(Renderer& renderer);
 
 protected:
-    virtual void onUpdate(float dt) {}
+    virtual void onUpdate(double deltaTime) {}
     virtual void onRender(Renderer& renderer) {}
 
 private:

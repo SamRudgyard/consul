@@ -76,8 +76,8 @@ void Consul::run()
     while (!close) {
         endTick();
         beginTick();
-
-        sceneManager.update(*renderer, (float)context->time.deltaTime);
+        Time& time = context->time;
+        sceneManager.update(*renderer, time.deltaTime);
 
         close = context->window.shouldClose && platform->shouldClose();
     }

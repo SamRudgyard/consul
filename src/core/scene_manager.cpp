@@ -22,7 +22,7 @@ void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)
     currentScene->init(renderer);
 }
 
-void SceneManager::update(Renderer& renderer, float deltaTime)
+void SceneManager::update(Renderer& renderer, double deltaTime)
 {
     if (!currentScene) {
         Console::get().error("[SceneManager::update] No scene was loaded!");

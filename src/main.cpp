@@ -33,9 +33,9 @@ public:
     }
 
 protected:
-    void onUpdate(float dt) override
+    void onUpdate(double deltaTime) override
     {
-        angle += dt;
+        angle += deltaTime;
         setRotationRad({0.0f, angle, 0.0f});
         static float r = 1.5f;
         setPosition({r * std::cos(angle), 0.0f, r * std::sin(angle)});
@@ -68,7 +68,7 @@ public:
         rotatingCube->initRendering(renderer);
     }
 
-    void onUpdate(float deltaTime) override
+    void onUpdate(double deltaTime) override
     {
         camera.handleInputs(deltaTime);
     }

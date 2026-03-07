@@ -40,7 +40,7 @@ public:
         cubeNode->initRendering(renderer);
     }
 
-    void onUpdate(float deltaTime) override {
+    void onUpdate(double deltaTime) override {
         camera.handleInputs(deltaTime);
     }
 

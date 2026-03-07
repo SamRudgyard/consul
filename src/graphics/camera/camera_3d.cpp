@@ -108,26 +108,26 @@ void Camera3D::updateViewMatrix()
     viewMatrix = view;
 }
 
-void Camera3D::handleInputs(float deltaTime) {
+void Camera3D::handleInputs(double deltaTime) {
     InputSystem& input = EngineContext::get()->inputSystem;
 
     if (input.isKeyDown(KeyboardKey::KEY_W)) {
-        position += speed*orientation*deltaTime;
+        position += speed*orientation*(float)deltaTime;
     }
     if (input.isKeyDown(KeyboardKey::KEY_A)) {
-        position -= speed*glm::normalize(glm::cross(orientation, up))*deltaTime;
+        position -= speed*glm::normalize(glm::cross(orientation, up))*(float)deltaTime;
     }
     if (input.isKeyDown(KeyboardKey::KEY_S)) {
-        position -= speed*orientation*deltaTime;
+        position -= speed*orientation*(float)deltaTime;
     }
     if (input.isKeyDown(KeyboardKey::KEY_D)) {
-        position += speed*glm::normalize(glm::cross(orientation, up))*deltaTime;
+        position += speed*glm::normalize(glm::cross(orientation, up))*(float)deltaTime;
     }
     if (input.isKeyDown(KeyboardKey::KEY_SPACE)) {
-        position += speed*up*deltaTime;
+        position += speed*up*(float)deltaTime;
     }
     if (input.isKeyDown(KeyboardKey::KEY_LEFT_CONTROL)) {
-        position -= speed*up*deltaTime;
+        position -= speed*up*(float)deltaTime;
     }
     if (input.isKeyDown(KeyboardKey::KEY_LEFT_SHIFT)) {
         speed = 10.0f;
