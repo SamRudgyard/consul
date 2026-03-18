@@ -39,11 +39,12 @@ protected:
         setRotationRad({0.0f, angle, 0.0f});
         static float r = 1.5f;
         setPosition({r * std::cos(angle), 0.0f, r * std::sin(angle)});
+
+        syncToRenderer();
     }
 
     void onRender(Renderer&) override
     {
-        syncToRenderer();
     }
 
 private:
