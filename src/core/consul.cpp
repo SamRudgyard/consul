@@ -124,7 +124,7 @@ void Consul::endTick()
         time.currentTime = platform->getTime();
         time.deltaTime += time.currentTime - time.previousTime;
     }
-
+    time.previousTime = time.currentTime;
     time.frameCount++;
 
     // Rendering
