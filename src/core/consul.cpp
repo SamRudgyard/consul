@@ -97,8 +97,9 @@ void Consul::beginTick()
 
     renderer->clearBackground(glm::vec4(0.f, 0.f, 0.f, 1.f));
     renderer->setViewport(0, 0, (int)context->window.framebufferSize.x, (int)context->window.framebufferSize.y);
-    
+
     context->inputSystem.beginTick();
+    platform->pollEvents();
 }
 
 void Consul::endTick()
@@ -106,8 +107,6 @@ void Consul::endTick()
 
     context->window.shouldClose = platform->shouldClose();
     context->inputSystem.endTick();
-
-    platform->pollEvents();
 
     Time& time = context->time;
 
