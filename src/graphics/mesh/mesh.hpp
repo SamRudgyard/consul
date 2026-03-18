@@ -71,8 +71,39 @@ public:
     const std::vector<glm::vec3>& getNormals() const { return normals; }
     const std::vector<glm::vec2>& getTextureCoords() const { return textureCoords; }
     const std::vector<glm::vec4>& getTangents() const { return tangents; }
-    const std::vector<unsigned int>& getIndices() const { return indices; }
-    const unsigned int getIndexCount() const { return indexCount; }
+    std::vector<unsigned int> getIndices() const
+    {
+        if (drawMode != DrawMode::LINES) {
+            return indices;
+        }
+
+        std::vector<unsigned int> lineIndices;
+
+        if (indexCount < 3) {
+            // A point or line doesn't require conversion
+            // from triangles to lines, so return
+            return indices;
+        }
+
+        // Each triangle (i0, i1, i2) becomes lines (i0, i1), (i1, i2), (i2, i0)
+        // => x2 number of indices
+        lineIndices.reserve(2*indexCount);
+
+        for (size_t i = 0; i < indices.size(); i += 3) {
+            const unsigned int i0 = indices[i];
+            const unsigned int i1 = indices[i + 1];
+            const unsigned int i2 = indices[i + 2];
+
+            lineIndices.push_back(i0);
+            lineIndices.push_back(i1);
+            lineIndices.push_back(i1);
+            lineIndices.push_back(i2);
+            lineIndices.push_back(i2);
+            lineIndices.push_back(i0);
+        }
+
+        return lineIndices;
+    }
     const std::vector<Texture>& getTextures() const { return textures; }
     Colour getTint() const { return tint; }
     void setTint(const Colour& value) { tint = value; }
@@ -83,7 +114,16 @@ public:
     void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }
     const glm::mat4& getModelMatrix() const { return modelMatrix; }
 
-    const unsigned int getNumIndices() const { return (unsigned int)indexCount; }
+    const unsigned int getNumIndices() const
+    {
+        if (drawMode == DrawMode::LINES) {
+            // Each triangle (i0, i1, i2) becomes lines (i0, i1), (i1, i2), (i2, i0)
+            // => x2 number of indices
+            return 2*indexCount;
+        }
+
+        return indexCount;
+    }
 
     bool hasAttribute(AttributeType type) const
     {

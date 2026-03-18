@@ -13,7 +13,6 @@
 using json = nlohmann::json;
 
 class IShader;
-class Camera;
 class RenderableTexture;
 
 class Model

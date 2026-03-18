@@ -28,6 +28,7 @@ public:
     void endTick()
     {
         previousPosition = position;
+        scrollOffset = glm::vec2(0.f, 0.f);
     }
 
     void setButtonDown(MouseButton button)

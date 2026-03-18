@@ -2,6 +2,8 @@
 
 #include "core/console/console.hpp"
 #include "core/engine_context.hpp"
+#include "core/scene.hpp"
+#include "core/scene_manager.hpp"
 #include "platforms/platform.hpp"
 #include "graphics/renderer.hpp"
 #include "time.hpp"
@@ -28,10 +30,10 @@ public:
     void initialiseEngine();
 
     /**
-     * Begins a new frame of the Consul application.
-     * @returns false when Consul requests termination; true otherwise.
+     * Runs the Consul application. Initialises a scene,
+     * and updates the scene each frame.
      */
-    bool run();
+    void run();
 
     /**
      * Gracefully terminate the Consul application.
@@ -57,6 +59,12 @@ public:
     */
     Renderer& getRenderer() { return *renderer; }
 
+    /**
+     * Loads a scene. Ownership is transferred to the engine.
+     * The previous scene (if any) will be shut down.
+     */
+    void loadScene(std::unique_ptr<Scene> newScene);
+
 private:
     Console& console = Console::get();
     EngineContext* context = EngineContext::get();
@@ -64,6 +72,8 @@ private:
     Renderer* renderer = nullptr;
     bool consoleWindowOpen = true;
     bool fpsMonitorWindowOpen = true;
+    bool close = false;
+    SceneManager sceneManager;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);

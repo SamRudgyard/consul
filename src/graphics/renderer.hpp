@@ -31,8 +31,16 @@ public:
     }
 
     ~Renderer() {
-        delete gfxBackend;
+        clearSceneResources();
 
+        if (gfxBackend) {
+            delete gfxBackend;
+            gfxBackend = nullptr;
+        }
+    }
+
+    void clearSceneResources()
+    {
         for (LoadedModel& loadedModel : loadedModels) {
             for (RenderableMesh* mesh : loadedModel.meshes) {
                 delete mesh;

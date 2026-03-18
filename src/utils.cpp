@@ -62,10 +62,25 @@ bool isSubstring(const std::string& str, const std::string& substr) {
 
 void waitTime(double seconds)
 {
-    if (seconds <= 0.0) {
-        return;
-    }
-    std::this_thread::sleep_for(std::chrono::duration<double>(seconds));
+    if (seconds < 0) return;    // Security check
+
+    // System halt functions
+    #if defined(_WIN32)
+        Sleep((unsigned long)(seconds*SECONDS_TO_MILLISECONDS));
+    #endif
+    #if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
+        struct timespec req = { 0 };
+        time_t sec = seconds;
+        long nsec = (seconds - sec)*1000000000L;
+        req.tv_sec = sec;
+        req.tv_nsec = nsec;
+
+        // NOTE: Use nanosleep() on Unix platforms... usleep() it's deprecated
+        while (nanosleep(&req, &req) == -1) continue;
+    #endif
+    #if defined(__APPLE__)
+        usleep(seconds*SECONDS_TO_MICROSECONDS);
+    #endif
 }
 
 void glCheckError_(const char* file, int line) {

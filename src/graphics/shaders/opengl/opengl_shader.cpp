@@ -126,6 +126,11 @@ void OpenGLShader::setUniformVec4(const char* name, const glm::vec4& value) cons
     glUniform4f(glGetUniformLocation(id, name), value.x, value.y, value.z, value.w);
 }
 
+void OpenGLShader::setUniformMat3(const char* name, const glm::mat3& matrix) const
+{
+    glUniformMatrix3fv(glGetUniformLocation(id, name), 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
 void OpenGLShader::setUniformMat4(const char* name, const glm::mat4& matrix) const
 {
     glUniformMatrix4fv(glGetUniformLocation(id, name), 1, GL_FALSE, glm::value_ptr(matrix));
