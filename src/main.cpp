@@ -3,6 +3,7 @@
 #include "core/consul.hpp"
 #include "core/window.hpp"
 #include "core/scene.hpp"
+#include "graphics/camera/camera_3d.hpp"
 #include "graphics/renderable.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/geometry/geometry_3d.hpp"
@@ -32,17 +33,18 @@ public:
     }
 
 protected:
-    void onUpdate(float dt) override
+    void onUpdate(double deltaTime) override
     {
-        angle += dt;
+        angle += deltaTime;
         setRotationRad({0.0f, angle, 0.0f});
         static float r = 1.5f;
         setPosition({r * std::cos(angle), 0.0f, r * std::sin(angle)});
+
+        syncToRenderer();
     }
 
     void onRender(Renderer&) override
     {
-        syncToRenderer();
     }
 
 private:
@@ -58,12 +60,18 @@ public:
 
     void onInit(Renderer& renderer) override
     {
+        camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
-        shader = renderer.newShader("shaders/default_vert.glsl", "shaders/default_frag.glsl");
+        shader = renderer.newShader("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl");
         renderer.loadModel(model);
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
         rotatingCube->initRendering(renderer);
+    }
+
+    void onUpdate(double deltaTime) override
+    {
+        camera.handleInputs(deltaTime);
     }
 
     void onRender(Renderer& renderer) override
@@ -78,6 +86,7 @@ public:
     }
 
 private:
+    Camera3D camera;
     IShader* shader = nullptr;
     Model model;
 };

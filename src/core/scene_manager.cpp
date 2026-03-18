@@ -1,5 +1,6 @@
 #include "core/scene_manager.hpp"
 
+#include "console/console.hpp"
 #include "graphics/renderer.hpp"
 
 void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)
@@ -13,15 +14,24 @@ void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)
     }
 
     currentScene = std::move(scene);
-    assert(currentScene);
+    if (!currentScene) {
+        Console::get().error("[SceneManager::loadScene] Failed to load scene!");
+        return;
+    }
 
     currentScene->init(renderer);
 }
 
-void SceneManager::update(Renderer& renderer, float deltaTime)
+void SceneManager::update(Renderer& renderer, double deltaTime)
 {
-    assert(currentScene);
-    assert(currentScene->isInitialised);
+    if (!currentScene) {
+        Console::get().error("[SceneManager::update] No scene was loaded!");
+        return;
+    }
+    if (!currentScene->isInitialised) {
+        Console::get().error("[SceneManager::update] Current scene is not initialised!");
+        return;
+    }
 
     currentScene->update(deltaTime);
     currentScene->render(renderer);

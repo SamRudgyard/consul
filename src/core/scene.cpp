@@ -9,17 +9,16 @@ void Scene::init(Renderer& renderer)
     }
 }
 
-void Scene::update(float deltaTime)
+void Scene::update(double deltaTime)
 {
-    camera.handleInputs(deltaTime);
     onUpdate(deltaTime);
     updateNodes(deltaTime);
 }
 
 void Scene::render(Renderer& renderer)
 {
-    onRender(renderer);
     renderNodes(renderer);
+    onRender(renderer);
 }
 
 void Scene::shutdown()

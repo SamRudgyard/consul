@@ -6,9 +6,14 @@
 #include <unordered_map>
 #include <cmath>
 
+#ifndef GLM_ENABLE_EXPERIMENTAL
+    #define GLM_ENABLE_EXPERIMENTAL
+#endif
+
 #include "core/console/console.hpp"
 #include "maths/constants.hpp"
 #include "glm/gtc/constants.hpp"
+#include "glm/gtx/norm.hpp"
 #include "glm/geometric.hpp"
 
 Mesh Geometry3D::capsule(float radius, float height, unsigned int nLatitudes, unsigned int nLongitudes)

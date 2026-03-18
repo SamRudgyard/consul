@@ -38,6 +38,10 @@ void Consul::initialiseEngine()
 
     context->ui.registerWindow("Console", [this](const std::string& name, bool* open) { console.draw(name, open); }, &consoleWindowOpen);
     context->ui.registerWindow("FPS Monitor", [this](const std::string& name, bool* open) { context->fpsMonitor.draw(name, open); }, &fpsMonitorWindowOpen);
+
+    context->time.previousTime = platform->getTime();
+    context->time.currentTime = context->time.previousTime;
+    context->time.deltaTime = context->time.targetFrameTime;
 }
 
 void Consul::initialiseWindow(PlatformType platformType)
@@ -74,10 +78,11 @@ void Consul::loadScene(std::unique_ptr<Scene> newScene)
 void Consul::run()
 {
     while (!close) {
-        endTick();
         beginTick();
-
-        sceneManager.update(*renderer, (float)context->time.deltaTime);
+        Time& time = context->time;
+        sceneManager.update(*renderer, time.deltaTime);
+        context->fpsMonitor.update(time.deltaTime);
+        endTick();
 
         close = context->window.shouldClose && platform->shouldClose();
     }
@@ -85,45 +90,56 @@ void Consul::run()
 
 void Consul::beginTick()
 {
-    platform->pollEvents();
+    Time& time = context->time;
+    time.currentTime = platform->getTime();
+    time.renderTime = time.currentTime - time.previousTime;
+    time.previousTime = time.currentTime;
 
     renderer->clearBackground(glm::vec4(0.f, 0.f, 0.f, 1.f));
     renderer->setViewport(0, 0, (int)context->window.framebufferSize.x, (int)context->window.framebufferSize.y);
 
     context->inputSystem.beginTick();
+    platform->pollEvents();
 }
 
 void Consul::endTick()
 {
+
+    context->window.shouldClose = platform->shouldClose();
+    context->inputSystem.endTick();
+
     Time& time = context->time;
+
     time.currentTime = platform->getTime();
-    time.deltaTime = time.currentTime - time.previousTime;
-    if (time.deltaTime < time.targetFrameTime) {
-        waitTime(time.targetFrameTime - time.deltaTime);
-    }
-    time.currentTime = platform->getTime();
-    time.deltaTime = time.currentTime - time.previousTime;
-    time.frameCount++;
+    time.updateTime = time.currentTime - time.previousTime;
     time.previousTime = time.currentTime;
+
+    time.deltaTime = time.updateTime + time.renderTime;
+
+    Console& console = Console::get();
+
+    if (time.deltaTime < time.targetFrameTime) {
+        time.previousTime = platform->getTime();
+        waitTime(time.targetFrameTime - time.deltaTime);
+        time.currentTime = platform->getTime();
+        time.deltaTime += time.currentTime - time.previousTime;
+    }
+
+    time.frameCount++;
+
+    // Rendering
 
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
-    context->fpsMonitor.update(context->time.deltaTime);
     context->ui.render();
 
     ImGui::Render();
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    // ImGui::UpdatePlatformWindows();
-
     platform->swapBuffers();
-    context->window.shouldClose = platform->shouldClose();
-    
-    context->inputSystem.endTick();
 }
 
 void Consul::terminate()
