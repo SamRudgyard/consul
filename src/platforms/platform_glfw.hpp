@@ -14,7 +14,7 @@ public:
 
     void initialiseImGui(GraphicsAPI gfxApi) override;
 
-    void initialiseGraphics(const Renderer& renderer) override;
+    void initialiseGraphics(Renderer& renderer) override;
 
     void pollEvents() override;
 

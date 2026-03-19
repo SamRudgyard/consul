@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "platforms/platform_glfw.hpp"
+#include "graphics/opengl_renderer.hpp"
 #include "imgui.h"
 #include "implot.h"
 #include "imgui_impl_opengl3.h"
@@ -21,7 +22,7 @@ void Consul::initialiseEngine()
 
     GraphicsAPI gfxApi = GraphicsAPI::OpenGL;
     initialiseRenderer(gfxApi);
-    platform->initialiseGraphics(renderer);
+    platform->initialiseGraphics(*renderer);
     console.log("[Consul] Graphics renderer initialised.");
 
     // Setup ImGui context
@@ -65,7 +66,7 @@ void Consul::initialiseRenderer(GraphicsAPI gfxApi)
 {
     switch (gfxApi) {
         case GraphicsAPI::OpenGL:
-            renderer = new OpenGLRenderer(platform);
+            renderer = new OpenGLRenderer();
             break;
         default:
             console.error("[Consul] Unknown graphics API!");

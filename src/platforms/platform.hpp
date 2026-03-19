@@ -18,7 +18,7 @@ public:
 
     virtual void initialiseImGui(GraphicsAPI gfxApi) = 0;
 
-    virtual void initialiseGraphics(const Renderer& renderer) = 0;
+    virtual void initialiseGraphics(Renderer& renderer) = 0;
 
     virtual void pollEvents() = 0;
 
