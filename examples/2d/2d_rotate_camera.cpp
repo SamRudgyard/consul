@@ -3,7 +3,7 @@
 #include "graphics/camera/camera_2d.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
-#include "graphics/renderable.hpp"
+#include "graphics/shader.hpp"
 
 class RotatingCamera2D : public Camera2D {
 public:
@@ -26,43 +26,45 @@ private:
     float rotationSpeedDeg = 90.0f;
 };
 
-class ColouredQuadNode : public Node, public Renderable {
+class ColouredQuadNode : public Node {
 public:
     explicit ColouredQuadNode(const Colour& tint)
         : tint(tint)
     {}
 
-    void initRendering(Renderer& renderer) override
+    void initRendering(Renderer& renderer)
     {
-        Mesh meshData = Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f});
-        meshData.setTint(tint);
-        mesh = renderer.addMesh(meshData);
-    }
-
-    void syncToRenderer() override
-    {
-        if (mesh) {
-            mesh->setModelMatrix(getWorldTransform());
-        }
+        mesh = std::make_unique<Mesh>(Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f}));
+        mesh->setTint(tint);
+        renderer.uploadMesh(*mesh);
     }
 
 protected:
     void onRender(Renderer& renderer) override
     {
-        syncToRenderer();
+        if (!mesh) {
+            return;
+        }
+
+        mesh->setModelMatrix(getWorldTransform());
+        renderer.uploadMesh(*mesh);
     }
 
 private:
     Colour tint;
-    RenderableMesh* mesh = nullptr;
+    std::unique_ptr<Mesh> mesh;
 };
 
 class RotateCameraScene : public Scene {
 public:
+    RotateCameraScene()
+        : shader("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl")
+    {}
+
     void onInit(Renderer& renderer) override
     {
         camera.setPosition({0.0f, 0.0f});
-        shader = renderer.newShader("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
+        renderer.uploadShader(shader);
 
         createQuad(renderer, {-1.25f, 0.0f, 0.0f}, Colour(220, 80, 80));
         createQuad(renderer, {0.0f, 0.0f, 0.0f}, Colour(240, 200, 90));
@@ -81,12 +83,6 @@ public:
         renderer.render(shader, camera);
     }
 
-    void onShutdown() override
-    {
-        delete shader;
-        shader = nullptr;
-    }
-
 private:
     void createQuad(Renderer& renderer, const glm::vec3& position, const Colour& tint)
     {
@@ -95,7 +91,7 @@ private:
         quad->initRendering(renderer);
     }
 
-    IShader* shader = nullptr;
+    Shader shader;
     RotatingCamera2D camera;
 };
 
