@@ -3,15 +3,13 @@
 #include "glm/glm.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
-#include "graphics/textures/renderable_texture.hpp"
+#include "graphics/texture.hpp"
 #include "glad/glad.h"
 
 #include <string>
 #include <vector>
 #include <iostream>
 #include <utility>
-
-class RenderableTexture;
 
 enum class AttributeType
 {
