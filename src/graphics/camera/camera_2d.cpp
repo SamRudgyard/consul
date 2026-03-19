@@ -7,7 +7,13 @@
 #include "maths/unit_conversions.hpp"
 #include "maths/vectors.hpp"
 
-void Camera2D::sendToShader(const Shader* shader) const {
+glm::vec3 Camera2D::getPosition() const
+{
+    return glm::vec3(position, 0.0f);
+}
+
+glm::mat4 Camera2D::getCameraMatrix() const
+{
     glm::vec3 position3D = glm::vec3(position, 0.0f);
     const glm::vec2 framebufferSize = context->window.framebufferSize;
     const float safeHeight = std::max(framebufferSize.y, 1.0f);
@@ -15,15 +21,13 @@ void Camera2D::sendToShader(const Shader* shader) const {
     const float halfHeight = 0.5f * viewHeight / zoom;
     const float halfWidth = halfHeight * aspectRatio;
 
-    shader->setUniformVec3("cameraPosition", position3D);
-
     glm::mat4 projection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f);
 
     glm::mat4 view = glm::mat4(1.0f);
     view = glm::rotate(view, -rotationDeg*DEG_TO_RAD, Z_AXIS);
     view = glm::translate(view, -position3D);
 
-    shader->setUniformMat4("cameraMatrix", projection * view);
+    return projection * view;
 }
 
 void Camera2D::handleInputs(double deltaTime) {

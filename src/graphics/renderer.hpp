@@ -1,13 +1,6 @@
 #pragma once
 
-#include "core/console/console.hpp"
-#include "graphics/mesh.hpp"
-#include "graphics/models/model.hpp"
-#include "graphics/camera/camera.hpp"
-#include "graphics/shader.hpp"
-#include "platforms/platform.hpp"
-#include "imgui_impl_opengl3.h"
-#include "utils.hpp"
+#include "glm/fwd.hpp"
 
 enum class GraphicsAPI
 {
@@ -15,10 +8,16 @@ enum class GraphicsAPI
     // Future graphics APIs can be added here (e.g., Vulkan, DirectX, etc.)
 };
 
+class Camera;
+class Mesh;
+class Model;
+class Shader;
+class Texture;
+
 class Renderer
 {
 public:
-    Renderer(Platform* platform) {};
+    Renderer() = default;
     virtual ~Renderer() = default;
 
     virtual void initialiseGraphics(void* loaderFunc) = 0;
@@ -39,20 +38,7 @@ public:
 
     virtual void uploadModel(Model& model) = 0;
 
-    void render(const IShader* shader, const Camera& camera)
-    {
-        for (RenderableMesh* mesh : standaloneMeshes) {
-            mesh->draw(shader, camera);
-        }
+    virtual void clearSceneResources() = 0;
 
-        for (LoadedModel& loadedModel : loadedModels) {
-            std::vector<glm::mat4> transforms = loadedModel.model->getTransformationMatrices();
-            for (unsigned int iMesh = 0; iMesh < loadedModel.meshes.size(); iMesh++) {
-                if (iMesh < transforms.size()) {
-                    loadedModel.meshes[iMesh]->setModelMatrix(transforms[iMesh]);
-                }
-                loadedModel.meshes[iMesh]->draw(shader, camera);
-            }
-        }
-    }
+    virtual void render(const Shader& shader, const Camera& camera) = 0;
 };

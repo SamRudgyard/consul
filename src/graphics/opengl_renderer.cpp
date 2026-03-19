@@ -5,6 +5,46 @@
 #endif
 #include <stb_image.h>
 
+void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, int value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform1i(location, value);
+    }
+}
+
+void OpenGLRenderer::setUniformVec3(GLuint programID, const char* uniformName, const glm::vec3& value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform3fv(location, 1, glm::value_ptr(value));
+    }
+}
+
+void OpenGLRenderer::setUniformVec4(GLuint programID, const char* uniformName, const glm::vec4& value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform4fv(location, 1, glm::value_ptr(value));
+    }
+}
+
+void OpenGLRenderer::setUniformMat3(GLuint programID, const char* uniformName, const glm::mat3& value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    }
+}
+
+void OpenGLRenderer::setUniformMat4(GLuint programID, const char* uniformName, const glm::mat4& value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    }
+}
+
 OpenGLRenderer::~OpenGLRenderer()
 {
     for (auto& [id, shader] : shaders) {
@@ -18,6 +58,20 @@ OpenGLRenderer::~OpenGLRenderer()
     for (auto& [path, texture] : textures) {
         releaseTexture(texture);
     }
+}
+
+void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture)
+{
+    uploadTexture(texture);
+
+    const auto it = textures.find(texture.getPath());
+    if (it == textures.end()) {
+        return;
+    }
+
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(GL_TEXTURE_2D, it->second.id);
+    setUniformInt(programID, uniformName, static_cast<int>(textureUnit));
 }
 
 unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw)
@@ -133,6 +187,105 @@ void OpenGLRenderer::uploadTexture(const Texture& texture)
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
     glBindTexture(GL_TEXTURE_2D, 0);
+    glCheckError();
+}
+
+void OpenGLRenderer::clearSceneResources()
+{
+    for (auto& [id, mesh] : meshes) {
+        releaseMesh(mesh);
+    }
+    meshes.clear();
+    meshData.clear();
+    meshDrawOrder.clear();
+
+    for (auto& [id, shader] : shaders) {
+        releaseShader(shader);
+    }
+    shaders.clear();
+
+    for (auto& [path, texture] : textures) {
+        releaseTexture(texture);
+    }
+    textures.clear();
+}
+
+void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
+{
+    if (meshDrawOrder.empty()) {
+        return;
+    }
+
+    uploadShader(shader);
+
+    const auto shaderIt = shaders.find(shader.getID());
+    if (shaderIt == shaders.end()) {
+        Console::get().error("[OpenGLRenderer::render] Attempted to render with a shader that has not been uploaded");
+        return;
+    }
+
+    const GLuint programID = shaderIt->second.id;
+    glUseProgram(programID);
+
+    setUniformMat4(programID, "cameraMatrix", camera.getCameraMatrix());
+    setUniformVec3(programID, "cameraPosition", camera.getPosition());
+    setUniformVec3(programID, "lightPosition", glm::vec3(5.0f, 5.0f, 5.0f));
+    setUniformVec3(programID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
+    setUniformVec3(programID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
+
+    const Texture defaultDiffuseTexture = Texture("assets/default/default.png", TextureType::DIFFUSE);
+    const Texture defaultSpecularTexture = Texture("assets/default/default.png", TextureType::SPECULAR);
+
+    for (unsigned int meshID : meshDrawOrder) {
+        const auto meshIt = meshData.find(meshID);
+        const auto glMeshIt = meshes.find(meshID);
+        if (meshIt == meshData.end() || glMeshIt == meshes.end()) {
+            continue;
+        }
+
+        const Mesh& mesh = meshIt->second;
+        const OpenGLMesh& glMesh = glMeshIt->second;
+
+        Texture diffuseTexture = defaultDiffuseTexture;
+        Texture specularTexture = defaultSpecularTexture;
+        for (const Texture& texture : mesh.getTextures()) {
+            if (texture.getType() == TextureType::DIFFUSE && diffuseTexture == defaultDiffuseTexture) {
+                diffuseTexture = texture;
+            } else if (texture.getType() == TextureType::SPECULAR && specularTexture == defaultSpecularTexture) {
+                specularTexture = texture;
+            }
+        }
+
+        bindTexture(programID, 0, "diffuse0", diffuseTexture);
+        bindTexture(programID, 1, "specular0", specularTexture);
+
+        const glm::mat4& modelMatrix = mesh.getModelMatrix();
+        const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
+        const Colour tint = mesh.getTint();
+        const glm::vec4 tintValue(
+            tint.r / 255.0f,
+            tint.g / 255.0f,
+            tint.b / 255.0f,
+            tint.alpha / 255.0f
+        );
+
+        setUniformMat4(programID, "model", modelMatrix);
+        setUniformMat3(programID, "normalMatrix", normalMatrix);
+        setUniformVec4(programID, "meshTint", tintValue);
+        setUniformInt(programID, "useLighting", mesh.hasAttribute(AttributeType::NORMAL) ? 1 : 0);
+
+        glBindVertexArray(glMesh.vao);
+        glDrawElements(
+            mesh.getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
+            static_cast<GLsizei>(mesh.getNumIndices()),
+            GL_UNSIGNED_INT,
+            nullptr
+        );
+    }
+
+    glBindVertexArray(0);
+    glActiveTexture(GL_TEXTURE0);
+    glUseProgram(0);
     glCheckError();
 }
 

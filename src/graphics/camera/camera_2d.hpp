@@ -27,9 +27,10 @@ public:
      */
     void setZoom(float zoom) { this->zoom = zoom; }
 
-    void sendToShader(const Shader* shader) const override;
-
     void handleInputs(double deltaTime) override;
+
+    glm::vec3 getPosition() const override;
+    glm::mat4 getCameraMatrix() const override;
 
 private:
     glm::vec2 position = glm::vec2(0.0f, 0.0f);

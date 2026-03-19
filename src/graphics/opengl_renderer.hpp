@@ -2,10 +2,19 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
+#include "core/console/console.hpp"
+#include "graphics/camera/camera.hpp"
+#include "graphics/mesh.hpp"
+#include "graphics/models/model.hpp"
+#include "graphics/shader.hpp"
+#include "graphics/texture.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "renderer.hpp"
 #include "glad/glad.h"
+#include "imgui_impl_opengl3.h"
+#include "renderer.hpp"
+#include "utils.hpp"
 
 struct OpenGLShader
 {
@@ -19,18 +28,18 @@ struct OpenGLTexture
 
 struct OpenGLMesh
 {
-    GLuint vao          = 0;
-    GLuint positionVBO  = 0;
-    GLuint normalVBO    = 0;
-    GLuint texCoordVBO  = 0;
-    GLuint tangentVBO   = 0;
-    GLuint ebo          = 0;
+    GLuint vao = 0;
+    GLuint positionVBO = 0;
+    GLuint normalVBO = 0;
+    GLuint texCoordVBO = 0;
+    GLuint tangentVBO = 0;
+    GLuint ebo = 0;
 };
 
 class OpenGLRenderer : public Renderer
 {
 public:
-    OpenGLRenderer(Platform* platform) : Renderer(platform) {}
+    OpenGLRenderer() = default;
     ~OpenGLRenderer() override;
 
     void initialiseGraphics(void* loaderFunc) override
@@ -114,12 +123,14 @@ public:
     void uploadMesh(const Mesh& mesh) override
     {
         unsigned int id = mesh.getID();
+        meshData.insert_or_assign(id, mesh);
 
         if (meshes.find(id) != meshes.end()) {
-            return; // Mesh already uploaded
+            return; // Mesh data already tracked, GPU geometry already uploaded
         }
 
         OpenGLMesh& glMesh = meshes[id];
+        meshDrawOrder.push_back(id);
         for (const Texture& texture : mesh.getTextures()) {
             uploadTexture(texture);
         }
@@ -172,20 +183,32 @@ public:
 
     void uploadModel(Model& model) override
     {
-        std::vector<Mesh> meshes = model.getMeshes();
-        for (Mesh& mesh : meshes) {
+        const std::vector<Mesh>& modelMeshes = model.getMeshes();
+        for (const Mesh& mesh : modelMeshes) {
             uploadMesh(mesh);
         }
     }
 
+    void clearSceneResources() override;
+
+    void render(const Shader& shader, const Camera& camera) override;
+
 private:
     std::unordered_map<unsigned int, OpenGLShader> shaders;
     std::unordered_map<unsigned int, OpenGLMesh> meshes;
+    std::unordered_map<unsigned int, Mesh> meshData;
+    std::vector<unsigned int> meshDrawOrder;
     std::unordered_map<std::string, OpenGLTexture> textures;
 
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec4>& data, AttributeType attribute, bool useDynamicDraw);
+    void bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture);
+    static void setUniformInt(GLuint programID, const char* uniformName, int value);
+    static void setUniformVec3(GLuint programID, const char* uniformName, const glm::vec3& value);
+    static void setUniformVec4(GLuint programID, const char* uniformName, const glm::vec4& value);
+    static void setUniformMat3(GLuint programID, const char* uniformName, const glm::mat3& value);
+    static void setUniformMat4(GLuint programID, const char* uniformName, const glm::mat4& value);
     void releaseMesh(OpenGLMesh& mesh);
     void releaseShader(OpenGLShader& shader);
     void releaseTexture(OpenGLTexture& texture);

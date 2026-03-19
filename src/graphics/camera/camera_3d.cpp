@@ -154,8 +154,12 @@ void Camera3D::handleInputs(double deltaTime) {
     updateProjectionMatrix();
 }
 
-void Camera3D::sendToShader(const Shader* shader) const
+glm::vec3 Camera3D::getPosition() const
 {
-    shader->setUniformVec3("cameraPosition", position);
-    shader->setUniformMat4("cameraMatrix", projectionMatrix * viewMatrix);
+    return position;
+}
+
+glm::mat4 Camera3D::getCameraMatrix() const
+{
+    return projectionMatrix * viewMatrix;
 }
