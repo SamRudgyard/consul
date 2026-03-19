@@ -25,7 +25,7 @@ public:
 	 * Gets the meshes loaded from this model.
 	 * @returns Vector of meshes. 
 	 */
-	std::vector<Mesh> getMeshes() const { return meshes; }
+	const std::vector<Mesh>& getMeshes() const { return meshes; }
 
 	/**
 	 * Gets the transformation matrices for each mesh in the model, with the

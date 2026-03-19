@@ -24,6 +24,18 @@ public:
     const std::string& getPath() const { return path; }
     TextureType getType() const { return type; }
     const char* getTextureTypeAsString() const { return textureTypeToString.at(type); }
+
+    // Texture operator= (const Texture& other)
+    // {
+    //     path = other.path;
+    //     type = other.type;
+    //     return *this;
+    // }
+
+    const bool operator==( const Texture& other ) const
+    {
+        return path == other.path && type == other.type;
+    }
 private:
     std::string path;
     TextureType type;

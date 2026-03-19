@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/engine_context.hpp"
-#include "graphics/shader.hpp"
+#include "glm/glm.hpp"
 
 enum class ProjectionType
 {
@@ -21,7 +21,8 @@ public:
 
     virtual void handleInputs(double deltaTime) = 0;
 
-    virtual void sendToShader(const Shader* shader) const = 0;
+    virtual glm::vec3 getPosition() const = 0;
+    virtual glm::mat4 getCameraMatrix() const = 0;
 
 protected:
     EngineContext* context = EngineContext::get();
