@@ -4,10 +4,9 @@
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "graphics/shaders/shader.hpp"
+#include "graphics/shader.hpp"
 #include "graphics/camera/camera.hpp"
-#include "graphics/mesh/mesh.hpp"
-#include "graphics/mesh/renderable_mesh.hpp"
+#include "graphics/mesh.hpp"
 #include "graphics/textures/renderable_texture.hpp"
 #include "core/console/console.hpp"
 #include "utils.hpp"

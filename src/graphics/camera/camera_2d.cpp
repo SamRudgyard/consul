@@ -7,7 +7,7 @@
 #include "maths/unit_conversions.hpp"
 #include "maths/vectors.hpp"
 
-void Camera2D::sendToShader(const IShader* shader) const {
+void Camera2D::sendToShader(const Shader* shader) const {
     glm::vec3 position3D = glm::vec3(position, 0.0f);
     const glm::vec2 framebufferSize = context->window.framebufferSize;
     const float safeHeight = std::max(framebufferSize.y, 1.0f);

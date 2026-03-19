@@ -68,7 +68,7 @@ public:
 private:
     Console& console = Console::get();
     EngineContext* context = EngineContext::get();
-    IPlatform* platform = nullptr;
+    Platform* platform = nullptr;
     Renderer* renderer = nullptr;
     bool consoleWindowOpen = true;
     bool fpsMonitorWindowOpen = true;

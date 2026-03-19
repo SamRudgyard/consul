@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/engine_context.hpp"
-#include "graphics/shaders/shader.hpp"
+#include "graphics/shader.hpp"
 
 enum class ProjectionType
 {
@@ -21,7 +21,7 @@ public:
 
     virtual void handleInputs(double deltaTime) = 0;
 
-    virtual void sendToShader(const IShader* shader) const = 0;
+    virtual void sendToShader(const Shader* shader) const = 0;
 
 protected:
     EngineContext* context = EngineContext::get();
