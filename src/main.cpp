@@ -4,32 +4,24 @@
 #include "core/window.hpp"
 #include "core/scene.hpp"
 #include "graphics/camera/camera_3d.hpp"
-#include "graphics/renderable.hpp"
+#include "graphics/shader.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/geometry/geometry_3d.hpp"
-#include "graphics/mesh/renderable_mesh.hpp"
 
-class CubeNode : public Node, public Renderable
+class CubeNode : public Node
 {
 public:
-    void initRendering(Renderer& renderer) override
+    void initRendering(Renderer& renderer)
     {
-        Mesh icosphere = Geometry3D::get()->sphereIcosphere(0.5f, 2);
-        Mesh icosphereOutline = Geometry3D::get()->sphereIcosphere(0.5f, 2);
-        icosphereOutline.setDrawMode(DrawMode::LINES);
-        icosphere.setTint(Colour(20, 200, 200));
-        mesh = renderer.addMesh(icosphere);
-        outlineMesh = renderer.addMesh(icosphereOutline);
-    }
+        mesh = std::make_unique<Mesh>(Geometry3D::get()->sphereIcosphere(0.5f, 2));
+        outlineMesh = std::make_unique<Mesh>(Geometry3D::get()->sphereIcosphere(0.5f, 2));
 
-    void syncToRenderer() override
-    {
-        if (mesh) {
-            mesh->setModelMatrix(getWorldTransform());
-        }
-        if (outlineMesh) {
-            outlineMesh->setModelMatrix(getWorldTransform());
-        }
+        mesh->setTint(Colour(20, 200, 200));
+        outlineMesh->setDrawMode(DrawMode::LINES);
+        outlineMesh->setTint(Colour(255, 255, 255));
+
+        renderer.uploadMesh(*mesh);
+        renderer.uploadMesh(*outlineMesh);
     }
 
 protected:
@@ -39,31 +31,41 @@ protected:
         setRotationRad({0.0f, angle, 0.0f});
         static float r = 1.5f;
         setPosition({r * std::cos(angle), 0.0f, r * std::sin(angle)});
-
-        syncToRenderer();
     }
 
-    void onRender(Renderer&) override
+    void onRender(Renderer& renderer) override
     {
+        if (!mesh || !outlineMesh) {
+            return;
+        }
+
+        mesh->setModelMatrix(getWorldTransform());
+        outlineMesh->setModelMatrix(getWorldTransform());
+
+        renderer.uploadMesh(*mesh);
+        renderer.uploadMesh(*outlineMesh);
     }
 
 private:
-    RenderableMesh* mesh = nullptr;
-    RenderableMesh* outlineMesh = nullptr;
+    std::unique_ptr<Mesh> mesh;
+    std::unique_ptr<Mesh> outlineMesh;
     float angle = 0.0f;
 };
 
 class ExampleScene : public Scene
 {
 public:
-    ExampleScene() : model("assets/shiba/scene.gltf") {};
+    ExampleScene()
+        : model("assets/shiba/scene.gltf"),
+          shader("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl")
+    {}
 
     void onInit(Renderer& renderer) override
     {
         camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
-        shader = renderer.newShader("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl");
-        renderer.loadModel(model);
+        renderer.uploadShader(shader);
+        renderer.uploadModel(model);
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
         rotatingCube->initRendering(renderer);
@@ -79,16 +81,10 @@ public:
         renderer.render(shader, camera);
     }
 
-    void onShutdown() override
-    {
-        delete shader;
-        shader = nullptr;
-    }
-
 private:
     Camera3D camera;
-    IShader* shader = nullptr;
     Model model;
+    Shader shader;
 };
 
 int main(int argc, char **argv)
