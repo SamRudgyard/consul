@@ -31,6 +31,7 @@ class OpenGLRenderer : public Renderer
 {
 public:
     OpenGLRenderer(Platform* platform) : Renderer(platform) {}
+    ~OpenGLRenderer() override;
 
     void initialiseGraphics(void* loaderFunc) override
     {
@@ -185,4 +186,7 @@ private:
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec4>& data, AttributeType attribute, bool useDynamicDraw);
+    void releaseMesh(OpenGLMesh& mesh);
+    void releaseShader(OpenGLShader& shader);
+    void releaseTexture(OpenGLTexture& texture);
 };
