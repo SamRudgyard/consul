@@ -7,7 +7,6 @@
 #include "graphics/shader.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/mesh.hpp"
-#include "graphics/textures/renderable_texture.hpp"
 #include "core/console/console.hpp"
 #include "utils.hpp"
 

@@ -34,6 +34,8 @@ public:
 
     virtual void uploadMesh(const Mesh& mesh) = 0;
 
+    virtual void uploadTexture(const Texture& texture) = 0;
+
     virtual void uploadModel(Model& model) = 0;
 
     void render(const IShader* shader, const Camera& camera)

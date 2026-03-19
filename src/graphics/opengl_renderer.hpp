@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <unordered_map>
 
 #include "glm/gtc/type_ptr.hpp"
@@ -7,6 +8,11 @@
 #include "glad/glad.h"
 
 struct OpenGLShader
+{
+    GLuint id = 0;
+};
+
+struct OpenGLTexture
 {
     GLuint id = 0;
 };
@@ -113,6 +119,9 @@ public:
         }
 
         OpenGLMesh& glMesh = meshes[id];
+        for (const Texture& texture : mesh.getTextures()) {
+            uploadTexture(texture);
+        }
 
         GLuint vao;
         glGenVertexArrays(1, &vao);
@@ -158,6 +167,8 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
     }
 
+    void uploadTexture(const Texture& texture) override;
+
     void uploadModel(Model& model) override
     {
         std::vector<Mesh> meshes = model.getMeshes();
@@ -169,6 +180,7 @@ public:
 private:
     std::unordered_map<unsigned int, OpenGLShader> shaders;
     std::unordered_map<unsigned int, OpenGLMesh> meshes;
+    std::unordered_map<std::string, OpenGLTexture> textures;
 
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw);

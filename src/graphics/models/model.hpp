@@ -3,7 +3,6 @@
 #include "nlohmann/json.hpp"
 #include "graphics/mesh.hpp"
 #include "graphics/texture.hpp"
-#include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -13,8 +12,6 @@
 using json = nlohmann::json;
 
 class IShader;
-class RenderableTexture;
-
 class Model
 {
 public:
