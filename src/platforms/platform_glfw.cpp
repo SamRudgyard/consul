@@ -139,7 +139,7 @@ void PlatformGLFW::initialiseWindow()
     glfwSetInputMode(handle, GLFW_LOCK_KEY_MODS, GLFW_TRUE); // Ensure modifier key flags (i.e. caps lock) are passed to key callbacks
 }
 
-void PlatformGLFW::initialiseImGui(const Renderer& renderer)
+void PlatformGLFW::initialiseImGui(GraphicsAPI gfxApi)
 {
     switch (gfxApi) {
         case GraphicsAPI::OpenGL:
@@ -151,7 +151,7 @@ void PlatformGLFW::initialiseImGui(const Renderer& renderer)
     }
 }
 
-void PlatformGLFW::initialiseGraphics(const Renderer& renderer)
+void PlatformGLFW::initialiseGraphics(Renderer& renderer)
 {
     renderer.initialiseGraphics((void*)glfwGetProcAddress);
 }
