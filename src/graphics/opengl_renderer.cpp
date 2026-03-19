@@ -5,6 +5,21 @@
 #endif
 #include <stb_image.h>
 
+OpenGLRenderer::~OpenGLRenderer()
+{
+    for (auto& [id, shader] : shaders) {
+        releaseShader(shader);
+    }
+
+    for (auto& [id, mesh] : meshes) {
+        releaseMesh(mesh);
+    }
+
+    for (auto& [path, texture] : textures) {
+        releaseTexture(texture);
+    }
+}
+
 unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw)
 {
     unsigned int vbo;
@@ -18,6 +33,54 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec2>& da
     glCheckError();
 
     return vbo;
+}
+void OpenGLRenderer::releaseMesh(OpenGLMesh& mesh)
+{
+    if (mesh.positionVBO != 0) {
+        glDeleteBuffers(1, &mesh.positionVBO);
+        mesh.positionVBO = 0;
+    }
+
+    if (mesh.normalVBO != 0) {
+        glDeleteBuffers(1, &mesh.normalVBO);
+        mesh.normalVBO = 0;
+    }
+
+    if (mesh.texCoordVBO != 0) {
+        glDeleteBuffers(1, &mesh.texCoordVBO);
+        mesh.texCoordVBO = 0;
+    }
+
+    if (mesh.tangentVBO != 0) {
+        glDeleteBuffers(1, &mesh.tangentVBO);
+        mesh.tangentVBO = 0;
+    }
+
+    if (mesh.ebo != 0) {
+        glDeleteBuffers(1, &mesh.ebo);
+        mesh.ebo = 0;
+    }
+
+    if (mesh.vao != 0) {
+        glDeleteVertexArrays(1, &mesh.vao);
+        mesh.vao = 0;
+    }
+}
+
+void OpenGLRenderer::releaseShader(OpenGLShader& shader)
+{
+    if (shader.id != 0) {
+        glDeleteProgram(shader.id);
+        shader.id = 0;
+    }
+}
+
+void OpenGLRenderer::releaseTexture(OpenGLTexture& texture)
+{
+    if (texture.id != 0) {
+        glDeleteTextures(1, &texture.id);
+        texture.id = 0;
+    }
 }
 
 void OpenGLRenderer::uploadTexture(const Texture& texture)

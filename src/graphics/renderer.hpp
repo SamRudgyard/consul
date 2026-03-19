@@ -19,6 +19,7 @@ class Renderer
 {
 public:
     Renderer(Platform* platform) {};
+    virtual ~Renderer() = default;
 
     virtual void initialiseGraphics(void* loaderFunc) = 0;
 
