@@ -21,6 +21,7 @@ void Consul::initialiseEngine()
 
     GraphicsAPI gfxApi = GraphicsAPI::OpenGL;
     initialiseRenderer(gfxApi);
+    platform->initialiseGraphics(renderer);
     console.log("[Consul] Graphics renderer initialised.");
 
     // Setup ImGui context
@@ -62,7 +63,14 @@ void Consul::initialiseWindow(PlatformType platformType)
 
 void Consul::initialiseRenderer(GraphicsAPI gfxApi)
 {
-    renderer = new Renderer(platform, gfxApi);
+    switch (gfxApi) {
+        case GraphicsAPI::OpenGL:
+            renderer = new OpenGLRenderer(platform);
+            break;
+        default:
+            console.error("[Consul] Unknown graphics API!");
+            break;
+    }
 }
 
 Consul::~Consul()

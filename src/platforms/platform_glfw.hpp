@@ -5,16 +5,16 @@
 struct GLFWmonitor;
 struct GLFWwindow;
 
-class PlatformGLFW : public IPlatform
+class PlatformGLFW : public Platform
 {
 public:
-    PlatformGLFW() : IPlatform() {}
+    PlatformGLFW() : Platform() {}
 
     void initialiseWindow() override;
 
     void initialiseImGui(GraphicsAPI gfxApi) override;
 
-    void loadGraphics(IGraphics* graphics) override;
+    void initialiseGraphics(const Renderer& renderer) override;
 
     void pollEvents() override;
 

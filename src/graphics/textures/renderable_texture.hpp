@@ -3,8 +3,8 @@
 #include <map>
 #include <string>
 
-#include "graphics/shaders/shader.hpp"
-#include "graphics/textures/texture.hpp"
+#include "graphics/shader.hpp"
+#include "graphics/texture.hpp"
 
 class RenderableTexture {
 public:
@@ -28,7 +28,7 @@ public:
      * @param shader   Shader program.
      * @param uniform  Name of the sampler uniform variable.
      */
-    virtual void setTextureUnit(const IShader* shader, const char* uniform) const = 0;
+    virtual void setTextureUnit(const Shader* shader, const char* uniform) const = 0;
 
 protected:
     /**

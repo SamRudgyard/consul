@@ -88,7 +88,7 @@ void OpenGLTexture::release() const {
     glDeleteTextures(1, &id);
 }
 
-void OpenGLTexture::setTextureUnit(const IShader* shader, const char* uniform) const {
+void OpenGLTexture::setTextureUnit(const Shader* shader, const char* uniform) const {
     shader->use();
     shader->setUniformInt(uniform, unit);
     glCheckError();

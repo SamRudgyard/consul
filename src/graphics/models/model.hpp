@@ -1,8 +1,8 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "graphics/mesh/mesh.hpp"
-#include "graphics/textures/texture.hpp"
+#include "graphics/mesh.hpp"
+#include "graphics/texture.hpp"
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"

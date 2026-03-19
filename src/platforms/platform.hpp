@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/engine_context.hpp"
-#include "graphics/graphics.hpp"
+#include "graphics/renderer.hpp"
 
 enum class PlatformType
 {
@@ -9,16 +9,16 @@ enum class PlatformType
     // Future platform types can be added here (e.g., SDL, etc.)
 };
 
-class IPlatform
+class Platform
 {
 public:
-    IPlatform() = default;
+    Platform() = default;
 
     virtual void initialiseWindow() = 0;
 
     virtual void initialiseImGui(GraphicsAPI gfxApi) = 0;
 
-    virtual void loadGraphics(IGraphics* graphics) = 0;
+    virtual void initialiseGraphics(const Renderer& renderer) = 0;
 
     virtual void pollEvents() = 0;
 

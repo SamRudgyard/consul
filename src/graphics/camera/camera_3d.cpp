@@ -4,7 +4,7 @@
 
 #include "maths/unit_conversions.hpp"
 #include "core/engine_context.hpp"
-#include "graphics/shaders/shader.hpp"
+#include "graphics/shader.hpp"
 #include "core/console/console.hpp"
 
 Camera3D::Camera3D(glm::vec3 position)
@@ -154,7 +154,7 @@ void Camera3D::handleInputs(double deltaTime) {
     updateProjectionMatrix();
 }
 
-void Camera3D::sendToShader(const IShader* shader) const
+void Camera3D::sendToShader(const Shader* shader) const
 {
     shader->setUniformVec3("cameraPosition", position);
     shader->setUniformMat4("cameraMatrix", projectionMatrix * viewMatrix);

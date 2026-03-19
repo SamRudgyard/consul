@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../renderable_texture.hpp"
-#include "graphics/shaders/shader.hpp"
+#include "graphics/shader.hpp"
 
 class OpenGLTexture : public RenderableTexture
 {
@@ -12,7 +12,7 @@ public:
     void bind() const override;
     void unbind() const override;
     void release() const override;
-    void setTextureUnit(const IShader* shader, const char* uniform) const override;
+    void setTextureUnit(const Shader* shader, const char* uniform) const override;
 
 private:
     unsigned int id = 0;

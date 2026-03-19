@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 
 #include "graphics/camera/camera.hpp"
-#include "graphics/shaders/shader.hpp"
+#include "graphics/shader.hpp"
 
 class Camera2D : public Camera {
 public:
@@ -27,7 +27,7 @@ public:
      */
     void setZoom(float zoom) { this->zoom = zoom; }
 
-    void sendToShader(const IShader* shader) const override;
+    void sendToShader(const Shader* shader) const override;
 
     void handleInputs(double deltaTime) override;
 

@@ -55,7 +55,10 @@ public:
         textures(textures),
         tint(tint),
         drawMode(drawMode),
-        indexCount(indices.size()) {}
+        indexCount(indices.size()) {
+            static unsigned int nextID = 0;
+            id = nextID++;
+        }
 
     void setVertexBuffer(unsigned int vbo, AttributeType type)
     {
@@ -158,7 +161,10 @@ public:
         indices.shrink_to_fit();
     }
 
+    unsigned int getID() const { return id; }
+
 private:
+    unsigned int id;
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;

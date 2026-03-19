@@ -73,7 +73,7 @@ public:
      * Sends the camera matrix (projection * view) to the given shader uniform.
      * @param shader  Shader to send the matrix to.
      */
-    void sendToShader(const IShader* shader) const override;
+    void sendToShader(const Shader* shader) const override;
 private:
     glm::vec3 position;
     float nearPlane = 0.1f;
