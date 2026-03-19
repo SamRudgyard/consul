@@ -8,7 +8,7 @@
 
 struct OpenGLShader
 {
-    GLuint programID = 0;
+    GLuint id = 0;
 };
 
 struct OpenGLMesh
@@ -72,7 +72,7 @@ public:
 
     void uploadShader(const Shader& shader) override
     {
-        if (shaders.find(shader.id) != shaders.end()) {
+        if (shaders.find(shader.getID()) != shaders.end()) {
             return; // Shader already uploaded
         }
 
@@ -81,12 +81,12 @@ public:
         fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
 
         // Compile vertex shader
-        const char* vertexCString = shader.vertexSource.c_str();
+        const char* vertexCString = shader.getVertexSource().c_str();
         glShaderSource(vertexID, 1, &vertexCString, NULL);
         glCompileShader(vertexID);
 
         // Compile fragment shader
-        const char* fragmentCString = shader.fragmentSource.c_str();
+        const char* fragmentCString = shader.getFragmentSource().c_str();
         glShaderSource(fragmentID, 1, &fragmentCString, NULL);
         glCompileShader(fragmentID);
 
@@ -101,7 +101,7 @@ public:
         glDeleteShader(fragmentID);
 
         // Store the compiled shader
-        shaders[shader.id] = { programID };
+        shaders[shader.getID()] = { programID };
     }
 
     void uploadMesh(const Mesh& mesh) override
