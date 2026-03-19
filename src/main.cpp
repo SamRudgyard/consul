@@ -13,15 +13,15 @@ class CubeNode : public Node
 public:
     void initRendering(Renderer& renderer)
     {
-        mesh = std::make_unique<Mesh>(Geometry3D::get()->sphereIcosphere(0.5f, 2));
-        outlineMesh = std::make_unique<Mesh>(Geometry3D::get()->sphereIcosphere(0.5f, 2));
+        mesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
+        outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
 
-        mesh->setTint(Colour(20, 200, 200));
-        outlineMesh->setDrawMode(DrawMode::LINES);
-        outlineMesh->setTint(Colour(255, 255, 255));
+        mesh.setTint(Colour(20, 200, 200));
+        outlineMesh.setDrawMode(DrawMode::LINES);
+        outlineMesh.setTint(Colour(255, 255, 255));
 
-        renderer.uploadMesh(*mesh);
-        renderer.uploadMesh(*outlineMesh);
+        renderer.uploadMesh(mesh);
+        renderer.uploadMesh(outlineMesh);
     }
 
 protected:
@@ -35,20 +35,16 @@ protected:
 
     void onRender(Renderer& renderer) override
     {
-        if (!mesh || !outlineMesh) {
-            return;
-        }
+        mesh.setModelMatrix(getWorldTransform());
+        outlineMesh.setModelMatrix(getWorldTransform());
 
-        mesh->setModelMatrix(getWorldTransform());
-        outlineMesh->setModelMatrix(getWorldTransform());
-
-        renderer.uploadMesh(*mesh);
-        renderer.uploadMesh(*outlineMesh);
+        renderer.uploadMesh(mesh);
+        renderer.uploadMesh(outlineMesh);
     }
 
 private:
-    std::unique_ptr<Mesh> mesh;
-    std::unique_ptr<Mesh> outlineMesh;
+    Mesh mesh;
+    Mesh outlineMesh;
     float angle = 0.0f;
 };
 

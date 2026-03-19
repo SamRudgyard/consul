@@ -28,6 +28,8 @@ enum class DrawMode
 
 class Mesh {
 public:
+    Mesh() = default;
+
     Mesh(
         std::vector<glm::vec3> positions,
         std::vector<unsigned int> indices,
