@@ -2,38 +2,39 @@
 #include "core/scene.hpp"
 #include "graphics/camera/camera_2d.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
-#include "graphics/renderable.hpp"
+#include "graphics/shader.hpp"
 
-class CubeNode : public Node, public Renderable {
+class CubeNode : public Node {
 public:
-    void initRendering(Renderer& renderer) override {
-        Mesh meshData = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
-        meshData.setTint(Colour(20, 200, 200));
-        mesh = renderer.addMesh(meshData);
-    }
-
-    void syncToRenderer() override {
-        if (mesh) {
-            mesh->setModelMatrix(getWorldTransform());
-        }
+    void initRendering(Renderer& renderer) {
+        mesh = std::make_unique<Mesh>(Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f}));
+        mesh->setTint(Colour(20, 200, 200));
+        renderer.uploadMesh(*mesh);
     }
 
 protected:
     void onRender(Renderer& renderer) override {
-        syncToRenderer();
+        if (!mesh) {
+            return;
+        }
+
+        mesh->setModelMatrix(getWorldTransform());
+        renderer.uploadMesh(*mesh);
     }
 
 private:
-    RenderableMesh* mesh = nullptr;
+    std::unique_ptr<Mesh> mesh;
 };
 
 class ExampleScene : public Scene {
 public:
-    ExampleScene() {}
+    ExampleScene()
+        : shader("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl")
+    {}
 
     void onInit(Renderer& renderer) override {
         camera.setPosition({0.0f, 0.0f});
-        shader = renderer.newShader("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
+        renderer.uploadShader(shader);
 
         CubeNode* cubeNode = getRoot().createChild<CubeNode>();
         cubeNode->setPosition({0.0f, 0.0f, 0.0f});
@@ -48,13 +49,8 @@ public:
         renderer.render(shader, camera);
     }
 
-    void onShutdown() override {
-        delete shader;
-        shader = nullptr;
-    }
-
 private:
-    IShader* shader = nullptr;
+    Shader shader;
     Camera2D camera;
 };
 
