@@ -5,46 +5,6 @@
 #endif
 #include <stb_image.h>
 
-void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, int value)
-{
-    const GLint location = glGetUniformLocation(programID, uniformName);
-    if (location >= 0) {
-        glUniform1i(location, value);
-    }
-}
-
-void OpenGLRenderer::setUniformVec3(GLuint programID, const char* uniformName, const glm::vec3& value)
-{
-    const GLint location = glGetUniformLocation(programID, uniformName);
-    if (location >= 0) {
-        glUniform3fv(location, 1, glm::value_ptr(value));
-    }
-}
-
-void OpenGLRenderer::setUniformVec4(GLuint programID, const char* uniformName, const glm::vec4& value)
-{
-    const GLint location = glGetUniformLocation(programID, uniformName);
-    if (location >= 0) {
-        glUniform4fv(location, 1, glm::value_ptr(value));
-    }
-}
-
-void OpenGLRenderer::setUniformMat3(GLuint programID, const char* uniformName, const glm::mat3& value)
-{
-    const GLint location = glGetUniformLocation(programID, uniformName);
-    if (location >= 0) {
-        glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
-    }
-}
-
-void OpenGLRenderer::setUniformMat4(GLuint programID, const char* uniformName, const glm::mat4& value)
-{
-    const GLint location = glGetUniformLocation(programID, uniformName);
-    if (location >= 0) {
-        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
-    }
-}
-
 OpenGLRenderer::~OpenGLRenderer()
 {
     for (auto& [id, shader] : shaders) {
@@ -60,80 +20,177 @@ OpenGLRenderer::~OpenGLRenderer()
     }
 }
 
-void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture)
+void OpenGLRenderer::initialiseGraphics(void* loaderFunc)
 {
-    uploadTexture(texture);
+    gladLoadGLLoader((GLADloadproc)loaderFunc);
 
-    const auto it = textures.find(texture.getPath());
-    if (it == textures.end()) {
+    const GLubyte* version = glGetString(GL_VERSION);
+    if (!version) {
+        Console::get().error("[OpenGL] Failed to retrieve OpenGL version");
+    } else {
+        Console::get().log("[OpenGL] Found OpenGL version " + std::string(reinterpret_cast<const char*>(version)));
+    }
+
+    glCheckError();
+
+    glEnable(GL_DEPTH_TEST);                                // Enable depth testing
+    glDepthFunc(GL_LESS);                                   // Type of depth testing to apply
+    glClearDepth(1.0f);                                     // Clear depth buffer to farthest
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      // Colour blending, determines how pixel colours are combined
+    glEnable(GL_BLEND);                                     // Enable colour blending (required for transparencies)
+    glCullFace(GL_BACK);                                    // Cull back faces
+    glFrontFace(GL_CCW);                                    // Front faces are counter clockwise
+    glEnable(GL_CULL_FACE);                                 // Enable backface culling
+}
+
+void OpenGLRenderer::initialiseImGui()
+{
+    ImGui_ImplOpenGL3_Init("#version 330");
+}
+
+void OpenGLRenderer::clearBackground(const glm::vec4& colour)
+{
+    glClearColor(colour.r, colour.g, colour.b, colour.a);
+    clearScreenBuffer();
+}
+
+void OpenGLRenderer::clearScreenBuffer()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void OpenGLRenderer::clearSceneResources()
+{
+    for (auto& [id, mesh] : meshes) {
+        releaseMesh(mesh);
+    }
+    meshes.clear();
+    meshData.clear();
+    meshDrawOrder.clear();
+
+    for (auto& [id, shader] : shaders) {
+        releaseShader(shader);
+    }
+    shaders.clear();
+
+    for (auto& [path, texture] : textures) {
+        releaseTexture(texture);
+    }
+    textures.clear();
+}
+
+void OpenGLRenderer::setViewport(int x, int y, int width, int height)
+{
+    if (width < 0) {
+        Console::get().error("[OpenGLRenderer::setViewport] Viewport width cannot be -ve: " + std::to_string(width));
+        return;
+    }
+    if (height < 0) {
+        Console::get().error("[OpenGLRenderer::setViewport] Viewport height cannot be -ve: " + std::to_string(height));
         return;
     }
 
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glBindTexture(GL_TEXTURE_2D, it->second.id);
-    setUniformInt(programID, uniformName, static_cast<int>(textureUnit));
+    glViewport(x, y, width, height);
 }
 
-unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw)
+void OpenGLRenderer::uploadShader(const Shader& shader)
 {
-    unsigned int vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, data.size()*sizeof(glm::vec2), data.data(), useDynamicDraw ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    if (shaders.find(shader.getID()) != shaders.end()) {
+        return; // Shader already uploaded
+    }
 
-    glVertexAttribPointer((unsigned int)(attribute), 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glEnableVertexAttribArray((unsigned int)(attribute));
+    unsigned int vertexID, fragmentID;
+    vertexID = glCreateShader(GL_VERTEX_SHADER);
+    fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
+
+    // Compile vertex shader
+    const char* vertexCString = shader.getVertexSource().c_str();
+    glShaderSource(vertexID, 1, &vertexCString, NULL);
+    glCompileShader(vertexID);
+
+    // Compile fragment shader
+    const char* fragmentCString = shader.getFragmentSource().c_str();
+    glShaderSource(fragmentID, 1, &fragmentCString, NULL);
+    glCompileShader(fragmentID);
+
+    // Link shaders into a program
+    GLuint programID = glCreateProgram();
+    glAttachShader(programID, vertexID);
+    glAttachShader(programID, fragmentID);
+    glLinkProgram(programID);
+
+    // Clean up shaders
+    glDeleteShader(vertexID);
+    glDeleteShader(fragmentID);
+
+    // Store the compiled shader
+    shaders[shader.getID()] = { programID };
+}
+
+void OpenGLRenderer::uploadMesh(const Mesh& mesh)
+{
+    unsigned int id = mesh.getID();
+    meshData.insert_or_assign(id, mesh);
+
+    if (meshes.find(id) != meshes.end()) {
+        return; // Mesh data already tracked, GPU geometry already uploaded
+    }
+
+    OpenGLMesh& glMesh = meshes[id];
+    meshDrawOrder.push_back(id);
+    for (const Texture& texture : mesh.getTextures()) {
+        uploadTexture(texture);
+    }
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glMesh.vao = vao;
+
+    if (!mesh.hasAttribute(AttributeType::POSITION)) {
+        Console::get().error("[OpenGLRenderer::uploadMesh] Provided Mesh has no position data");
+        return;
+    }
+    glMesh.positionVBO = enableVertexBuffer(mesh.getPositions(), AttributeType::POSITION, false);
+
+    if (mesh.hasAttribute(AttributeType::NORMAL)) {
+        glMesh.normalVBO = enableVertexBuffer(mesh.getNormals(), AttributeType::NORMAL, false);
+    } else {
+        glVertexAttrib3fv((unsigned int)(AttributeType::NORMAL), glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f)));
+    }
+
+    if (mesh.hasAttribute(AttributeType::TEXCOORD)) {
+        glMesh.texCoordVBO = enableVertexBuffer(mesh.getTextureCoords(), AttributeType::TEXCOORD, false);
+    } else {
+        glVertexAttrib2fv((unsigned int)(AttributeType::TEXCOORD), glm::value_ptr(glm::vec2(0.0f, 0.0f)));
+    }
+
+    if (mesh.hasAttribute(AttributeType::TANGENT)) {
+        glMesh.tangentVBO = enableVertexBuffer(mesh.getTangents(), AttributeType::TANGENT, false);
+    } else {
+        glVertexAttrib4fv((unsigned int)(AttributeType::TANGENT), glm::value_ptr(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)));
+    }
+
+    // Generate element buffer object (EBO) for indices
+    std::vector<unsigned int> indices = mesh.getIndices();
+
+    GLuint ebo = 0;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    glMesh.ebo = ebo;
     
-    glCheckError();
-
-    return vbo;
-}
-void OpenGLRenderer::releaseMesh(OpenGLMesh& mesh)
-{
-    if (mesh.positionVBO != 0) {
-        glDeleteBuffers(1, &mesh.positionVBO);
-        mesh.positionVBO = 0;
-    }
-
-    if (mesh.normalVBO != 0) {
-        glDeleteBuffers(1, &mesh.normalVBO);
-        mesh.normalVBO = 0;
-    }
-
-    if (mesh.texCoordVBO != 0) {
-        glDeleteBuffers(1, &mesh.texCoordVBO);
-        mesh.texCoordVBO = 0;
-    }
-
-    if (mesh.tangentVBO != 0) {
-        glDeleteBuffers(1, &mesh.tangentVBO);
-        mesh.tangentVBO = 0;
-    }
-
-    if (mesh.ebo != 0) {
-        glDeleteBuffers(1, &mesh.ebo);
-        mesh.ebo = 0;
-    }
-
-    if (mesh.vao != 0) {
-        glDeleteVertexArrays(1, &mesh.vao);
-        mesh.vao = 0;
-    }
+    // Unbind all to prevent accidental modification
+    glBindVertexArray(0);                       // Unbind VAO first
+    glBindBuffer(GL_ARRAY_BUFFER, 0);           // Then unbind VBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
 }
 
-void OpenGLRenderer::releaseShader(OpenGLShader& shader)
+void OpenGLRenderer::uploadModel(Model& model)
 {
-    if (shader.id != 0) {
-        glDeleteProgram(shader.id);
-        shader.id = 0;
-    }
-}
-
-void OpenGLRenderer::releaseTexture(OpenGLTexture& texture)
-{
-    if (texture.id != 0) {
-        glDeleteTextures(1, &texture.id);
-        texture.id = 0;
+    const std::vector<Mesh>& modelMeshes = model.getMeshes();
+    for (const Mesh& mesh : modelMeshes) {
+        uploadMesh(mesh);
     }
 }
 
@@ -188,26 +245,6 @@ void OpenGLRenderer::uploadTexture(const Texture& texture)
     stbi_image_free(data);
     glBindTexture(GL_TEXTURE_2D, 0);
     glCheckError();
-}
-
-void OpenGLRenderer::clearSceneResources()
-{
-    for (auto& [id, mesh] : meshes) {
-        releaseMesh(mesh);
-    }
-    meshes.clear();
-    meshData.clear();
-    meshDrawOrder.clear();
-
-    for (auto& [id, shader] : shaders) {
-        releaseShader(shader);
-    }
-    shaders.clear();
-
-    for (auto& [path, texture] : textures) {
-        releaseTexture(texture);
-    }
-    textures.clear();
 }
 
 void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
@@ -289,6 +326,22 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
     glCheckError();
 }
 
+unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw)
+{
+    unsigned int vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, data.size()*sizeof(glm::vec2), data.data(), useDynamicDraw ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+
+    glVertexAttribPointer((unsigned int)(attribute), 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray((unsigned int)(attribute));
+    
+    glCheckError();
+
+    return vbo;
+}
+
+
 unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw)
 {
     unsigned int vbo;
@@ -317,4 +370,108 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec4>& da
     glCheckError();
 
     return vbo;
+}
+
+void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture)
+{
+    uploadTexture(texture);
+
+    const auto it = textures.find(texture.getPath());
+    if (it == textures.end()) {
+        return;
+    }
+
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(GL_TEXTURE_2D, it->second.id);
+    setUniformInt(programID, uniformName, static_cast<int>(textureUnit));
+}
+
+void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, int value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform1i(location, value);
+    }
+}
+
+void OpenGLRenderer::setUniformVec3(GLuint programID, const char* uniformName, const glm::vec3& value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform3fv(location, 1, glm::value_ptr(value));
+    }
+}
+
+void OpenGLRenderer::setUniformVec4(GLuint programID, const char* uniformName, const glm::vec4& value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform4fv(location, 1, glm::value_ptr(value));
+    }
+}
+
+void OpenGLRenderer::setUniformMat3(GLuint programID, const char* uniformName, const glm::mat3& value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    }
+}
+
+void OpenGLRenderer::setUniformMat4(GLuint programID, const char* uniformName, const glm::mat4& value)
+{
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    }
+}
+
+
+void OpenGLRenderer::releaseMesh(OpenGLMesh& mesh)
+{
+    if (mesh.positionVBO != 0) {
+        glDeleteBuffers(1, &mesh.positionVBO);
+        mesh.positionVBO = 0;
+    }
+
+    if (mesh.normalVBO != 0) {
+        glDeleteBuffers(1, &mesh.normalVBO);
+        mesh.normalVBO = 0;
+    }
+
+    if (mesh.texCoordVBO != 0) {
+        glDeleteBuffers(1, &mesh.texCoordVBO);
+        mesh.texCoordVBO = 0;
+    }
+
+    if (mesh.tangentVBO != 0) {
+        glDeleteBuffers(1, &mesh.tangentVBO);
+        mesh.tangentVBO = 0;
+    }
+
+    if (mesh.ebo != 0) {
+        glDeleteBuffers(1, &mesh.ebo);
+        mesh.ebo = 0;
+    }
+
+    if (mesh.vao != 0) {
+        glDeleteVertexArrays(1, &mesh.vao);
+        mesh.vao = 0;
+    }
+}
+
+void OpenGLRenderer::releaseShader(OpenGLShader& shader)
+{
+    if (shader.id != 0) {
+        glDeleteProgram(shader.id);
+        shader.id = 0;
+    }
+}
+
+void OpenGLRenderer::releaseTexture(OpenGLTexture& texture)
+{
+    if (texture.id != 0) {
+        glDeleteTextures(1, &texture.id);
+        texture.id = 0;
+    }
 }
