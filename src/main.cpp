@@ -11,7 +11,7 @@
 class CubeNode : public Node
 {
 public:
-    void initRendering(Renderer& renderer)
+    void initialise(Renderer& renderer)
     {
         mesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
         outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
@@ -64,7 +64,7 @@ public:
         renderer.uploadModel(model);
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
-        rotatingCube->initRendering(renderer);
+        rotatingCube->initialise(renderer);
     }
 
     void onUpdate(double deltaTime) override

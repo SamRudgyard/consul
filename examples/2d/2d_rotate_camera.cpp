@@ -32,7 +32,7 @@ public:
         : tint(tint)
     {}
 
-    void initRendering(Renderer& renderer)
+    void initialise(Renderer& renderer)
     {
         mesh = std::make_unique<Mesh>(Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f}));
         mesh->setTint(tint);
@@ -88,7 +88,7 @@ private:
     {
         ColouredQuadNode* quad = getRoot().createChild<ColouredQuadNode>(tint);
         quad->setPosition(position);
-        quad->initRendering(renderer);
+        quad->initialise(renderer);
     }
 
     Shader shader;

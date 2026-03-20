@@ -6,7 +6,7 @@
 
 class CubeNode : public Node {
 public:
-    void initRendering(Renderer& renderer) {
+    void initialise(Renderer& renderer) {
         mesh = std::make_unique<Mesh>(Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f}));
         mesh->setTint(Colour(20, 200, 200));
         renderer.uploadMesh(*mesh);
@@ -38,7 +38,7 @@ public:
 
         CubeNode* cubeNode = getRoot().createChild<CubeNode>();
         cubeNode->setPosition({0.0f, 0.0f, 0.0f});
-        cubeNode->initRendering(renderer);
+        cubeNode->initialise(renderer);
     }
 
     void onUpdate(double deltaTime) override {
