@@ -60,16 +60,6 @@ public:
             id = nextID++;
         }
 
-    void setVertexBuffer(unsigned int vbo, AttributeType type)
-    {
-        vertexBuffers[static_cast<size_t>(type)] = vbo;
-    }
-
-    unsigned int getVertexBuffer(AttributeType type) const
-    {
-        return vertexBuffers[static_cast<size_t>(type)];
-    }
-
     const std::vector<glm::vec3>& getPositions() const { return positions; }
     const std::vector<glm::vec3>& getNormals() const { return normals; }
     const std::vector<glm::vec2>& getTextureCoords() const { return textureCoords; }
