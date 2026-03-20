@@ -60,10 +60,38 @@ public:
             id = nextID++;
         }
 
+    /**
+     * Gets the vertex positions associated with this Mesh.
+     * @return Vertex positions.
+     */
     const std::vector<glm::vec3>& getPositions() const { return positions; }
+    
+    /**
+     * Gets the normals associated with this Mesh.
+     * @return Normal vectors.
+     */
     const std::vector<glm::vec3>& getNormals() const { return normals; }
+    
+    /**
+     * Gets the texture coordinates associated with this Mesh.
+     * @return Texture coordinates, in the form `(u, v)`.
+     */
     const std::vector<glm::vec2>& getTextureCoords() const { return textureCoords; }
+    
+    /**
+     * Gets the tangents associated with this Mesh.
+     * @return Tangents.
+     */
     const std::vector<glm::vec4>& getTangents() const { return tangents; }
+    
+    /**
+     * Gets the indices associates with this Mesh.
+     * If drawing using `DrawMode::LINES`, constructs three
+     * pairs of indices for each line in a triangle.
+     * 
+     * @return Indices to draw the Mesh in currently set
+     * draw mode.
+     */
     std::vector<unsigned int> getIndices() const
     {
         if (drawMode != DrawMode::LINES) {
@@ -97,16 +125,57 @@ public:
 
         return lineIndices;
     }
-    const std::vector<Texture>& getTextures() const { return textures; }
-    Colour getTint() const { return tint; }
-    void setTint(const Colour& value) { tint = value; }
 
-    DrawMode getDrawMode() const { return drawMode; }
+    /**
+     * Gets the textures associated with this Mesh.
+     * @return Textures on this Mesh.
+     */
+    const std::vector<Texture>& getTextures() const { return textures; }
+
+    /**
+     * Sets the colour tint of this Mesh.
+     * @param colour Colour tint.
+     */
+    void setTint(const Colour& colour) { tint = colour; }
+
+    /**
+     * Gets the colour tint of this Mesh.
+     * @return Colour of the Mesh.
+     */
+    Colour getTint() const { return tint; }
+
+    /**
+     * Set the draw mode of this Mesh.
+     * @param mode The draw mode.
+     */
     void setDrawMode(DrawMode mode) { drawMode = mode; }
 
+    /**
+     * Gets the draw mode of this Mesh.
+     * @return The draw mode.
+     */
+    DrawMode getDrawMode() const { return drawMode; }
+
+    /**
+     * Set the model matrix for this Mesh.
+     * The model matrix converts from vertex attributes from local
+     * model space to world space.
+     * @param matrix The new model matrix.
+     */
     void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }
+
+    /**
+     * Gets the current model matrix for this Mesh.
+     * The model matrix converts from vertex attributes from local
+     * model space to world space.
+     * @return The current model matrix.
+     */
     const glm::mat4& getModelMatrix() const { return modelMatrix; }
 
+    /**
+     * Gets the number of indices associated with this Mesh.
+     * @return Number of indices.
+     */
     const unsigned int getNumIndices() const
     {
         if (drawMode == DrawMode::LINES) {
@@ -118,6 +187,13 @@ public:
         return indexCount;
     }
 
+    /**
+     * Determines if the Mesh has a given vertex attribute
+     * (i.e. position, normals, texture coordinates, etc.) from a
+     * given AttributeType enum.
+     * @param type attribute type.
+     * @return true if Mesh has this attribute type, false otherwise.
+     */
     bool hasAttribute(AttributeType type) const
     {
         switch (type) {
@@ -136,6 +212,10 @@ public:
         }
     }
 
+    /**
+     * Clears the vectors storing the Mesh's vertex attributes
+     * (positions, normals, etc.) and its indices.
+     */
     void clear()
     {
         positions.clear();
@@ -151,6 +231,10 @@ public:
         indices.shrink_to_fit();
     }
 
+    /**
+     * Gets the unique ID of this Mesh.
+     * @return ID of this Mesh.
+     */
     unsigned int getID() const { return id; }
 
 private:
