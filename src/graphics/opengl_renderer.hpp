@@ -114,8 +114,8 @@ public:
 
 private:
     std::unordered_map<unsigned int, OpenGLShader> shaders;
-    std::unordered_map<unsigned int, OpenGLMesh> meshes;
-    std::unordered_map<unsigned int, Mesh> meshData;
+    std::unordered_map<unsigned int, OpenGLMesh> openglMeshes;
+    std::unordered_map<unsigned int, Mesh> meshes;
     std::vector<unsigned int> meshDrawOrder;
     std::unordered_map<std::string, OpenGLTexture> textures;
 
