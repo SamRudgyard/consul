@@ -11,7 +11,7 @@ OpenGLRenderer::~OpenGLRenderer()
         releaseShader(shader);
     }
 
-    for (auto& [id, mesh] : meshes) {
+    for (auto& [id, mesh] : openglMeshes) {
         releaseMesh(mesh);
     }
 
@@ -61,11 +61,11 @@ void OpenGLRenderer::clearScreenBuffer()
 
 void OpenGLRenderer::clearSceneResources()
 {
-    for (auto& [id, mesh] : meshes) {
+    for (auto& [id, mesh] : openglMeshes) {
         releaseMesh(mesh);
     }
+    openglMeshes.clear();
     meshes.clear();
-    meshData.clear();
     meshDrawOrder.clear();
 
     for (auto& [id, shader] : shaders) {
@@ -130,13 +130,14 @@ void OpenGLRenderer::uploadShader(const Shader& shader)
 void OpenGLRenderer::uploadMesh(const Mesh& mesh)
 {
     unsigned int id = mesh.getID();
-    meshData.insert_or_assign(id, mesh);
 
-    if (meshes.find(id) != meshes.end()) {
+    meshes.insert_or_assign(id, mesh);
+
+    if (openglMeshes.find(id) != openglMeshes.end()) {
         return; // Mesh data already tracked, GPU geometry already uploaded
     }
 
-    OpenGLMesh& glMesh = meshes[id];
+    OpenGLMesh& glMesh = openglMeshes[id];
     meshDrawOrder.push_back(id);
     for (const Texture& texture : mesh.getTextures()) {
         uploadTexture(texture);
@@ -274,9 +275,9 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
     const Texture defaultSpecularTexture = Texture("assets/default/default.png", TextureType::SPECULAR);
 
     for (unsigned int meshID : meshDrawOrder) {
-        const auto meshIt = meshData.find(meshID);
-        const auto glMeshIt = meshes.find(meshID);
-        if (meshIt == meshData.end() || glMeshIt == meshes.end()) {
+        const auto meshIt = meshes.find(meshID);
+        const auto glMeshIt = openglMeshes.find(meshID);
+        if (meshIt == meshes.end() || glMeshIt == openglMeshes.end()) {
             continue;
         }
 
