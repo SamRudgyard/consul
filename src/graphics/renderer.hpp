@@ -30,11 +30,11 @@ public:
 
     virtual void setViewport(int x, int y, int width, int height) = 0;
 
-    virtual void uploadShader(const Shader& shader) = 0;
+    virtual void uploadShader(Shader& shader) = 0;
 
-    virtual void uploadMesh(const Mesh& mesh) = 0;
+    virtual void uploadMesh(Mesh& mesh) = 0;
 
-    virtual void uploadTexture(const Texture& texture) = 0;
+    virtual void uploadTexture(Texture& texture) = 0;
 
     virtual void uploadModel(Model& model) = 0;
 

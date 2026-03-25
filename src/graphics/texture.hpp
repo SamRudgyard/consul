@@ -16,12 +16,27 @@ class Texture
 {
 public:
     Texture()
-        : path("assets/default/default.png"), type(TextureType::DIFFUSE) {};
+        : Texture("assets/default/default.png", TextureType::DIFFUSE) {}
 
     Texture(std::string texturePath, TextureType textureType)
-        : path(texturePath), type(textureType) {};
+        : path(texturePath), type(textureType)
+    {
+        static unsigned int nextID = 0;
+        id = nextID++;
+    }
+
+    static Texture getDefaultDiffuseTexture() {
+        static std::string defaultTexturePath = "assets/default/default.png";
+        return Texture(defaultTexturePath, TextureType::DIFFUSE);
+    }
+
+    static Texture getDefaultSpecularTexture() {
+        static std::string defaultTexturePath = "assets/default/default.png";
+        return Texture(defaultTexturePath, TextureType::SPECULAR);
+    }
 
     const std::string& getPath() const { return path; }
+    unsigned int getID() const { return id; }
     TextureType getType() const { return type; }
     const char* getTextureTypeAsString() const { return textureTypeToString.at(type); }
 
@@ -37,6 +52,7 @@ public:
         return path == other.path && type == other.type;
     }
 private:
+    unsigned int id = 0;
     std::string path;
     TextureType type;
 

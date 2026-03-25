@@ -7,17 +7,21 @@
 
 OpenGLRenderer::~OpenGLRenderer()
 {
-    for (auto& [id, shader] : shaders) {
-        releaseShader(shader);
+    for (auto& [shaderID, ShaderBuffer] : shaders) {
+        releaseShader(ShaderBuffer);
     }
 
-    for (auto& [id, mesh] : openglMeshes) {
-        releaseMesh(mesh);
+    for (auto& [meshID, meshBuffer] : meshes) {
+        releaseMesh(meshBuffer);
     }
 
-    for (auto& [path, texture] : textures) {
-        releaseTexture(texture);
+    for (auto& [textureID, textureBuffer] : textures) {
+        releaseTexture(textureBuffer);
     }
+
+    shaders.clear();
+    meshes.clear();
+    textures.clear();
 }
 
 void OpenGLRenderer::initialiseGraphics(void* loaderFunc)
@@ -61,20 +65,19 @@ void OpenGLRenderer::clearScreenBuffer()
 
 void OpenGLRenderer::clearSceneResources()
 {
-    for (auto& [id, mesh] : openglMeshes) {
-        releaseMesh(mesh);
+    for (auto& [meshID, meshBuffer] : meshes) {
+        releaseMesh(meshBuffer);
     }
-    openglMeshes.clear();
     meshes.clear();
     meshDrawOrder.clear();
 
-    for (auto& [id, shader] : shaders) {
-        releaseShader(shader);
+    for (auto& [shaderID, shaderBuffer] : shaders) {
+        releaseShader(shaderBuffer);
     }
     shaders.clear();
 
-    for (auto& [path, texture] : textures) {
-        releaseTexture(texture);
+    for (auto& [textureID, textureBuffer] : textures) {
+        releaseTexture(textureBuffer);
     }
     textures.clear();
 }
@@ -93,112 +96,152 @@ void OpenGLRenderer::setViewport(int x, int y, int width, int height)
     glViewport(x, y, width, height);
 }
 
-void OpenGLRenderer::uploadShader(const Shader& shader)
+void OpenGLRenderer::uploadShader(Shader& shader)
 {
-    if (shaders.find(shader.getID()) != shaders.end()) {
-        return; // Shader already uploaded
+    const unsigned int shaderID = shader.getID();
+    if (shaders.find(shaderID) != shaders.end()) {
+        // Currently no functionality to adjust Shader vertex/fragment code
+        // on the fly, so return if found.
+        return;
     }
 
     unsigned int vertexID, fragmentID;
     vertexID = glCreateShader(GL_VERTEX_SHADER);
     fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
+    glCheckError();
 
     // Compile vertex shader
     const char* vertexCString = shader.getVertexSource().c_str();
     glShaderSource(vertexID, 1, &vertexCString, NULL);
     glCompileShader(vertexID);
+    glCheckError();
 
     // Compile fragment shader
     const char* fragmentCString = shader.getFragmentSource().c_str();
     glShaderSource(fragmentID, 1, &fragmentCString, NULL);
     glCompileShader(fragmentID);
+    glCheckError();
 
     // Link shaders into a program
     GLuint programID = glCreateProgram();
     glAttachShader(programID, vertexID);
     glAttachShader(programID, fragmentID);
     glLinkProgram(programID);
+    glCheckError();
 
     // Clean up shaders
     glDeleteShader(vertexID);
     glDeleteShader(fragmentID);
+    glCheckError();
 
-    // Store the compiled shader
-    shaders[shader.getID()] = { programID };
+    // Store the compiled shader directly in the map entry.
+    shaders[shaderID].id = programID;
+
+    Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader " + std::to_string(shader.getID()) + " to GPU.");
 }
 
-void OpenGLRenderer::uploadMesh(const Mesh& mesh)
+void OpenGLRenderer::uploadMesh(Mesh& mesh)
 {
-    unsigned int id = mesh.getID();
+    if (!mesh.isAnyDirty()) return;
 
-    meshes.insert_or_assign(id, mesh);
+    auto [it, inserted] = meshes.try_emplace(mesh.getID());
+    MeshBuffer& meshBuffer = it->second;
+    meshBuffer.mesh = &mesh;
 
-    if (openglMeshes.find(id) != openglMeshes.end()) {
-        return; // Mesh data already tracked, GPU geometry already uploaded
+    if (inserted) {
+        glGenVertexArrays(1, &meshBuffer.vao);
     }
+    glBindVertexArray(meshBuffer.vao);
+    glCheckError();
 
-    OpenGLMesh& glMesh = openglMeshes[id];
-    meshDrawOrder.push_back(id);
-    for (const Texture& texture : mesh.getTextures()) {
-        uploadTexture(texture);
+    const bool uploadPositions = inserted || mesh.isDirty(AttributeType::POSITION);
+    const bool uploadNormals = inserted || mesh.isDirty(AttributeType::NORMAL);
+    const bool uploadTexCoords = inserted || mesh.isDirty(AttributeType::TEXCOORD);
+    const bool uploadTangents = inserted || mesh.isDirty(AttributeType::TANGENT);
+    const bool uploadIndices = inserted || mesh.isDirty(AttributeType::INDICES);
+
+    if (uploadPositions) {
+        if (!mesh.hasAttribute(AttributeType::POSITION)) {
+            Console::get().error("[OpenGLRenderer::uploadMesh] Provided Mesh has no position data");
+            return;
+        }
+        meshBuffer.positionVBO = enableVertexBuffer(mesh.getPositions(), AttributeType::POSITION, false);
+        mesh.clean(AttributeType::POSITION);
+        glCheckError();
     }
-
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glMesh.vao = vao;
-
-    if (!mesh.hasAttribute(AttributeType::POSITION)) {
-        Console::get().error("[OpenGLRenderer::uploadMesh] Provided Mesh has no position data");
-        return;
-    }
-    glMesh.positionVBO = enableVertexBuffer(mesh.getPositions(), AttributeType::POSITION, false);
-
-    if (mesh.hasAttribute(AttributeType::NORMAL)) {
-        glMesh.normalVBO = enableVertexBuffer(mesh.getNormals(), AttributeType::NORMAL, false);
-    } else {
-        glVertexAttrib3fv((unsigned int)(AttributeType::NORMAL), glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f)));
-    }
-
-    if (mesh.hasAttribute(AttributeType::TEXCOORD)) {
-        glMesh.texCoordVBO = enableVertexBuffer(mesh.getTextureCoords(), AttributeType::TEXCOORD, false);
-    } else {
-        glVertexAttrib2fv((unsigned int)(AttributeType::TEXCOORD), glm::value_ptr(glm::vec2(0.0f, 0.0f)));
-    }
-
-    if (mesh.hasAttribute(AttributeType::TANGENT)) {
-        glMesh.tangentVBO = enableVertexBuffer(mesh.getTangents(), AttributeType::TANGENT, false);
-    } else {
-        glVertexAttrib4fv((unsigned int)(AttributeType::TANGENT), glm::value_ptr(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)));
-    }
-
-    // Generate element buffer object (EBO) for indices
-    std::vector<unsigned int> indices = mesh.getIndices();
-
-    GLuint ebo = 0;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
-    glMesh.ebo = ebo;
     
+    if (uploadNormals) {
+        if (mesh.hasAttribute(AttributeType::NORMAL)) {
+            meshBuffer.normalVBO = enableVertexBuffer(mesh.getNormals(), AttributeType::NORMAL, false);
+        } else {
+            glVertexAttrib3fv((unsigned int)(AttributeType::NORMAL), glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f)));
+        }
+        mesh.clean(AttributeType::NORMAL);
+        glCheckError();
+    }
+
+    if (uploadTexCoords) {
+        if (mesh.hasAttribute(AttributeType::TEXCOORD)) {
+            meshBuffer.texCoordVBO = enableVertexBuffer(mesh.getTextureCoords(), AttributeType::TEXCOORD, false);
+        } else {
+            glVertexAttrib2fv((unsigned int)(AttributeType::TEXCOORD), glm::value_ptr(glm::vec2(0.0f, 0.0f)));
+        }
+        mesh.clean(AttributeType::TEXCOORD);
+        glCheckError();
+    }
+
+    if (uploadTangents) {
+        if (mesh.hasAttribute(AttributeType::TANGENT)) {
+            meshBuffer.tangentVBO = enableVertexBuffer(mesh.getTangents(), AttributeType::TANGENT, false);
+        } else {
+            glVertexAttrib4fv((unsigned int)(AttributeType::TANGENT), glm::value_ptr(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)));
+        }
+        mesh.clean(AttributeType::TANGENT);
+        glCheckError();
+    }    
+
+    if (uploadIndices) {
+        // Generate element buffer object (EBO) for indices
+        std::vector<unsigned int> indices = mesh.getIndices();
+
+        GLuint ebo = 0;
+        glGenBuffers(1, &ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+        glCheckError();
+        meshBuffer.ebo = ebo;
+        mesh.clean(AttributeType::INDICES);
+    }
+
     // Unbind all to prevent accidental modification
     glBindVertexArray(0);                       // Unbind VAO first
     glBindBuffer(GL_ARRAY_BUFFER, 0);           // Then unbind VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
+    glCheckError();
+
+    for (Texture& texture : mesh.getTextures()) {
+        uploadTexture(texture);
+    }
+
+    Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + std::to_string(mesh.getID()) + " to GPU.");
 }
 
 void OpenGLRenderer::uploadModel(Model& model)
 {
-    const std::vector<Mesh>& modelMeshes = model.getMeshes();
-    for (const Mesh& mesh : modelMeshes) {
+    std::vector<Mesh>& modelMeshes = model.getMeshes();
+    for (Mesh& mesh : modelMeshes) {
         uploadMesh(mesh);
     }
+
+    Console::get().logOnDebug("[OpenGLRenderer::uploadModel] Successfully uploaded Model '" + model.getFilePath() + "' to GPU.");
 }
 
-void OpenGLRenderer::uploadTexture(const Texture& texture)
+void OpenGLRenderer::uploadTexture(Texture& texture)
 {
+    const unsigned int textureID = texture.getID();
     const std::string& texturePath = texture.getPath();
-    if (textures.find(texturePath) != textures.end()) {
+
+    if (textures.find(textureID) != textures.end()) {
         return; // Texture already uploaded, so return
     }
 
@@ -218,14 +261,18 @@ void OpenGLRenderer::uploadTexture(const Texture& texture)
         return;
     }
 
-    OpenGLTexture& glTexture = textures[texturePath];
-    glGenTextures(1, &glTexture.id);
-    glBindTexture(GL_TEXTURE_2D, glTexture.id);
+    glCheckError();
+
+    TextureBuffer& textureBuffer = textures[textureID];
+    glGenTextures(1, &textureBuffer.id);
+    glBindTexture(GL_TEXTURE_2D, textureBuffer.id);
+    glCheckError();
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glCheckError();
 
     if (numColourChannels == 4) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -236,11 +283,14 @@ void OpenGLRenderer::uploadTexture(const Texture& texture)
     } else {
         stbi_image_free(data);
         glBindTexture(GL_TEXTURE_2D, 0);
-        releaseTexture(glTexture);
-        textures.erase(texturePath);
+        releaseTexture(textureBuffer);
+        textures.erase(textureID);
         Console::get().error("[OpenGLRenderer::uploadTexture] Invalid number of colour channels (expected 1, 3, or 4, but got " + std::to_string(numColourChannels) + ")");
         return;
     }
+    glCheckError();
+
+    Console::get().logOnDebug("[OpenGLRenderer::uploadTexture] Successfully uploaded Texture " + std::to_string(texture.getID()) + " to GPU.");
 
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
@@ -250,20 +300,14 @@ void OpenGLRenderer::uploadTexture(const Texture& texture)
 
 void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
 {
-    if (meshDrawOrder.empty()) {
-        return;
-    }
-
-    uploadShader(shader);
-
     const auto shaderIt = shaders.find(shader.getID());
     if (shaderIt == shaders.end()) {
-        Console::get().error("[OpenGLRenderer::render] Attempted to render with a shader that has not been uploaded");
+        Console::get().error("[OpenGLRenderer::render] Attempting to render with a shader that hasn't been uploaded.");
         return;
     }
-
     const GLuint programID = shaderIt->second.id;
     glUseProgram(programID);
+    glCheckError();
 
     setUniformMat4(programID, "cameraMatrix", camera.getCameraMatrix());
     setUniformVec3(programID, "cameraPosition", camera.getPosition());
@@ -271,31 +315,31 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
     setUniformVec3(programID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
     setUniformVec3(programID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
 
-    const Texture defaultDiffuseTexture = Texture("assets/default/default.png", TextureType::DIFFUSE);
-    const Texture defaultSpecularTexture = Texture("assets/default/default.png", TextureType::SPECULAR);
-
-    for (unsigned int meshID : meshDrawOrder) {
-        const auto meshIt = meshes.find(meshID);
-        const auto glMeshIt = openglMeshes.find(meshID);
-        if (meshIt == meshes.end() || glMeshIt == openglMeshes.end()) {
+    for (auto& [meshID, meshBuffer] : meshes) {
+        if (!meshBuffer.mesh) {
             continue;
         }
+        const Mesh& mesh = *meshBuffer.mesh;
+        const std::vector<Texture>& textures = mesh.getTextures();
 
-        const Mesh& mesh = meshIt->second;
-        const OpenGLMesh& glMesh = glMeshIt->second;
+        unsigned int iDiffuse = 0;
+        unsigned int iSpecular = 0;
 
-        Texture diffuseTexture = defaultDiffuseTexture;
-        Texture specularTexture = defaultSpecularTexture;
-        for (const Texture& texture : mesh.getTextures()) {
-            if (texture.getType() == TextureType::DIFFUSE && diffuseTexture == defaultDiffuseTexture) {
-                diffuseTexture = texture;
-            } else if (texture.getType() == TextureType::SPECULAR && specularTexture == defaultSpecularTexture) {
-                specularTexture = texture;
+        for (unsigned int iTexture = 0; iTexture < textures.size(); iTexture++) {
+            const Texture& texture = textures[iTexture];
+            if (texture.getType() == TextureType::DIFFUSE) {
+                const std::string uniformName = "diffuse" + std::to_string(iDiffuse);
+                glCheckError();
+                bindTexture(programID, 0, uniformName.c_str(), texture);
+                iDiffuse++;
+            }
+            else if (texture.getType() == TextureType::SPECULAR) {
+                const std::string uniformName = "specular" + std::to_string(iSpecular);
+                bindTexture(programID, 1, uniformName.c_str(), texture);
+                glCheckError();
+                iSpecular++;
             }
         }
-
-        bindTexture(programID, 0, "diffuse0", diffuseTexture);
-        bindTexture(programID, 1, "specular0", specularTexture);
 
         const glm::mat4& modelMatrix = mesh.getModelMatrix();
         const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
@@ -312,13 +356,15 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
         setUniformVec4(programID, "meshTint", tintValue);
         setUniformInt(programID, "useLighting", mesh.hasAttribute(AttributeType::NORMAL) ? 1 : 0);
 
-        glBindVertexArray(glMesh.vao);
+        glBindVertexArray(meshBuffer.vao);
         glDrawElements(
             mesh.getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
             static_cast<GLsizei>(mesh.getNumIndices()),
             GL_UNSIGNED_INT,
             nullptr
         );
+
+        glCheckError();
     }
 
     glBindVertexArray(0);
@@ -375,16 +421,15 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec4>& da
 
 void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture)
 {
-    uploadTexture(texture);
-
-    const auto it = textures.find(texture.getPath());
+    auto it = textures.find(texture.getID());
     if (it == textures.end()) {
+        Console::get().error("[OpenGLRenderer::bindTexture] Attempting to bind texture that hasn't been uploaded!");
         return;
     }
 
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     glBindTexture(GL_TEXTURE_2D, it->second.id);
-    setUniformInt(programID, uniformName, static_cast<int>(textureUnit));
+    setUniformInt(programID, uniformName, (int)textureUnit);
 }
 
 void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, int value)
@@ -400,6 +445,7 @@ void OpenGLRenderer::setUniformVec3(GLuint programID, const char* uniformName, c
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
         glUniform3fv(location, 1, glm::value_ptr(value));
+        glCheckError();
     }
 }
 
@@ -424,11 +470,12 @@ void OpenGLRenderer::setUniformMat4(GLuint programID, const char* uniformName, c
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
         glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+        glCheckError();
     }
 }
 
 
-void OpenGLRenderer::releaseMesh(OpenGLMesh& mesh)
+void OpenGLRenderer::releaseMesh(MeshBuffer& mesh)
 {
     if (mesh.positionVBO != 0) {
         glDeleteBuffers(1, &mesh.positionVBO);
@@ -461,7 +508,7 @@ void OpenGLRenderer::releaseMesh(OpenGLMesh& mesh)
     }
 }
 
-void OpenGLRenderer::releaseShader(OpenGLShader& shader)
+void OpenGLRenderer::releaseShader(ShaderBuffer& shader)
 {
     if (shader.id != 0) {
         glDeleteProgram(shader.id);
@@ -469,7 +516,7 @@ void OpenGLRenderer::releaseShader(OpenGLShader& shader)
     }
 }
 
-void OpenGLRenderer::releaseTexture(OpenGLTexture& texture)
+void OpenGLRenderer::releaseTexture(TextureBuffer& texture)
 {
     if (texture.id != 0) {
         glDeleteTextures(1, &texture.id);
