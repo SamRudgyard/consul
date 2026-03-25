@@ -25,6 +25,7 @@ public:
 	 * Gets the meshes loaded from this model.
 	 * @returns Vector of meshes. 
 	 */
+	std::vector<Mesh>& getMeshes() { return meshes; }
 	const std::vector<Mesh>& getMeshes() const { return meshes; }
 
 	/**
@@ -69,6 +70,8 @@ public:
 	 * @returns Current runtime transform matrix.
 	 */
 	const glm::mat4& getTransform() const { return modelTransform; }
+
+	const std::string& getFilePath() const { return file; }
 
 private:
 	// Variables for easy access

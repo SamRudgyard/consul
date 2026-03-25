@@ -16,17 +16,17 @@
 #include "renderer.hpp"
 #include "utils.hpp"
 
-struct OpenGLShader
+struct ShaderBuffer
 {
     GLuint id = 0;
 };
 
-struct OpenGLTexture
+struct TextureBuffer
 {
     GLuint id = 0;
 };
 
-struct OpenGLMesh
+struct MeshBuffer
 {
     GLuint vao = 0;
     GLuint positionVBO = 0;
@@ -34,6 +34,8 @@ struct OpenGLMesh
     GLuint texCoordVBO = 0;
     GLuint tangentVBO = 0;
     GLuint ebo = 0;
+
+    const Mesh* mesh = nullptr;
 };
 
 class OpenGLRenderer : public Renderer
@@ -85,13 +87,13 @@ public:
      * Uploads the given Shader to the GPU.
      * @param shader The shader to upload to the GPU.
      */
-    void uploadShader(const Shader& shader) override;
+    void uploadShader(Shader& shader) override;
 
     /**
      * Uploads the given Mesh to the GPU.
      * @param mesh The mesh to upload to the GPU.
      */
-    void uploadMesh(const Mesh& mesh) override;
+    void uploadMesh(Mesh& mesh) override;
 
     /**
      * Uploads the given Model to the GPU.
@@ -103,7 +105,7 @@ public:
      * Uploads the given Texture to the GPU.
      * @param texture The texture to upload to the GPU.
      */
-    void uploadTexture(const Texture& texture) override;
+    void uploadTexture(Texture& texture) override;
 
     /**
      * Render all uploaded models/meshes with the provided shader and camera.
@@ -113,11 +115,10 @@ public:
     void render(const Shader& shader, const Camera& camera) override;
 
 private:
-    std::unordered_map<unsigned int, OpenGLShader> shaders;
-    std::unordered_map<unsigned int, OpenGLMesh> openglMeshes;
-    std::unordered_map<unsigned int, Mesh> meshes;
+    std::unordered_map<unsigned int, ShaderBuffer> shaders;
+    std::unordered_map<unsigned int, MeshBuffer> meshes;
+    std::unordered_map<unsigned int, TextureBuffer> textures;
     std::vector<unsigned int> meshDrawOrder;
-    std::unordered_map<std::string, OpenGLTexture> textures;
 
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw);
@@ -128,7 +129,7 @@ private:
     static void setUniformVec4(GLuint programID, const char* uniformName, const glm::vec4& value);
     static void setUniformMat3(GLuint programID, const char* uniformName, const glm::mat3& value);
     static void setUniformMat4(GLuint programID, const char* uniformName, const glm::mat4& value);
-    void releaseMesh(OpenGLMesh& mesh);
-    void releaseShader(OpenGLShader& shader);
-    void releaseTexture(OpenGLTexture& texture);
+    void releaseMesh(MeshBuffer& mesh);
+    void releaseShader(ShaderBuffer& shader);
+    void releaseTexture(TextureBuffer& texture);
 };

@@ -6,6 +6,7 @@
 #include "graphics/texture.hpp"
 #include "glad/glad.h"
 
+#include <bitset>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -25,6 +26,8 @@ enum class DrawMode
     TRIANGLES,
     LINES
 };
+
+using MeshUploadMask = std::bitset<(int)AttributeType::INDICES + 1>;
 
 class Mesh {
 public:
@@ -58,6 +61,9 @@ public:
         indexCount(indices.size()) {
             static unsigned int nextID = 0;
             id = nextID++;
+
+            // New meshes need an initial GPU upload of geometric attributes.
+            uploadMask.set();
         }
 
     /**
@@ -130,6 +136,7 @@ public:
      * Gets the textures associated with this Mesh.
      * @return Textures on this Mesh.
      */
+    std::vector<Texture>& getTextures() { return textures; }
     const std::vector<Texture>& getTextures() const { return textures; }
 
     /**
@@ -148,7 +155,12 @@ public:
      * Set the draw mode of this Mesh.
      * @param mode The draw mode.
      */
-    void setDrawMode(DrawMode mode) { drawMode = mode; }
+    void setDrawMode(DrawMode mode) {
+        if (drawMode != mode) {
+            drawMode = mode;
+            markDirty(AttributeType::INDICES);
+        }
+    }
 
     /**
      * Gets the draw mode of this Mesh.
@@ -237,6 +249,22 @@ public:
      */
     unsigned int getID() const { return id; }
 
+    bool isAnyDirty() const {
+        return uploadMask.any();
+    }
+
+    bool isDirty(AttributeType attribute) const {
+        return uploadMask.test((int)attribute);
+    }
+
+    void markDirty(AttributeType attribute) {
+        uploadMask.set((int)attribute);
+    }
+
+    void clean(AttributeType attribute) {
+        uploadMask.reset((int)attribute);
+    }
+
 private:
     unsigned int id;
     glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -250,4 +278,5 @@ private:
     DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
     std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(5, 0);
+    MeshUploadMask uploadMask;
 };
