@@ -260,7 +260,10 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
 void OpenGLRenderer::uploadModel(Model& model)
 {
     std::vector<Mesh>& modelMeshes = model.getMeshes();
-    for (Mesh& mesh : modelMeshes) {
+    std::vector<glm::mat4> transforms = model.getTransformationMatrices();
+    for (unsigned int iMesh = 0; iMesh < modelMeshes.size(); iMesh++) {
+        Mesh& mesh = modelMeshes[iMesh];
+        mesh.setModelMatrix(transforms[iMesh]);
         uploadMesh(mesh);
     }
 
