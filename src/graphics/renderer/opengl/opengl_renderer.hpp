@@ -8,12 +8,12 @@
 #include "graphics/camera/camera.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
+#include "graphics/renderer/renderer.hpp"
 #include "graphics/shader/shader.hpp"
 #include "graphics/texture.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glad/glad.h"
 #include "imgui_impl_opengl3.h"
-#include "renderer.hpp"
 #include "utils.hpp"
 
 struct ShaderBuffer

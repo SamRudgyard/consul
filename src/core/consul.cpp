@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "platforms/platform_glfw.hpp"
-#include "graphics/opengl_renderer.hpp"
+#include "graphics/renderer/opengl/opengl_renderer.hpp"
 #include "imgui.h"
 #include "implot.h"
 #include "imgui_impl_opengl3.h"

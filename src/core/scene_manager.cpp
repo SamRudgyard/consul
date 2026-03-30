@@ -1,7 +1,7 @@
 #include "core/scene_manager.hpp"
 
 #include "console/console.hpp"
-#include "graphics/renderer.hpp"
+#include "graphics/renderer/renderer.hpp"
 
 void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)
 {

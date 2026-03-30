@@ -5,7 +5,7 @@
 #include "core/scene.hpp"
 #include "core/scene_manager.hpp"
 #include "platforms/platform.hpp"
-#include "graphics/renderer.hpp"
+#include "graphics/renderer/renderer.hpp"
 #include "time.hpp"
 
 enum class PlatformType;
