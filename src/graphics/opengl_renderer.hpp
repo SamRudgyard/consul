@@ -8,7 +8,7 @@
 #include "graphics/camera/camera.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
-#include "graphics/shader.hpp"
+#include "graphics/shader/shader.hpp"
 #include "graphics/texture.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glad/glad.h"

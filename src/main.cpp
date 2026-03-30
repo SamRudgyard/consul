@@ -4,7 +4,7 @@
 #include "core/window.hpp"
 #include "core/scene.hpp"
 #include "graphics/camera/camera_3d.hpp"
-#include "graphics/shader.hpp"
+#include "graphics/shader/shader.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/geometry/geometry_3d.hpp"
 

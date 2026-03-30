@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 
 #include "graphics/camera/camera.hpp"
-#include "graphics/shader.hpp"
+#include "graphics/shader/shader.hpp"
 
 class Camera2D : public Camera {
 public:

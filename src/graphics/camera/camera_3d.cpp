@@ -4,7 +4,7 @@
 
 #include "maths/unit_conversions.hpp"
 #include "core/engine_context.hpp"
-#include "graphics/shader.hpp"
+#include "graphics/shader/shader.hpp"
 #include "core/console/console.hpp"
 
 Camera3D::Camera3D(glm::vec3 position)
