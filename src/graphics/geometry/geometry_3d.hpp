@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/mesh.hpp"
+#include "graphics/mesh/mesh.hpp"
 #include "graphics/colour.hpp"
 
 #include "glm/vec4.hpp"
