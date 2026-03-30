@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "graphics/mesh.hpp"
+#include "graphics/mesh/mesh.hpp"
 #include "graphics/texture.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"

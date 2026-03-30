@@ -6,7 +6,7 @@
 
 #include "core/console/console.hpp"
 #include "graphics/camera/camera.hpp"
-#include "graphics/mesh.hpp"
+#include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/shader.hpp"
 #include "graphics/texture.hpp"
