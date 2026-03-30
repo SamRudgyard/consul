@@ -105,6 +105,8 @@ void OpenGLRenderer::uploadShader(Shader& shader)
         return;
     }
 
+    Console& console = Console::get();
+
     unsigned int vertexID, fragmentID;
     vertexID = glCreateShader(GL_VERTEX_SHADER);
     fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -116,11 +118,31 @@ void OpenGLRenderer::uploadShader(Shader& shader)
     glCompileShader(vertexID);
     glCheckError();
 
+    // Check for compilation errors
+    int success;
+    char infoLog[512];
+    glGetShaderiv(vertexID, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(vertexID, 512, NULL, infoLog);
+        console.error("[OpenGLRenderer::uploadShader] Vertex shader compilation failed: " + std::string(infoLog));
+    }
+
+    console.logOnDebug("[OpenGLRenderer::uploadShader] Vertex shader successfully compiled.");
+
     // Compile fragment shader
     const char* fragmentCString = shader.getFragmentSource().c_str();
     glShaderSource(fragmentID, 1, &fragmentCString, NULL);
     glCompileShader(fragmentID);
     glCheckError();
+
+    // Check for compilation errors
+    glGetShaderiv(fragmentID, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(fragmentID, 512, NULL, infoLog);
+        console.error("[OpenGLRenderer::uploadShader] Fragment shader compilation failed: " + std::string(infoLog));
+    }
+
+    console.logOnDebug("[OpenGLRenderer::uploadShader] Fragment shader successfully compiled.");
 
     // Link shaders into a program
     GLuint programID = glCreateProgram();
@@ -128,6 +150,15 @@ void OpenGLRenderer::uploadShader(Shader& shader)
     glAttachShader(programID, fragmentID);
     glLinkProgram(programID);
     glCheckError();
+
+    // Check for linking errors
+    glGetProgramiv(programID, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(programID, 512, NULL, infoLog);
+        console.error("[OpenGLRenderer::uploadShader] Shader program linking failed: " + std::string(infoLog));
+    }
+
+    console.logOnDebug("[OpenGLRenderer::uploadShader] Shader program successfully linked.");
 
     // Clean up shaders
     glDeleteShader(vertexID);
