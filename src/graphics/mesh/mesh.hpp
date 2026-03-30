@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
-#include "graphics/texture.hpp"
+#include "graphics/texture/texture.hpp"
 #include "glad/glad.h"
 
 #include <bitset>

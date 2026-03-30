@@ -10,7 +10,7 @@
 #include "graphics/models/model.hpp"
 #include "graphics/renderer/renderer.hpp"
 #include "graphics/shader/shader.hpp"
-#include "graphics/texture.hpp"
+#include "graphics/texture/texture.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glad/glad.h"
 #include "imgui_impl_opengl3.h"
