@@ -2,7 +2,7 @@
 
 #include "nlohmann/json.hpp"
 #include "graphics/mesh/mesh.hpp"
-#include "graphics/texture.hpp"
+#include "graphics/texture/texture.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
