@@ -2,7 +2,7 @@
 #include "core/scene.hpp"
 #include "graphics/camera/camera_2d.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
-#include "graphics/shader.hpp"
+#include "graphics/shader/shader.hpp"
 
 class CubeNode : public Node {
 public:

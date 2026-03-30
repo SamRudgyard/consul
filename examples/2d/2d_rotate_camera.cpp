@@ -3,7 +3,7 @@
 #include "graphics/camera/camera_2d.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
-#include "graphics/shader.hpp"
+#include "graphics/shader/shader.hpp"
 
 class RotatingCamera2D : public Camera2D {
 public:
