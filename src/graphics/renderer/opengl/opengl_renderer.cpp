@@ -364,12 +364,12 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
             if (texture.getType() == TextureType::DIFFUSE) {
                 const std::string uniformName = "diffuse" + std::to_string(iDiffuse);
                 glCheckError();
-                bindTexture(programID, 0, uniformName.c_str(), texture);
+                bindTexture(programID, iDiffuse, uniformName.c_str(), texture);
                 iDiffuse++;
             }
             else if (texture.getType() == TextureType::SPECULAR) {
                 const std::string uniformName = "specular" + std::to_string(iSpecular);
-                bindTexture(programID, 1, uniformName.c_str(), texture);
+                bindTexture(programID, iSpecular, uniformName.c_str(), texture);
                 glCheckError();
                 iSpecular++;
             }
