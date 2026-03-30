@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/engine_context.hpp"
-#include "graphics/renderer.hpp"
+#include "graphics/renderer/renderer.hpp"
 
 enum class PlatformType
 {

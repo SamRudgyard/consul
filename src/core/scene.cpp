@@ -1,5 +1,5 @@
 #include "scene.hpp"
-#include "graphics/renderer.hpp"
+#include "graphics/renderer/renderer.hpp"
 
 void Scene::init(Renderer& renderer)
 {
