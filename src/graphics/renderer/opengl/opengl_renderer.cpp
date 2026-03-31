@@ -196,15 +196,33 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
             Console::get().error("[OpenGLRenderer::uploadMesh] Provided Mesh has no position data");
             return;
         }
+
+        const bool alreadyHasPositionVBO = meshBuffer.positionVBO != 0;
+
+        if (alreadyHasPositionVBO) {
+            // If a position VBO already exists, we need to delete it,
+            // otherwise we will have a memory leak.
+            glDeleteBuffers(1, &meshBuffer.positionVBO);
+            meshBuffer.positionVBO = 0;
+        }
+
         meshBuffer.positionVBO = enableVertexBuffer(mesh.getPositions(), AttributeType::POSITION, false);
         mesh.clean(AttributeType::POSITION);
         glCheckError();
     }
     
     if (uploadNormals) {
+        const bool alreadyHasNormalVBO = meshBuffer.normalVBO != 0;
+
+        if (alreadyHasNormalVBO) {
+            glDeleteBuffers(1, &meshBuffer.normalVBO);
+            meshBuffer.normalVBO = 0;
+        }
+
         if (mesh.hasAttribute(AttributeType::NORMAL)) {
             meshBuffer.normalVBO = enableVertexBuffer(mesh.getNormals(), AttributeType::NORMAL, false);
         } else {
+            glDisableVertexAttribArray((unsigned int)(AttributeType::NORMAL));
             glVertexAttrib3fv((unsigned int)(AttributeType::NORMAL), glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f)));
         }
         mesh.clean(AttributeType::NORMAL);
@@ -212,9 +230,17 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
     }
 
     if (uploadTexCoords) {
+        const bool alreadyHasTexCoordVBO = meshBuffer.texCoordVBO != 0;
+
+        if (alreadyHasTexCoordVBO) {
+            glDeleteBuffers(1, &meshBuffer.texCoordVBO);
+            meshBuffer.texCoordVBO = 0;
+        }
+        
         if (mesh.hasAttribute(AttributeType::TEXCOORD)) {
             meshBuffer.texCoordVBO = enableVertexBuffer(mesh.getTextureCoords(), AttributeType::TEXCOORD, false);
         } else {
+            glDisableVertexAttribArray((unsigned int)(AttributeType::TEXCOORD));
             glVertexAttrib2fv((unsigned int)(AttributeType::TEXCOORD), glm::value_ptr(glm::vec2(0.0f, 0.0f)));
         }
         mesh.clean(AttributeType::TEXCOORD);
@@ -222,9 +248,17 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
     }
 
     if (uploadTangents) {
+        const bool alreadyHasTangentVBO = meshBuffer.tangentVBO != 0;
+
+        if (alreadyHasTangentVBO) {
+            glDeleteBuffers(1, &meshBuffer.tangentVBO);
+            meshBuffer.tangentVBO = 0;
+        }
+
         if (mesh.hasAttribute(AttributeType::TANGENT)) {
             meshBuffer.tangentVBO = enableVertexBuffer(mesh.getTangents(), AttributeType::TANGENT, false);
         } else {
+            glDisableVertexAttribArray((unsigned int)(AttributeType::TANGENT));
             glVertexAttrib4fv((unsigned int)(AttributeType::TANGENT), glm::value_ptr(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)));
         }
         mesh.clean(AttributeType::TANGENT);
@@ -235,12 +269,17 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
         // Generate element buffer object (EBO) for indices
         std::vector<unsigned int> indices = mesh.getIndices();
 
-        GLuint ebo = 0;
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        const bool alreadyHasEBO = meshBuffer.ebo != 0;
+
+        if (alreadyHasEBO) {
+            glDeleteBuffers(1, &meshBuffer.ebo);
+            meshBuffer.ebo = 0;
+        }
+
+        glGenBuffers(1, &meshBuffer.ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshBuffer.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
         glCheckError();
-        meshBuffer.ebo = ebo;
         mesh.clean(AttributeType::INDICES);
     }
 
