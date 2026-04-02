@@ -6,11 +6,6 @@
 #include "implot.h"
 #include "maths/unit_conversions.hpp"
 
-void PerformanceWindow::bindTime(Time& frameTime)
-{
-    time = &frameTime;
-}
-
 void PerformanceWindow::update()
 {
     if (time == nullptr) {

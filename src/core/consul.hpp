@@ -4,6 +4,7 @@
 #include "core/engine_context.hpp"
 #include "core/scene.hpp"
 #include "core/scene_manager.hpp"
+#include "core/ui/user_interface.hpp"
 #include "platforms/platform.hpp"
 #include "graphics/renderer/renderer.hpp"
 #include "time.hpp"
@@ -68,6 +69,7 @@ public:
 private:
     Console& console = Console::get();
     EngineContext* context = EngineContext::get();
+    UserInterface ui;
     Platform* platform = nullptr;
     Renderer* renderer = nullptr;
     bool consoleWindowOpen = true;

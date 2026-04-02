@@ -11,8 +11,7 @@ class UserInterface
 {
 public:
     UserInterface();
-
-    void initialise(Time& time);
+    
     void update();
 
     PerformanceWindow& getPerformanceWindow() { return performanceWindow; }

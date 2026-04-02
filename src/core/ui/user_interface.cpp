@@ -5,11 +5,6 @@ UserInterface::UserInterface()
 {
 }
 
-void UserInterface::initialise(Time& time)
-{
-    performanceWindow.bindTime(time);
-}
-
 void UserInterface::update()
 {
     for (UIWindow* window : windows) {

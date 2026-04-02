@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/time.hpp"
+#include "core/engine_context.hpp"
 #include "ui_window.hpp"
 
 enum class TimeSpan
@@ -18,13 +18,11 @@ enum class TimeSpan
 class PerformanceWindow : public UIWindow
 {
 public:
-    void bindTime(Time& frameTime);
-
     void update() override;
 
 private:
     bool isOpen = true;
-    Time* time = nullptr;
+    Time* time = &EngineContext::get()->time;
 
     // FPS graph
     static constexpr unsigned int MAX_SECONDS_RECORDED = 60;

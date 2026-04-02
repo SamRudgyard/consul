@@ -38,8 +38,6 @@ void Consul::initialiseEngine()
     renderer->initialiseImGui();
     console.log("[Consul] ImGui initialised.");
 
-    context->ui.initialise(context->time);
-
     context->time.previousTime = platform->getTime();
     context->time.currentTime = context->time.previousTime;
     context->time.deltaTime = context->time.targetFrameTime;
@@ -141,7 +139,7 @@ void Consul::endTick()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     console.draw("Console", &consoleWindowOpen);
-    context->ui.update();
+    ui.update();
 
     ImGui::Render();
 
