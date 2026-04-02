@@ -34,7 +34,7 @@ void PerformanceWindow::update()
     ImVec2 workSize = viewport ? viewport->WorkSize : ImVec2(0.0f, 0.0f);
 
     // Place the overlay in the top-right corner of the main viewport.
-    const ImVec2 padding = ImVec2(10.0f, 10.0f);
+    const ImVec2 padding = ImVec2(1.0f, 1.0f);
     const ImVec2 windowPos = ImVec2(workPos.x + workSize.x - padding.x, workPos.y + padding.y);
     ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2(1.0f, 0.0f));
 
