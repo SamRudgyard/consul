@@ -71,7 +71,6 @@ private:
     Platform* platform = nullptr;
     Renderer* renderer = nullptr;
     bool consoleWindowOpen = true;
-    bool fpsMonitorWindowOpen = true;
     bool close = false;
     SceneManager sceneManager;
 

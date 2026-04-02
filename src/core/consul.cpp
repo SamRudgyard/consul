@@ -38,8 +38,7 @@ void Consul::initialiseEngine()
     renderer->initialiseImGui();
     console.log("[Consul] ImGui initialised.");
 
-    context->ui.registerWindow("Console", [this](const std::string& name, bool* open) { console.draw(name, open); }, &consoleWindowOpen);
-    context->ui.registerWindow("FPS Monitor", [this](const std::string& name, bool* open) { context->fpsMonitor.draw(name, open); }, &fpsMonitorWindowOpen);
+    context->ui.initialise(context->time);
 
     context->time.previousTime = platform->getTime();
     context->time.currentTime = context->time.previousTime;
@@ -90,7 +89,6 @@ void Consul::run()
         beginTick();
         Time& time = context->time;
         sceneManager.update(*renderer, time.deltaTime);
-        context->fpsMonitor.update(time.deltaTime);
         endTick();
 
         close = context->window.shouldClose && platform->shouldClose();
@@ -142,7 +140,8 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    context->ui.render();
+    console.draw("Console", &consoleWindowOpen);
+    context->ui.update();
 
     ImGui::Render();
 
@@ -154,8 +153,6 @@ void Consul::endTick()
 void Consul::terminate()
 {
     console.log("[Consul] Shutting down Game Engine...");
-    context->ui.unregisterWindow("Console");
-    context->ui.unregisterWindow("FPS Monitor");
 
     sceneManager.shutdown(*renderer);
 
