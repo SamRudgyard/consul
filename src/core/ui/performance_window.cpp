@@ -44,11 +44,11 @@ void PerformanceWindow::update()
     }
 
     if (ImGui::CollapsingHeader("Time", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Text("Run Time: %.3f s", time->currentTime);
+        ImGui::Text("Run Time:    %.3f s", time->currentTime);
         ImGui::Text("Update Time: %.3f ms", time->updateTime*SECONDS_TO_MILLISECONDS);
         ImGui::Text("Render Time: %.3f ms", time->renderTime*SECONDS_TO_MILLISECONDS);
-        ImGui::Text("Frame Time: %.3f ms", time->deltaTime*SECONDS_TO_MILLISECONDS);
-        ImGui::Text("FPS: %.0f", time->deltaTime > 0.0 ? 1.0 / time->deltaTime : 0.0);
+        ImGui::Text("Frame Time:  %.3f ms", time->deltaTime*SECONDS_TO_MILLISECONDS);
+        ImGui::Text("FPS:         %.0f", time->deltaTime > 0.0 ? 1.0 / time->deltaTime : 0.0);
     }
 
     if (ImGui::CollapsingHeader("FPS Plot", ImGuiTreeNodeFlags_DefaultOpen)) {
