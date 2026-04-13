@@ -15,15 +15,15 @@ void ConsoleWindow::update()
     Window& window = context->window;
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    const ImVec2 viewportSize = viewport ? viewport->WorkSize : ImVec2(window.windowSize.x, window.windowSize.y);
-    const float consoleWidth = 0.2f * viewportSize.x;
-    const float consoleHeight = 0.3f * viewportSize.y;
-    const ImVec2 bottomRight = viewport
-        ? ImVec2(viewport->WorkPos.x + viewportSize.x, viewport->WorkPos.y + viewportSize.y)
-        : ImVec2(window.windowSize.x, window.windowSize.y);
+    const ImVec2 workPos = viewport ? viewport->WorkPos : ImVec2(0.0f, 0.0f);
+    const ImVec2 workSize = viewport ? viewport->WorkSize : ImVec2(window.windowSize.x, window.windowSize.y);
+    const float consoleWidth = 0.2f * workSize.x;
+    const float consoleHeight = 0.3f * workSize.y;
 
     ImGui::SetNextWindowSize({consoleWidth, consoleHeight}, ImGuiCond_Appearing);
-    ImGui::SetNextWindowPos({bottomRight.x - consoleWidth, bottomRight.y - consoleHeight}, ImGuiCond_Appearing);
+    const ImVec2 padding = ImVec2(1.0f, 1.0f);
+    const ImVec2 windowPos = ImVec2(workPos.x + workSize.x - padding.x, workPos.y + workSize.y - padding.y);
+    ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
     if (!ImGui::Begin("Console", &isOpen)) {
         ImGui::End();
         return;
