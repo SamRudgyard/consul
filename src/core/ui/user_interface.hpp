@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "console_window.hpp"
 #include "performance_window.hpp"
 
 /**
@@ -14,9 +15,11 @@ public:
     
     void update();
 
+    ConsoleWindow& getConsoleWindow() { return consoleWindow; }
     PerformanceWindow& getPerformanceWindow() { return performanceWindow; }
 
 private:
+    ConsoleWindow consoleWindow;
     PerformanceWindow performanceWindow;
     std::vector<UIWindow*> windows;
 };

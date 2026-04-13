@@ -1,7 +1,7 @@
 #include "user_interface.hpp"
 
 UserInterface::UserInterface()
-    : windows{&performanceWindow}
+    : windows{&consoleWindow, &performanceWindow}
 {
 }
 

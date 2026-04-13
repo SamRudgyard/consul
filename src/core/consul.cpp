@@ -121,8 +121,6 @@ void Consul::endTick()
 
     time.deltaTime = time.updateTime + time.renderTime;
 
-    Console& console = Console::get();
-
     if (time.deltaTime < time.targetFrameTime) {
         time.previousTime = platform->getTime();
         waitTime(time.targetFrameTime - time.deltaTime);
@@ -138,7 +136,6 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    console.draw("Console", &consoleWindowOpen);
     ui.update();
 
     ImGui::Render();

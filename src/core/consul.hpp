@@ -72,7 +72,6 @@ private:
     UserInterface ui;
     Platform* platform = nullptr;
     Renderer* renderer = nullptr;
-    bool consoleWindowOpen = true;
     bool close = false;
     SceneManager sceneManager;
 
