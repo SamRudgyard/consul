@@ -3,7 +3,9 @@
 #include <string>
 #include <vector>
 
+#ifndef CONSUL_CONSOLE_STDOUT
 #define MAX_CONSOLE_SIZE 1000
+#endif
 
 /**
  * Minimal in-application console with a rolling log.
@@ -64,7 +66,8 @@ protected:
     ~Console();
 
 private:
-    bool redirectOutput;
     std::vector<std::string> items;
+
+    void appendMessage(const std::string& message);
 
 };

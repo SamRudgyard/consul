@@ -1,5 +1,6 @@
 #include "console.hpp"
 
+#include <iostream>
 #include <stdexcept>
 
 Console::~Console()
@@ -7,46 +8,43 @@ Console::~Console()
     clearLog();
 }
 
-void Console::log(const std::string& message)
+void Console::appendMessage(const std::string& message)
 {
-    if (items.size() > MAX_CONSOLE_SIZE) {
+#ifdef CONSUL_CONSOLE_STDOUT
+    std::cout << message << '\n';
+    return;
+#else
+    if (items.size() >= MAX_CONSOLE_SIZE) {
         items.erase(items.begin());
     }
     items.push_back(message);
+#endif
+}
+
+void Console::log(const std::string& message)
+{
+    appendMessage(message);
 }
 
 void Console::logOnDebug(const std::string& message)
 {
 #ifndef NDEBUG
-    if (items.size() > MAX_CONSOLE_SIZE) {
-        items.erase(items.begin());
-    }
-    items.push_back("[DEBUG] " + message);
+    appendMessage("[DEBUG] " + message);
 #endif
 }
 
 void Console::error(const std::string& message)
 {
-    if (items.size() > MAX_CONSOLE_SIZE) {
-        items.erase(items.begin());
-    }
-    items.push_back("[ERROR] " + message);
-
+    appendMessage("[ERROR] " + message);
     throw std::runtime_error(message);
 }
 
 void Console::warn(const std::string& message)
 {
-    if (items.size() > MAX_CONSOLE_SIZE) {
-        items.erase(items.begin());
-    }
-    items.push_back("[WARNING] " + message);
+    appendMessage("[WARNING] " + message);
 }
 
 void Console::info(const std::string& message)
 {
-    if (items.size() > MAX_CONSOLE_SIZE) {
-        items.erase(items.begin());
-    }
-    items.push_back("[INFO] " + message);
+    appendMessage("[INFO] " + message);
 }

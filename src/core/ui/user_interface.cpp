@@ -1,7 +1,12 @@
 #include "user_interface.hpp"
 
 UserInterface::UserInterface()
-    : windows{&consoleWindow, &performanceWindow}
+#ifndef CONSUL_CONSOLE_STDOUT
+    : consoleWindow(std::make_unique<ConsoleWindow>()),
+      windows{consoleWindow.get(), &performanceWindow}
+#else
+    : windows{&performanceWindow}
+#endif
 {
 }
 
