@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "core/engine_context.hpp"
@@ -23,6 +22,7 @@ public:
 private:
     bool isOpen = true;
     Time* time = &EngineContext::get()->time;
+    Profiler* profiler = &EngineContext::get()->profiler;
 
     // FPS graph
     static constexpr unsigned int MAX_SECONDS_RECORDED = 60;
@@ -30,4 +30,8 @@ private:
     std::vector<float> timeHistory;
     float totalRecordedTime = 0.0f;
     TimeSpan selectedFpsRange = TimeSpan::LAST_30_SECS;
+
+    // Profiler graph
+    TimeSpan selectedProfilerRange = TimeSpan::LAST_30_SECS;
+    std::vector<bool> selectedProfilerMethods;
 };

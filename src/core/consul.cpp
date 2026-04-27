@@ -9,6 +9,7 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 #include "utils.hpp"
+#include "core/profiling/profiler_scope.hpp"
 
 void Consul::initialiseEngine()
 {
@@ -96,6 +97,9 @@ void Consul::run()
 void Consul::beginTick()
 {
     Time& time = context->time;
+    context->profiler.beginFrame(static_cast<float>(time.deltaTime));
+    CONSUL_PROFILE_METHOD();
+
     time.currentTime = platform->getTime();
     time.renderTime = time.currentTime - time.previousTime;
     time.previousTime = time.currentTime;
@@ -109,6 +113,7 @@ void Consul::beginTick()
 
 void Consul::endTick()
 {
+    CONSUL_PROFILE_METHOD();
 
     context->window.shouldClose = platform->shouldClose();
     context->inputSystem.endTick();

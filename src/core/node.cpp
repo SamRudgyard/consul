@@ -1,4 +1,5 @@
 #include "core/node.hpp"
+#include "core/profiling/profiler_scope.hpp"
 #include "maths/unit_conversions.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -48,6 +49,8 @@ const glm::mat4& Node::getWorldTransform() const
 
 void Node::update(float dt, const glm::mat4& parentTransform)
 {
+    CONSUL_PROFILE_METHOD();
+
     onUpdate(dt);
 
     worldTransform = parentTransform*localTransform;
@@ -59,6 +62,8 @@ void Node::update(float dt, const glm::mat4& parentTransform)
 
 void Node::render(Renderer& renderer)
 {
+    CONSUL_PROFILE_METHOD();
+
     if (!isVisible) {
         return;
     }

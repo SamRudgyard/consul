@@ -1,10 +1,13 @@
 #include "core/scene_manager.hpp"
 
 #include "console/console.hpp"
+#include "core/profiling/profiler_scope.hpp"
 #include "graphics/renderer/renderer.hpp"
 
 void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)
 {
+    CONSUL_PROFILE_METHOD();
+
     // Close previous scene's resources
     if (currentScene) {
         renderer.clearSceneResources();
@@ -24,6 +27,8 @@ void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)
 
 void SceneManager::update(Renderer& renderer, double deltaTime)
 {
+    CONSUL_PROFILE_METHOD();
+
     if (!currentScene) {
         Console::get().error("[SceneManager::update] No scene was loaded!");
         return;
@@ -39,6 +44,8 @@ void SceneManager::update(Renderer& renderer, double deltaTime)
 
 void SceneManager::shutdown(Renderer& renderer)
 {
+    CONSUL_PROFILE_METHOD();
+
     renderer.clearSceneResources();
 
     if (!currentScene) {
