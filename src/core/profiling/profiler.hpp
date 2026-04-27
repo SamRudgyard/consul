@@ -11,7 +11,7 @@ class Profiler
 {
 public:
     static constexpr float MAX_SECONDS_RECORDED = 60.0f;
-    static constexpr std::size_t INVALID_METHOD_INDEX = static_cast<std::size_t>(-1);
+    static constexpr std::size_t INVALID_METHOD_INDEX = (std::size_t)(-1);
 
     Profiler() = default;
     Profiler(const Profiler&) = delete;

@@ -97,7 +97,7 @@ void Consul::run()
 void Consul::beginTick()
 {
     Time& time = context->time;
-    context->profiler.beginFrame(static_cast<float>(time.deltaTime));
+    context->profiler.beginFrame((float)(time.deltaTime));
     CONSUL_PROFILE_METHOD();
 
     time.currentTime = platform->getTime();

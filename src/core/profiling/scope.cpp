@@ -44,7 +44,7 @@ Scope::~Scope()
         return;
     }
 
-    durationSeconds = static_cast<float>(
+    durationSeconds = (float)(
         std::chrono::duration<double>(std::chrono::steady_clock::now() - startTime).count()
     );
     profiler->addSample(*this);

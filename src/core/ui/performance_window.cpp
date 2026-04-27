@@ -30,11 +30,11 @@ void drawTimeRangeCombo(const char* label, TimeSpan& selectedTimeRange)
     const auto selectedIt = std::find(SELECTABLE_TIME_RANGES.begin(), SELECTABLE_TIME_RANGES.end(), selectedTimeRange);
     int selectedIndex = selectedIt == SELECTABLE_TIME_RANGES.end()
         ? 0
-        : static_cast<int>(std::distance(SELECTABLE_TIME_RANGES.begin(), selectedIt));
+        : (int)(std::distance(SELECTABLE_TIME_RANGES.begin(), selectedIt));
 
     ImGui::SetNextItemWidth(100.0f);
-    if (ImGui::Combo(label, &selectedIndex, SELECTABLE_TIME_RANGE_LABELS.data(), static_cast<int>(SELECTABLE_TIME_RANGE_LABELS.size()))) {
-        selectedTimeRange = SELECTABLE_TIME_RANGES.at(static_cast<std::size_t>(selectedIndex));
+    if (ImGui::Combo(label, &selectedIndex, SELECTABLE_TIME_RANGE_LABELS.data(), (int)(SELECTABLE_TIME_RANGE_LABELS.size()))) {
+        selectedTimeRange = SELECTABLE_TIME_RANGES.at((std::size_t)(selectedIndex));
     }
 }
 
@@ -63,7 +63,7 @@ void PerformanceWindow::update()
         return;
     }
 
-    const float deltaTime = static_cast<float>(time->deltaTime);
+    const float deltaTime = (float)(time->deltaTime);
     const float currentFps = deltaTime > 0.0f ? 1.0f / deltaTime : 0.0f;
 
     fpsHistory.push_back(currentFps);
@@ -123,9 +123,9 @@ void PerformanceWindow::update()
 
                     if (ImPlot::BeginPlot("##fps_plot", ImVec2(-1, 120.0f), ImPlotFlags_NoLegend)) {
                         ImPlot::SetupAxes("Seconds Ago", "FPS", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoGridLines);
-                        ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, static_cast<double>(selectedFpsRange), ImPlotCond_Always);
+                        ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, (double)(selectedFpsRange), ImPlotCond_Always);
                         ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0, yMax, ImPlotCond_Always);
-                        ImPlot::PlotLine("FPS", secsAgo.data(), fpsHistory.data(), static_cast<int>(fpsHistory.size()));
+                        ImPlot::PlotLine("FPS", secsAgo.data(), fpsHistory.data(), (int)(fpsHistory.size()));
                         ImPlot::EndPlot();
                     }
                 }
@@ -171,7 +171,7 @@ void PerformanceWindow::update()
             int selectedMethodsCount = countSelectedMethods();
 
             std::string methodsPreview = "Methods";
-            if (selectedMethodsCount == static_cast<int>(methods.size())) {
+            if (selectedMethodsCount == (int)(methods.size())) {
                 methodsPreview = "All Methods";
             } else if (selectedMethodsCount == 0) {
                 methodsPreview = "No Methods";
@@ -192,7 +192,7 @@ void PerformanceWindow::update()
                 for (std::size_t i = 0; i < methods.size(); i++) {
                     const std::string methodLabel = getProfilerLegendMethodLabel(methods[i]);
                     bool isEnabled = selectedProfilerMethods[i];
-                    ImGui::PushID(static_cast<int>(i));
+                    ImGui::PushID((int)(i));
                     if (ImGui::Checkbox(methodLabel.c_str(), &isEnabled)) {
                         selectedProfilerMethods[i] = isEnabled;
                     }
@@ -258,7 +258,7 @@ void PerformanceWindow::update()
                 elapsedSeconds -= frameDurations[i];
             }
 
-            const float selectedRangeSeconds = static_cast<float>(selectedProfilerRange);
+            const float selectedRangeSeconds = (float)(selectedProfilerRange);
 
             float visibleMinMs = std::numeric_limits<float>::max();
             float visibleMaxMs = 0.0f;
@@ -294,7 +294,7 @@ void PerformanceWindow::update()
                 }
 
                 const float methodAverageRuntimeMs = methodVisibleCount > 0
-                    ? methodVisibleTotalMs/static_cast<float>(methodVisibleCount)
+                    ? methodVisibleTotalMs/(float)(methodVisibleCount)
                     : 0.0f;
                 methodRuntimeOrder.emplace_back(methodIndex, methodAverageRuntimeMs);
             }
@@ -337,8 +337,8 @@ void PerformanceWindow::update()
 
                     const std::size_t methodStartIndex = methodHistoryMs->size() - sampleCount;
                     const float* methodData = methodHistoryMs->data() + methodStartIndex;
-                    ImPlot::SetNextLineStyle(ImPlot::GetColormapColor(static_cast<int>(plotOrderIndex)));
-                    ImPlot::PlotLine(methods[methodIndex].c_str(), secsAgo.data(), methodData, static_cast<int>(sampleCount));
+                    ImPlot::SetNextLineStyle(ImPlot::GetColormapColor((int)(plotOrderIndex)));
+                    ImPlot::PlotLine(methods[methodIndex].c_str(), secsAgo.data(), methodData, (int)(sampleCount));
                 }
                 ImPlot::EndPlot();
             }
@@ -355,7 +355,7 @@ void PerformanceWindow::update()
                     const std::string colorButtonId = "##profiler_legend_color_" + std::to_string(legendOrderIndex);
                     ImGui::ColorButton(
                         colorButtonId.c_str(),
-                        ImPlot::GetColormapColor(static_cast<int>(legendOrderIndex)),
+                        ImPlot::GetColormapColor((int)(legendOrderIndex)),
                         ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_NoBorder,
                         ImVec2(10.0f, 10.0f)
                     );

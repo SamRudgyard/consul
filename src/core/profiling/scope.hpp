@@ -8,7 +8,7 @@ class Profiler;
 class Scope
 {
 public:
-    static constexpr std::size_t INVALID_METHOD_INDEX = static_cast<std::size_t>(-1);
+    static constexpr std::size_t INVALID_METHOD_INDEX = (std::size_t)(-1);
 
     Scope() = default;
     Scope(Profiler* profiler, std::size_t methodIndex);

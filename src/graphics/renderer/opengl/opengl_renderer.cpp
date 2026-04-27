@@ -432,7 +432,7 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
         glBindVertexArray(meshBuffer.vao);
         glDrawElements(
             mesh.getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
-            static_cast<GLsizei>(mesh.getNumIndices()),
+            (GLsizei)(mesh.getNumIndices()),
             GL_UNSIGNED_INT,
             nullptr
         );

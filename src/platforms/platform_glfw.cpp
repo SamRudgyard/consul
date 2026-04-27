@@ -198,7 +198,7 @@ void PlatformGLFW::onFramebufferResized(GLFWwindow* window, int width, int heigh
         return; // When window is minimised GLFW may send a resize event with 0 width and/or height
     }
 
-    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    EngineContext* context = (EngineContext*)(glfwGetWindowUserPointer(window));
     context->window.framebufferSize = glm::vec2((float)width, (float)height);
 
     Console::get().logOnDebug("[GLFW] Framebuffer resized to " + std::to_string(width) + "x" + std::to_string(height));
@@ -210,7 +210,7 @@ void PlatformGLFW::onWindowResized(GLFWwindow* window, int width, int height)
         return; // When window is minimised GLFW may send a resize event with 0 width and/or height
     }
 
-    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    EngineContext* context = (EngineContext*)(glfwGetWindowUserPointer(window));
     context->window.windowSize = glm::vec2((float)width, (float)height);
 
     Console::get().logOnDebug("[GLFW] Window resized to " + std::to_string(width) + "x" + std::to_string(height));
@@ -218,7 +218,7 @@ void PlatformGLFW::onWindowResized(GLFWwindow* window, int width, int height)
 
 void PlatformGLFW::onWindowPosChanged(GLFWwindow* window, int xpos, int ypos)
 {
-    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    EngineContext* context = (EngineContext*)(glfwGetWindowUserPointer(window));
     context->window.position = glm::vec2((float)xpos, (float)ypos);
 
     Console::get().logOnDebug("[GLFW] Window position changed to ("
@@ -229,7 +229,7 @@ void PlatformGLFW::onWindowPosChanged(GLFWwindow* window, int xpos, int ypos)
 
 void PlatformGLFW::onWindowMaximised(GLFWwindow* window, int maximised)
 {
-    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    EngineContext* context = (EngineContext*)(glfwGetWindowUserPointer(window));
     context->window.isMaximised = maximised;
 
     if (context->window.isMaximised) {
@@ -241,7 +241,7 @@ void PlatformGLFW::onWindowMaximised(GLFWwindow* window, int maximised)
 
 void PlatformGLFW::onWindowMinimised(GLFWwindow* window, int iconified)
 {
-    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    EngineContext* context = (EngineContext*)(glfwGetWindowUserPointer(window));
     context->window.isMinimised = iconified;
 
     if (context->window.isMinimised) {
@@ -253,7 +253,7 @@ void PlatformGLFW::onWindowMinimised(GLFWwindow* window, int iconified)
 
 void PlatformGLFW::onWindowFocused(GLFWwindow* window, int focused)
 {
-    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    EngineContext* context = (EngineContext*)(glfwGetWindowUserPointer(window));
     context->window.isFocused = focused;
 
     if (context->window.isFocused) {
@@ -265,7 +265,7 @@ void PlatformGLFW::onWindowFocused(GLFWwindow* window, int focused)
 
 void PlatformGLFW::onContentScaleChanged(GLFWwindow* window, float xscale, float yscale)
 {
-    EngineContext* context = static_cast<EngineContext*>(glfwGetWindowUserPointer(window));
+    EngineContext* context = (EngineContext*)(glfwGetWindowUserPointer(window));
     context->window.contentScale = glm::vec2(xscale, yscale);
 
     Console::get().logOnDebug("[GLFW] Window content scale changed to ("
