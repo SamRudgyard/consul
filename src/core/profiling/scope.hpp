@@ -13,7 +13,6 @@ public:
     Scope(const Scope&) = delete;
     Scope& operator=(const Scope&) = delete;
     Scope(Scope&& other) noexcept;
-    Scope& operator=(Scope&& other) noexcept;
     ~Scope();
 
 private:

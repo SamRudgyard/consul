@@ -15,20 +15,6 @@ Scope::Scope(Scope&& other) noexcept
     other.methodIndex = INVALID_METHOD_INDEX;
 }
 
-Scope& Scope::operator=(Scope&& other) noexcept
-{
-    if (this == &other) {
-        return *this;
-    }
-
-    methodIndex = other.methodIndex;
-    startTime = other.startTime;
-
-    other.methodIndex = INVALID_METHOD_INDEX;
-
-    return *this;
-}
-
 Scope::~Scope()
 {
     if (methodIndex == INVALID_METHOD_INDEX) {
