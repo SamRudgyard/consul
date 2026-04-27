@@ -1,23 +1,18 @@
 #include "scope.hpp"
 
-#include "profiler.hpp"
+#include "event_queue.hpp"
 
-Scope::Scope(Profiler* profiler, std::size_t methodIndex)
-    : profiler(profiler),
-      methodIndex(methodIndex),
+Scope::Scope(std::size_t methodIndex)
+    : methodIndex(methodIndex),
       startTime(std::chrono::steady_clock::now())
 {
 }
 
 Scope::Scope(Scope&& other) noexcept
-    : profiler(other.profiler),
-      methodIndex(other.methodIndex),
-      startTime(other.startTime),
-      durationSeconds(other.durationSeconds)
+    : methodIndex(other.methodIndex),
+      startTime(other.startTime)
 {
-    other.profiler = nullptr;
     other.methodIndex = INVALID_METHOD_INDEX;
-    other.durationSeconds = 0.0f;
 }
 
 Scope& Scope::operator=(Scope&& other) noexcept
@@ -26,26 +21,26 @@ Scope& Scope::operator=(Scope&& other) noexcept
         return *this;
     }
 
-    profiler = other.profiler;
     methodIndex = other.methodIndex;
     startTime = other.startTime;
-    durationSeconds = other.durationSeconds;
 
-    other.profiler = nullptr;
     other.methodIndex = INVALID_METHOD_INDEX;
-    other.durationSeconds = 0.0f;
 
     return *this;
 }
 
 Scope::~Scope()
 {
-    if (profiler == nullptr || methodIndex == INVALID_METHOD_INDEX) {
+    if (methodIndex == INVALID_METHOD_INDEX) {
         return;
     }
 
-    durationSeconds = (float)(
+    const float durationSeconds = (float)(
         std::chrono::duration<double>(std::chrono::steady_clock::now() - startTime).count()
     );
-    profiler->addSample(*this);
+
+    ProfileEventQueue::pushEvent(ProfileEvent{
+        methodIndex,
+        durationSeconds
+    });
 }

@@ -20,9 +20,7 @@ public:
     void beginFrame(float frameDeltaSeconds);
 
     std::size_t registerMethod(const char* methodName);
-    void addSample(const Scope& scope);
 
-    Scope profileScope(std::size_t methodIndex);
     Scope profileScope(const char* methodName);
 
     const std::vector<std::string>& getRegisteredMethods() const { return registeredMethods; }

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "event_queue.hpp"
 #include "scope.hpp"
 #include "maths/unit_conversions.hpp"
 
@@ -10,6 +11,16 @@ void Profiler::beginFrame(float frameDeltaSeconds)
     if (!hasActiveFrame) {
         hasActiveFrame = true;
         return;
+    }
+
+    std::vector<ProfileEvent> pendingEvents;
+    ProfileEventQueue::drainEvents(pendingEvents);
+    for (const ProfileEvent& event : pendingEvents) {
+        if (event.durationSeconds < 0.0f || event.methodIndex >= currentFrameTotalsMs.size()) {
+            continue;
+        }
+
+        currentFrameTotalsMs[event.methodIndex] += event.durationSeconds*SECONDS_TO_MILLISECONDS;
     }
 
     frameDeltaSeconds = std::max(0.0f, frameDeltaSeconds);
@@ -37,26 +48,9 @@ std::size_t Profiler::registerMethod(const char* methodName)
     return ensureMethodIndex(methodName);
 }
 
-void Profiler::addSample(const Scope& scope)
-{
-    const std::size_t methodIdx = scope.getMethod();
-    const float durationSeconds = scope.getDurationSeconds();
-
-    if (durationSeconds < 0.0f || methodIdx >= currentFrameTotalsMs.size()) {
-        return;
-    }
-
-    currentFrameTotalsMs[methodIdx] += durationSeconds*SECONDS_TO_MILLISECONDS;
-}
-
-Scope Profiler::profileScope(std::size_t methodIndex)
-{
-    return Scope(this, methodIndex);
-}
-
 Scope Profiler::profileScope(const char* methodName)
 {
-    return Scope(this, ensureMethodIndex(methodName));
+    return Scope(ensureMethodIndex(methodName));
 }
 
 const std::vector<float>* Profiler::getMethodHistoryMs(const std::string& methodName) const
