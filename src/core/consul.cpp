@@ -79,6 +79,7 @@ Consul::~Consul()
 
 void Consul::loadScene(std::unique_ptr<Scene> newScene)
 {
+    CONSUL_PROFILE_METHOD();
     sceneManager.loadScene(std::move(newScene), *renderer);
 }
 

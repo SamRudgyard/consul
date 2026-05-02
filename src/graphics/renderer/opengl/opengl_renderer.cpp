@@ -5,6 +5,8 @@
 #endif
 #include <stb_image.h>
 
+#include "core/profiling/profiler_scope.hpp"
+
 OpenGLRenderer::~OpenGLRenderer()
 {
     for (auto& [shaderID, ShaderBuffer] : shaders) {
@@ -54,17 +56,23 @@ void OpenGLRenderer::initialiseImGui()
 
 void OpenGLRenderer::clearBackground(const glm::vec4& colour)
 {
+    CONSUL_PROFILE_METHOD();
+
     glClearColor(colour.r, colour.g, colour.b, colour.a);
     clearScreenBuffer();
 }
 
 void OpenGLRenderer::clearScreenBuffer()
 {
+    CONSUL_PROFILE_METHOD();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void OpenGLRenderer::clearSceneResources()
 {
+    CONSUL_PROFILE_METHOD();
+
     for (auto& [meshID, meshBuffer] : meshes) {
         releaseMesh(meshBuffer);
     }
@@ -84,6 +92,8 @@ void OpenGLRenderer::clearSceneResources()
 
 void OpenGLRenderer::setViewport(int x, int y, int width, int height)
 {
+    CONSUL_PROFILE_METHOD();
+
     if (width < 0) {
         Console::get().error("[OpenGLRenderer::setViewport] Viewport width cannot be -ve: " + std::to_string(width));
         return;
@@ -98,6 +108,8 @@ void OpenGLRenderer::setViewport(int x, int y, int width, int height)
 
 void OpenGLRenderer::uploadShader(Shader& shader)
 {
+    CONSUL_PROFILE_METHOD();
+
     const unsigned int shaderID = shader.getID();
     if (shaders.find(shaderID) != shaders.end()) {
         // Currently no functionality to adjust Shader vertex/fragment code
@@ -173,6 +185,8 @@ void OpenGLRenderer::uploadShader(Shader& shader)
 
 void OpenGLRenderer::uploadMesh(Mesh& mesh)
 {
+    CONSUL_PROFILE_METHOD();
+
     if (!mesh.isAnyDirty()) return;
 
     auto [it, inserted] = meshes.try_emplace(mesh.getID());
@@ -298,6 +312,8 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
 
 void OpenGLRenderer::uploadModel(Model& model)
 {
+    CONSUL_PROFILE_METHOD();
+
     std::vector<Mesh>& modelMeshes = model.getMeshes();
     std::vector<glm::mat4> transforms = model.getTransformationMatrices();
     for (unsigned int iMesh = 0; iMesh < modelMeshes.size(); iMesh++) {
@@ -311,6 +327,8 @@ void OpenGLRenderer::uploadModel(Model& model)
 
 void OpenGLRenderer::uploadTexture(Texture& texture)
 {
+    CONSUL_PROFILE_METHOD();
+
     const unsigned int textureID = texture.getID();
     const std::string& texturePath = texture.getPath();
 
@@ -373,6 +391,8 @@ void OpenGLRenderer::uploadTexture(Texture& texture)
 
 void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
 {
+    CONSUL_PROFILE_METHOD();
+
     const auto shaderIt = shaders.find(shader.getID());
     if (shaderIt == shaders.end()) {
         Console::get().error("[OpenGLRenderer::render] Attempting to render with a shader that hasn't been uploaded.");
@@ -448,6 +468,8 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
 
 unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw)
 {
+    CONSUL_PROFILE_METHOD();
+
     unsigned int vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -464,6 +486,8 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec2>& da
 
 unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw)
 {
+    CONSUL_PROFILE_METHOD();
+    
     unsigned int vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -479,6 +503,8 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec3>& da
 
 unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec4>& data, AttributeType attribute, bool useDynamicDraw)
 {
+    CONSUL_PROFILE_METHOD();
+
     unsigned int vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -494,6 +520,8 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec4>& da
 
 void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture)
 {
+    CONSUL_PROFILE_METHOD();
+
     auto it = textures.find(texture.getID());
     if (it == textures.end()) {
         Console::get().error("[OpenGLRenderer::bindTexture] Attempting to bind texture that hasn't been uploaded!");
@@ -507,6 +535,8 @@ void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const cha
 
 void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, int value)
 {
+    CONSUL_PROFILE_METHOD();
+
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
         glUniform1i(location, value);
@@ -515,6 +545,8 @@ void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, in
 
 void OpenGLRenderer::setUniformVec3(GLuint programID, const char* uniformName, const glm::vec3& value)
 {
+    CONSUL_PROFILE_METHOD();
+
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
         glUniform3fv(location, 1, glm::value_ptr(value));
@@ -524,6 +556,8 @@ void OpenGLRenderer::setUniformVec3(GLuint programID, const char* uniformName, c
 
 void OpenGLRenderer::setUniformVec4(GLuint programID, const char* uniformName, const glm::vec4& value)
 {
+    CONSUL_PROFILE_METHOD();
+
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
         glUniform4fv(location, 1, glm::value_ptr(value));
@@ -532,6 +566,8 @@ void OpenGLRenderer::setUniformVec4(GLuint programID, const char* uniformName, c
 
 void OpenGLRenderer::setUniformMat3(GLuint programID, const char* uniformName, const glm::mat3& value)
 {
+    CONSUL_PROFILE_METHOD();
+
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
         glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
@@ -540,6 +576,8 @@ void OpenGLRenderer::setUniformMat3(GLuint programID, const char* uniformName, c
 
 void OpenGLRenderer::setUniformMat4(GLuint programID, const char* uniformName, const glm::mat4& value)
 {
+    CONSUL_PROFILE_METHOD();
+
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
         glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
@@ -550,6 +588,8 @@ void OpenGLRenderer::setUniformMat4(GLuint programID, const char* uniformName, c
 
 void OpenGLRenderer::releaseMesh(MeshBuffer& mesh)
 {
+    CONSUL_PROFILE_METHOD();
+
     if (mesh.positionVBO != 0) {
         glDeleteBuffers(1, &mesh.positionVBO);
         mesh.positionVBO = 0;
@@ -583,6 +623,8 @@ void OpenGLRenderer::releaseMesh(MeshBuffer& mesh)
 
 void OpenGLRenderer::releaseShader(ShaderBuffer& shader)
 {
+    CONSUL_PROFILE_METHOD();
+
     if (shader.id != 0) {
         glDeleteProgram(shader.id);
         shader.id = 0;
@@ -591,6 +633,8 @@ void OpenGLRenderer::releaseShader(ShaderBuffer& shader)
 
 void OpenGLRenderer::releaseTexture(TextureBuffer& texture)
 {
+    CONSUL_PROFILE_METHOD();
+    
     if (texture.id != 0) {
         glDeleteTextures(1, &texture.id);
         texture.id = 0;

@@ -77,6 +77,8 @@ void Node::render(Renderer& renderer)
 
 void Node::recalcLocalTransformation()
 {
+    CONSUL_PROFILE_METHOD();
+
     // --------
     // Rotation
     // --------
