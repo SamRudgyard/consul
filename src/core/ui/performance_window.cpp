@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "implot.h"
 #include "maths/unit_conversions.hpp"
+#include "utils.hpp"
 
 namespace
 {
@@ -159,6 +160,13 @@ void PerformanceWindow::update()
                 selectedProfilerMethods.resize(methods.size());
             }
 
+            std::vector<std::string> methodLabels;
+            methodLabels.reserve(methods.size());
+            for (const std::string& methodName : methods) {
+                methodLabels.push_back(getProfilerLegendMethodLabel(methodName));
+            }
+            const std::vector<std::size_t> alphabetizedMethodIndices = getAlphabeticalStringOrder(methodLabels);
+
             const auto countSelectedMethods = [this]() -> int {
                 int selectedCount = 0;
                 for (bool isSelected : selectedProfilerMethods) {
@@ -168,15 +176,15 @@ void PerformanceWindow::update()
                 }
                 return selectedCount;
             };
-            int selectedMethodsCount = countSelectedMethods();
+            int nSelectedMethods = countSelectedMethods();
 
             std::string methodsPreview = "Methods";
-            if (selectedMethodsCount == (int)(methods.size())) {
+            if (nSelectedMethods == (int)(methods.size())) {
                 methodsPreview = "All Methods";
-            } else if (selectedMethodsCount == 0) {
+            } else if (nSelectedMethods == 0) {
                 methodsPreview = "No Methods";
             } else {
-                methodsPreview = std::to_string(selectedMethodsCount) + " / " + std::to_string(methods.size()) + " Methods";
+                methodsPreview = std::to_string(nSelectedMethods) + " / " + std::to_string(methods.size()) + " Methods";
             }
 
             ImGui::SetNextItemWidth(300.0f);
@@ -189,24 +197,25 @@ void PerformanceWindow::update()
                 }
                 ImGui::Separator();
 
-                for (std::size_t i = 0; i < methods.size(); i++) {
-                    const std::string methodLabel = getProfilerLegendMethodLabel(methods[i]);
-                    bool isEnabled = selectedProfilerMethods[i];
-                    ImGui::PushID((int)(i));
+                for (std::size_t sortedIndex = 0; sortedIndex < alphabetizedMethodIndices.size(); sortedIndex++) {
+                    const std::size_t methodIndex = alphabetizedMethodIndices[sortedIndex];
+                    const std::string& methodLabel = methodLabels[methodIndex];
+                    bool isEnabled = selectedProfilerMethods[methodIndex];
+                    ImGui::PushID((int)(methodIndex));
                     if (ImGui::Checkbox(methodLabel.c_str(), &isEnabled)) {
-                        selectedProfilerMethods[i] = isEnabled;
+                        selectedProfilerMethods[methodIndex] = isEnabled;
                     }
                     ImGui::PopID();
                 }
                 ImGui::EndCombo();
             }
-            selectedMethodsCount = countSelectedMethods();
+            nSelectedMethods = countSelectedMethods();
 
             drawTimeRangeCombo("Time Range##profiler_range", selectedProfilerRange);
 
             const std::vector<float>& frameDurations = profiler->getFrameDurations();
 
-            if (selectedMethodsCount == 0) {
+            if (nSelectedMethods == 0) {
                 ImGui::TextUnformatted("No methods selected.");
                 ImGui::EndTabItem();
                 ImGui::EndTabBar();
@@ -314,7 +323,7 @@ void PerformanceWindow::update()
 
             float latestMs = summedSelectedMethodMs[sampleCount - 1];
 
-            ImGui::Text("Selected Methods: %d", selectedMethodsCount);
+            ImGui::Text("Selected Methods: %d", nSelectedMethods);
             ImGui::SameLine();
             ImGui::Text("Latest Sum: %.3f ms", latestMs);
 
