@@ -5,6 +5,7 @@
 
 #include "glad/glad.h"
 #include "core/console/console.hpp"
+#include "core/profiling/profiler_scope.hpp"
 
 #include "maths/unit_conversions.hpp"
 
@@ -20,6 +21,7 @@ bool doesFileExist(const char* filePath)
 
 const std::string readFile(const char* filePath)
 {
+    CONSUL_PROFILE_METHOD();
     if (!filePath) Console::get().error("[readFile] Provided file path is null");
 
     if (!doesFileExist(filePath)) Console::get().error("[readFile] File does not exist: '" + std::string(filePath) + "'");
@@ -62,6 +64,7 @@ bool isSubstring(const std::string& str, const std::string& substr) {
 
 void waitTime(double seconds)
 {
+    CONSUL_PROFILE_METHOD();
     if (seconds < 0) return;    // Security check
 
     // System halt functions
