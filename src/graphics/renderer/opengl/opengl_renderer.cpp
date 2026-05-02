@@ -5,7 +5,7 @@
 #endif
 #include <stb_image.h>
 
-#include "core/profiling/profiler_scope.hpp"
+#include "core/profiling/profile_method.hpp"
 
 OpenGLRenderer::~OpenGLRenderer()
 {

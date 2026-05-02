@@ -1,5 +1,5 @@
 #include "scene.hpp"
-#include "core/profiling/profiler_scope.hpp"
+#include "core/profiling/profile_method.hpp"
 #include "graphics/renderer/renderer.hpp"
 
 void Scene::init(Renderer& renderer)

@@ -6,7 +6,7 @@
 #include <string>
 
 #include "core/console/console.hpp"
-#include "core/profiling/profiler_scope.hpp"
+#include "core/profiling/profile_method.hpp"
 #include "core/engine_context.hpp"
 #include "GLFW/glfw3.h"
 #include "imgui_impl_glfw.h"

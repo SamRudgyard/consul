@@ -1,6 +1,6 @@
 #include "input_system.hpp"
 
-#include "core/profiling/profiler_scope.hpp"
+#include "core/profiling/profile_method.hpp"
 
 InputSystem::InputSystem() = default;
 InputSystem::~InputSystem() = default;

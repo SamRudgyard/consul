@@ -1,7 +1,7 @@
 #include "core/scene_manager.hpp"
 
 #include "console/console.hpp"
-#include "core/profiling/profiler_scope.hpp"
+#include "core/profiling/profile_method.hpp"
 #include "graphics/renderer/renderer.hpp"
 
 void SceneManager::loadScene(std::unique_ptr<Scene> scene, Renderer& renderer)

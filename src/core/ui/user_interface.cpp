@@ -1,5 +1,5 @@
 #include "user_interface.hpp"
-#include "core/profiling/profiler_scope.hpp"
+#include "core/profiling/profile_method.hpp"
 
 UserInterface::UserInterface()
 #ifndef CONSUL_CONSOLE_STDOUT

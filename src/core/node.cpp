@@ -1,5 +1,5 @@
 #include "core/node.hpp"
-#include "core/profiling/profiler_scope.hpp"
+#include "core/profiling/profile_method.hpp"
 #include "maths/unit_conversions.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
