@@ -328,12 +328,11 @@ void PerformanceWindow::update()
             ImGui::Text("Latest Sum: %.3f ms", latestMs);
 
             constexpr float profilerPlotHeight = 300.0f;
-            constexpr float profilerLegendWidth = 100.0f;
             constexpr float profilerLegendSpacing = 8.0f;
             const float availableWidth = ImGui::GetContentRegionAvail().x;
-            const float plotWidth = std::max(120.0f, availableWidth - profilerLegendWidth - profilerLegendSpacing);
+            const float sharedPanelWidth = std::max(1.0f, (availableWidth - profilerLegendSpacing)*0.5f);
 
-            if (ImPlot::BeginPlot("##profiler_plot", ImVec2(plotWidth, profilerPlotHeight), ImPlotFlags_NoLegend)) {
+            if (ImPlot::BeginPlot("##profiler_plot", ImVec2(sharedPanelWidth, profilerPlotHeight), ImPlotFlags_NoLegend)) {
                 ImPlot::SetupAxes("Seconds Ago", "Runtime (ms)", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoGridLines);
                 ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, selectedRangeSeconds, ImPlotCond_Always);
                 ImPlot::SetupAxisLimits(ImAxis_Y1, yMin, yMax, ImPlotCond_Always);
@@ -353,7 +352,7 @@ void PerformanceWindow::update()
             }
 
             ImGui::SameLine(0.0f, profilerLegendSpacing);
-            if (ImGui::BeginChild("##profiler_legend_side_panel", ImVec2(profilerLegendWidth, profilerPlotHeight), true, ImGuiWindowFlags_HorizontalScrollbar)) {
+            if (ImGui::BeginChild("##profiler_legend_side_panel", ImVec2(sharedPanelWidth, profilerPlotHeight), true, ImGuiWindowFlags_HorizontalScrollbar)) {
                 ImGui::TextUnformatted("Legend (Desc)");
                 ImGui::Separator();
 
