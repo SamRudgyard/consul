@@ -1,10 +1,13 @@
 #include "utils.hpp"
 
+#include <algorithm>
+#include <cctype>
 #include <thread>
 #include <chrono>
 
 #include "glad/glad.h"
 #include "core/console/console.hpp"
+#include "core/profiling/profile_method.hpp"
 
 #include "maths/unit_conversions.hpp"
 
@@ -20,6 +23,7 @@ bool doesFileExist(const char* filePath)
 
 const std::string readFile(const char* filePath)
 {
+    CONSUL_PROFILE_METHOD();
     if (!filePath) Console::get().error("[readFile] Provided file path is null");
 
     if (!doesFileExist(filePath)) Console::get().error("[readFile] File does not exist: '" + std::string(filePath) + "'");
@@ -60,8 +64,45 @@ bool isSubstring(const std::string& str, const std::string& substr) {
     return str.find(substr) != std::string::npos;
 }
 
+std::vector<std::size_t> getAlphabeticalStringOrder(const std::vector<std::string>& strings)
+{
+    std::vector<std::size_t> sortedIndices(strings.size());
+    for (std::size_t i = 0; i < strings.size(); i++) {
+        sortedIndices[i] = i;
+    }
+
+    std::sort(sortedIndices.begin(), sortedIndices.end(), [&strings](std::size_t lhs, std::size_t rhs) {
+        auto compareCharsCaseInsensitive = [](unsigned char lhsChar, unsigned char rhsChar) {
+            return std::tolower(lhsChar) < std::tolower(rhsChar);
+        };
+
+        if (std::lexicographical_compare(
+                strings[lhs].begin(),
+                strings[lhs].end(),
+                strings[rhs].begin(),
+                strings[rhs].end(),
+                compareCharsCaseInsensitive)) {
+            return true;
+        }
+
+        if (std::lexicographical_compare(
+                strings[rhs].begin(),
+                strings[rhs].end(),
+                strings[lhs].begin(),
+                strings[lhs].end(),
+                compareCharsCaseInsensitive)) {
+            return false;
+        }
+
+        return strings[lhs] < strings[rhs];
+    });
+
+    return sortedIndices;
+}
+
 void waitTime(double seconds)
 {
+    CONSUL_PROFILE_METHOD();
     if (seconds < 0) return;    // Security check
 
     // System halt functions

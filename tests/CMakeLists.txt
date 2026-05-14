@@ -19,6 +19,7 @@ add_executable(consul_tests
 
 target_link_libraries(consul_tests
   PRIVATE
+    consul::consul
     Catch2::Catch2WithMain
     glm::glm
 )

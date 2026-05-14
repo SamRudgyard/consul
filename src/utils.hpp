@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 enum ColourCode {
     FG_RED      = 31,
@@ -80,6 +81,15 @@ void unloadFileText(char* text);
  * @returns True if substr is found within str; false otherwise.
  */
 bool isSubstring(const std::string& str, const std::string& substr);
+
+/**
+ * Get the index order that would sort a list of strings alphabetically.
+ * The comparison is case-insensitive, with the original strings used as a tiebreaker.
+ *
+ * @param strings Strings to order alphabetically.
+ * @returns Indices into the input list in alphabetical order.
+ */
+std::vector<std::size_t> getAlphabeticalStringOrder(const std::vector<std::string>& strings);
 
 void waitTime(double seconds);
 

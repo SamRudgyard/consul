@@ -9,6 +9,7 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 #include "utils.hpp"
+#include "core/profiling/profile_method.hpp"
 
 void Consul::initialiseEngine()
 {
@@ -37,9 +38,6 @@ void Consul::initialiseEngine()
     platform->initialiseImGui(gfxApi);
     renderer->initialiseImGui();
     console.log("[Consul] ImGui initialised.");
-
-    context->ui.registerWindow("Console", [this](const std::string& name, bool* open) { console.draw(name, open); }, &consoleWindowOpen);
-    context->ui.registerWindow("FPS Monitor", [this](const std::string& name, bool* open) { context->fpsMonitor.draw(name, open); }, &fpsMonitorWindowOpen);
 
     context->time.previousTime = platform->getTime();
     context->time.currentTime = context->time.previousTime;
@@ -81,6 +79,7 @@ Consul::~Consul()
 
 void Consul::loadScene(std::unique_ptr<Scene> newScene)
 {
+    CONSUL_PROFILE_METHOD();
     sceneManager.loadScene(std::move(newScene), *renderer);
 }
 
@@ -90,7 +89,6 @@ void Consul::run()
         beginTick();
         Time& time = context->time;
         sceneManager.update(*renderer, time.deltaTime);
-        context->fpsMonitor.update(time.deltaTime);
         endTick();
 
         close = context->window.shouldClose && platform->shouldClose();
@@ -100,6 +98,9 @@ void Consul::run()
 void Consul::beginTick()
 {
     Time& time = context->time;
+    context->profiler.beginFrame((float)(time.deltaTime));
+    CONSUL_PROFILE_METHOD();
+
     time.currentTime = platform->getTime();
     time.renderTime = time.currentTime - time.previousTime;
     time.previousTime = time.currentTime;
@@ -113,6 +114,7 @@ void Consul::beginTick()
 
 void Consul::endTick()
 {
+    CONSUL_PROFILE_METHOD();
 
     context->window.shouldClose = platform->shouldClose();
     context->inputSystem.endTick();
@@ -124,8 +126,6 @@ void Consul::endTick()
     time.previousTime = time.currentTime;
 
     time.deltaTime = time.updateTime + time.renderTime;
-
-    Console& console = Console::get();
 
     if (time.deltaTime < time.targetFrameTime) {
         time.previousTime = platform->getTime();
@@ -142,7 +142,7 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    context->ui.render();
+    ui.update();
 
     ImGui::Render();
 
@@ -154,8 +154,6 @@ void Consul::endTick()
 void Consul::terminate()
 {
     console.log("[Consul] Shutting down Game Engine...");
-    context->ui.unregisterWindow("Console");
-    context->ui.unregisterWindow("FPS Monitor");
 
     sceneManager.shutdown(*renderer);
 

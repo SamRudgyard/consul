@@ -4,6 +4,7 @@ project(Consul)
 # Options
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_CONSUL_APP "Build the Consul demo application" ${PROJECT_IS_TOP_LEVEL})
+option(CONSUL_CONSOLE_STDOUT "Route console output to stdout instead of the ImGui console window" OFF)
 
 # Prefer the NEW behavior for FetchContent extraction timestamps
 if(POLICY CMP0135)
@@ -146,6 +147,9 @@ add_library(consul::consul ALIAS consul)
 
 target_include_directories(consul PUBLIC ${SRC_DIR} ${stb_SOURCE_DIR})
 target_compile_definitions(consul PUBLIC NOMINMAX)
+if(CONSUL_CONSOLE_STDOUT)
+  target_compile_definitions(consul PUBLIC CONSUL_CONSOLE_STDOUT)
+endif()
 target_link_libraries(consul
   PUBLIC
     glfw

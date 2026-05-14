@@ -745,7 +745,7 @@ Mesh Geometry3D::sphereIcosphere(float radius, unsigned int nDivisions)
             }
 
             glm::vec3 mid = glm::normalize((positions[a] + positions[b]) * 0.5f);
-            const unsigned int index = static_cast<unsigned int>(positions.size());
+            const unsigned int index = (unsigned int)(positions.size());
             positions.push_back(mid);
             midpointCache.emplace(key, index);
             return index;

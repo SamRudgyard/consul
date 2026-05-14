@@ -1,12 +1,14 @@
 #pragma once
 
 #include <string>
-#include <deque>
+#include <vector>
 
+#ifndef CONSUL_CONSOLE_STDOUT
 #define MAX_CONSOLE_SIZE 1000
+#endif
 
 /**
- * Minimal in-application console with a rolling log and an ImGui-based UI.
+ * Minimal in-application console with a rolling log.
  */
 class Console
 {
@@ -27,6 +29,11 @@ public:
      * Clear all log items.
      */
     void clearLog() { items.clear(); };
+
+    /**
+     * Returns the current log entries.
+     */
+    const std::vector<std::string>& getItems() const { return items; }
 
     /**
      * Appends a standard message to the log.
@@ -54,19 +61,13 @@ public:
      */
     void info(const std::string& message);
 
-    /**
-     * Draw the console's UI window.
-     */
-    void draw(const std::string& title, bool* open);
-
 protected:
     Console() = default;
     ~Console();
 
 private:
-    bool redirectOutput;
-    bool autoScroll = true;
-    bool scrollToBottom = false;
-    std::deque<std::string> items;
+    std::vector<std::string> items;
+
+    void appendMessage(const std::string& message);
 
 };
