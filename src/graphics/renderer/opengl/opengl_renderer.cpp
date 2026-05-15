@@ -6,6 +6,7 @@
 #include <stb_image.h>
 
 #include "core/profiling/profile_method.hpp"
+#include "graphics/colour.hpp"
 
 OpenGLRenderer::~OpenGLRenderer()
 {
@@ -436,17 +437,45 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
 
         const glm::mat4& modelMatrix = mesh.getModelMatrix();
         const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-        const Colour tint = mesh.getTint();
-        const glm::vec4 tintValue(
-            tint.r / 255.0f,
-            tint.g / 255.0f,
-            tint.b / 255.0f,
-            tint.alpha / 255.0f
-        );
+
+        std::shared_ptr<Material> material = mesh.getMaterial();
+        if (material) {
+            for (const ShaderUniform& uniform : material->getUniforms()) {
+                const char* uniformName = uniform.name.c_str();
+                switch (uniform.type) {
+                    case UniformType::INT:
+                        if (const int* value = std::get_if<int>(&uniform.value)) {
+                            setUniformInt(programID, uniformName, *value);
+                        }
+                        break;
+                    case UniformType::VEC3:
+                        if (const glm::vec3* value = std::get_if<glm::vec3>(&uniform.value)) {
+                            setUniformVec3(programID, uniformName, *value);
+                        }
+                        break;
+                    case UniformType::VEC4:
+                        if (const glm::vec4* value = std::get_if<glm::vec4>(&uniform.value)) {
+                            setUniformVec4(programID, uniformName, *value);
+                        }
+                        break;
+                    case UniformType::COLOUR:
+                        if (const Colour* value = std::get_if<Colour>(&uniform.value)) {
+                            setUniformVec4(programID, uniformName, value->toVec4());
+                        }
+                        break;
+                    case UniformType::MAT4:
+                        if (const glm::mat4* value = std::get_if<glm::mat4>(&uniform.value)) {
+                            setUniformMat4(programID, uniformName, *value);
+                        }
+                        break;
+                    default:
+                        Console::get().error("[OpenGLRenderer::render] Unsupported uniform type for uniform '" + uniform.name + "'");
+                }
+            }
+        }
 
         setUniformMat4(programID, "model", modelMatrix);
         setUniformMat3(programID, "normalMatrix", normalMatrix);
-        setUniformVec4(programID, "meshTint", tintValue);
         setUniformInt(programID, "useLighting", mesh.hasAttribute(AttributeType::NORMAL) ? 1 : 0);
 
         glBindVertexArray(meshBuffer.vao);

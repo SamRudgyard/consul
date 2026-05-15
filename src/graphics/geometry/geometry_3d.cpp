@@ -222,7 +222,7 @@ Mesh Geometry3D::line(glm::vec3 startPosition, glm::vec3 endPosition)
     std::vector<Texture> textures;
     textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), Colour(255, 255, 255, 255), DrawMode::LINES);
+    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::LINES);
 }
 
 Mesh Geometry3D::cone(float radius, float height, unsigned int sides)

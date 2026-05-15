@@ -10,7 +10,7 @@ Mesh Geometry2D::line(glm::vec2 startPosition, glm::vec2 endPosition)
     std::vector<Texture> textures;
     textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), Colour(255, 255, 255, 255), DrawMode::LINES);
+    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::LINES);
 }
 
 Mesh Geometry2D::rect(glm::vec2 minCorner, glm::vec2 maxCorner)
@@ -28,7 +28,7 @@ Mesh Geometry2D::rect(glm::vec2 minCorner, glm::vec2 maxCorner)
     std::vector<Texture> textures;
     textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), Colour(255, 255, 255, 255), DrawMode::TRIANGLES);
+    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::TRIANGLES);
 }
 
 Mesh Geometry2D::rectOutline(glm::vec2 minCorner, glm::vec2 maxCorner)
@@ -48,7 +48,7 @@ Mesh Geometry2D::rectOutline(glm::vec2 minCorner, glm::vec2 maxCorner)
     std::vector<Texture> textures;
     textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), Colour(255, 255, 255, 255), DrawMode::LINES);
+    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::LINES);
 }
 
 Mesh Geometry2D::triangle(glm::vec2 a, glm::vec2 b, glm::vec2 c)
@@ -62,5 +62,5 @@ Mesh Geometry2D::triangle(glm::vec2 a, glm::vec2 b, glm::vec2 c)
     std::vector<Texture> textures;
     textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), Colour(255, 255, 255, 255), DrawMode::TRIANGLES);
+    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::TRIANGLES);
 }

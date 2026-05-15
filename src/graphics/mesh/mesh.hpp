@@ -1,16 +1,18 @@
 #pragma once
 
-#include "glm/glm.hpp"
-#include "graphics/camera/camera.hpp"
-#include "graphics/colour.hpp"
-#include "graphics/texture/texture.hpp"
-#include "glad/glad.h"
-
 #include <bitset>
+#include <memory>
 #include <string>
 #include <vector>
 #include <iostream>
 #include <utility>
+
+#include "glm/glm.hpp"
+#include "graphics/camera/camera.hpp"
+#include "graphics/colour.hpp"
+#include "graphics/material/material.hpp"
+#include "graphics/texture/texture.hpp"
+#include "glad/glad.h"
 
 enum class AttributeType
 {
@@ -37,9 +39,8 @@ public:
         std::vector<glm::vec3> positions,
         std::vector<unsigned int> indices,
         std::vector<Texture> textures = {},
-        Colour tint = Colour(255, 255, 255, 255),
         DrawMode drawMode = DrawMode::TRIANGLES
-    ) : Mesh(std::move(positions), {}, {}, {}, std::move(indices), std::move(textures), tint, drawMode) {}
+    ) : Mesh(std::move(positions), {}, {}, {}, std::move(indices), std::move(textures), drawMode) {}
 
     Mesh(
         std::vector<glm::vec3> positions,
@@ -48,7 +49,6 @@ public:
         std::vector<glm::vec4> tangents,
         std::vector<unsigned int> indices,
         std::vector<Texture> textures,
-        Colour tint = Colour(255, 255, 255, 255),
         DrawMode drawMode = DrawMode::TRIANGLES
     );
 
@@ -94,16 +94,12 @@ public:
     const std::vector<Texture>& getTextures() const { return textures; }
 
     /**
-     * Sets the colour tint of this Mesh.
-     * @param colour Colour tint.
+     * Gets the Material associated with this Mesh.
+     * @return Material of this Mesh.
      */
-    void setTint(const Colour& colour) { tint = colour; }
+    std::shared_ptr<Material> getMaterial() const { return material; }
 
-    /**
-     * Gets the colour tint of this Mesh.
-     * @return Colour of the Mesh.
-     */
-    Colour getTint() const { return tint; }
+    void setMaterial(std::shared_ptr<Material> newMaterial) { material = newMaterial; }
 
     /**
      * Set the draw mode of this Mesh.
@@ -177,7 +173,7 @@ private:
     std::vector<glm::vec4> tangents; // TODO: Why vec4 for tangents?
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
-    Colour tint = Colour(255, 255, 255, 255);
+    std::shared_ptr<Material> material;
     DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
     std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(5, 0);
