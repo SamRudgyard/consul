@@ -23,7 +23,6 @@ public:
         mesh.setMaterial(material);
         outlineMesh.setDrawMode(DrawMode::LINES);
         outlineMesh.setMaterial(std::make_shared<Material>());
-        outlineMesh.getMaterial()->setUniform("albedo", UniformType::COLOUR, Colour(255, 255, 255));
 
         renderer.uploadMesh(mesh);
         renderer.uploadMesh(outlineMesh);

@@ -173,7 +173,7 @@ private:
     std::vector<glm::vec4> tangents; // TODO: Why vec4 for tangents?
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
-    std::shared_ptr<Material> material;
+    std::shared_ptr<Material> material = std::make_shared<Material>();
     DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
     std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(5, 0);
