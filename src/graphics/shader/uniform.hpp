@@ -3,6 +3,7 @@
 #include <string>
 #include <variant>
 
+#include "core/console/console.hpp"
 #include "glm/glm.hpp"
 #include "graphics/colour.hpp"
 
@@ -22,6 +23,33 @@ enum class UniformType
 struct ShaderUniform
 {
     std::string name;
-    UniformType type;
     UniformValue value;
+
+    UniformType getType() const
+    {
+        if (std::holds_alternative<float>(value)) {
+            return UniformType::FLOAT;
+        }
+        else if (std::holds_alternative<int>(value)) {
+            return UniformType::INT;
+        }
+        else if (std::holds_alternative<glm::vec2>(value)) {
+            return UniformType::VEC2;
+        }
+        else if (std::holds_alternative<glm::vec3>(value)) {
+            return UniformType::VEC3;
+        }
+        else if (std::holds_alternative<glm::vec4>(value)) {
+            return UniformType::VEC4;
+        }
+        else if (std::holds_alternative<Colour>(value)) {
+            return UniformType::COLOUR;
+        }
+        else if (std::holds_alternative<glm::mat4>(value)) {
+            return UniformType::MAT4;
+        }
+        else {
+            Console::get().error("[ShaderUniform::getType] Unsupported uniform type '" + name + "'");
+        }
+    }
 };

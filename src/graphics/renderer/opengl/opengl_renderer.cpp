@@ -442,7 +442,7 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
         if (material) {
             for (const ShaderUniform& uniform : material->getUniforms()) {
                 const char* uniformName = uniform.name.c_str();
-                switch (uniform.type) {
+                switch (uniform.getType()) {
                     case UniformType::INT:
                         if (const int* value = std::get_if<int>(&uniform.value)) {
                             setUniformInt(programID, uniformName, *value);

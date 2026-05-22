@@ -18,7 +18,7 @@ public:
         outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
 
         material = std::make_shared<Material>();
-        material->setUniform("albedo", UniformType::COLOUR, Colour(20, 200, 200));
+        material->setUniform("albedo", Colour(20, 200, 200));
 
         mesh.setMaterial(material);
         outlineMesh.setDrawMode(DrawMode::LINES);

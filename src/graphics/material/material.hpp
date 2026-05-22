@@ -6,13 +6,13 @@ class Material
 {
 public:
     Material() {
-        this->setUniform("albedo", UniformType::COLOUR, Colour(255, 255, 255));
+        this->setUniform("albedo", Colour(255, 255, 255));
     };
 
     std::vector<ShaderUniform>& getUniforms() { return uniforms; }
-    void setUniform(const std::string& name, UniformType type, UniformValue value)
+    void setUniform(const std::string& name, UniformValue value)
     {
-        uniforms.push_back({name, type, value});
+        uniforms.push_back({name, value});
     }
 
 private:
