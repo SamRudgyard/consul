@@ -18,12 +18,12 @@ public:
         outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
 
         material = std::make_shared<Material>();
-        material->addUniform("meshTint", UniformType::COLOUR, Colour(20, 200, 200));
+        material->setUniform("albedo", UniformType::COLOUR, Colour(20, 200, 200));
 
         mesh.setMaterial(material);
         outlineMesh.setDrawMode(DrawMode::LINES);
         outlineMesh.setMaterial(std::make_shared<Material>());
-        outlineMesh.getMaterial()->addUniform("meshTint", UniformType::COLOUR, Colour(255, 255, 255));
+        outlineMesh.getMaterial()->setUniform("albedo", UniformType::COLOUR, Colour(255, 255, 255));
 
         renderer.uploadMesh(mesh);
         renderer.uploadMesh(outlineMesh);

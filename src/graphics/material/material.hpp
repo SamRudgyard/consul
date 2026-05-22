@@ -8,7 +8,7 @@ public:
     Material() = default;
 
     std::vector<ShaderUniform>& getUniforms() { return uniforms; }
-    void addUniform(const std::string& name, UniformType type, UniformValue value)
+    void setUniform(const std::string& name, UniformType type, UniformValue value)
     {
         uniforms.push_back({name, type, value});
     }

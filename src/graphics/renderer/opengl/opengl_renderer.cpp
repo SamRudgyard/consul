@@ -403,6 +403,9 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
     glUseProgram(programID);
     glCheckError();
 
+    // Default albedo
+    setUniformVec4(programID, "albedo", glm::vec4(1.0f));
+
     setUniformMat4(programID, "cameraMatrix", camera.getCameraMatrix());
     setUniformVec3(programID, "cameraPosition", camera.getPosition());
     setUniformVec3(programID, "lightPosition", glm::vec3(5.0f, 5.0f, 5.0f));

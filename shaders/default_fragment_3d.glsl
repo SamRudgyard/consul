@@ -9,7 +9,7 @@ in vec2 fragTexCoords;
 uniform sampler2D diffuse0;
 uniform sampler2D specular0;
 
-uniform vec4 meshTint;
+uniform vec4 albedo;
 
 uniform vec3 cameraPosition;
 uniform vec3 lightPosition;
@@ -19,9 +19,9 @@ uniform int useLighting;
 
 void main()
 {
-    vec3 diffuseColour = texture(diffuse0, fragTexCoords).rgb * meshTint.rgb;
+    vec3 diffuseColour = texture(diffuse0, fragTexCoords).rgb * albedo.rgb;
     if (useLighting == 0) {
-        fragmentColour = vec4(diffuseColour, meshTint.a);
+        fragmentColour = vec4(diffuseColour, albedo.a);
         return;
     }
 
@@ -41,5 +41,5 @@ void main()
     vec3 ambient = ambientColour * diffuseColour;
     vec3 lighting = ambient + lightColour * (diff * diffuseColour + spec);
     
-    fragmentColour = vec4(lighting, meshTint.a);
+    fragmentColour = vec4(lighting, albedo.a);
 }
