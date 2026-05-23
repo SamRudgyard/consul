@@ -442,34 +442,18 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
         if (material) {
             for (const ShaderUniform& uniform : material->getUniforms()) {
                 const char* uniformName = uniform.name.c_str();
-                switch (uniform.getType()) {
-                    case UniformType::INT:
-                        if (const int* value = std::get_if<int>(&uniform.value)) {
-                            setUniformInt(programID, uniformName, *value);
-                        }
-                        break;
-                    case UniformType::VEC3:
-                        if (const glm::vec3* value = std::get_if<glm::vec3>(&uniform.value)) {
-                            setUniformVec3(programID, uniformName, *value);
-                        }
-                        break;
-                    case UniformType::VEC4:
-                        if (const glm::vec4* value = std::get_if<glm::vec4>(&uniform.value)) {
-                            setUniformVec4(programID, uniformName, *value);
-                        }
-                        break;
-                    case UniformType::COLOUR:
-                        if (const Colour* value = std::get_if<Colour>(&uniform.value)) {
-                            setUniformVec4(programID, uniformName, value->toVec4());
-                        }
-                        break;
-                    case UniformType::MAT4:
-                        if (const glm::mat4* value = std::get_if<glm::mat4>(&uniform.value)) {
-                            setUniformMat4(programID, uniformName, *value);
-                        }
-                        break;
-                    default:
-                        Console::get().error("[OpenGLRenderer::render] Unsupported uniform type for uniform '" + uniform.name + "'");
+                if (const int* intUniform = std::get_if<int>(&uniform.value)) {
+                    setUniformInt(programID, uniformName, *intUniform);
+                } else if (const glm::vec3* vec3Uniform = std::get_if<glm::vec3>(&uniform.value)) {
+                    setUniformVec3(programID, uniformName, *vec3Uniform);
+                } else if (const glm::vec4* vec4Uniform = std::get_if<glm::vec4>(&uniform.value)) {
+                    setUniformVec4(programID, uniformName, *vec4Uniform);
+                } else if (const Colour* colourUniform = std::get_if<Colour>(&uniform.value)) {
+                    setUniformVec4(programID, uniformName, colourUniform->toVec4());
+                } else if (const glm::mat4* mat4Uniform = std::get_if<glm::mat4>(&uniform.value)) {
+                    setUniformMat4(programID, uniformName, *mat4Uniform);
+                } else {
+                    Console::get().error("[OpenGLRenderer::render] Unsupported uniform type for uniform '" + uniform.name + "'");
                 }
             }
         }
