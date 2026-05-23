@@ -7,10 +7,8 @@ Mesh Geometry2D::line(glm::vec2 startPosition, glm::vec2 endPosition)
         {endPosition.x, endPosition.y, 0.0f}
     };
     std::vector<unsigned int> indices = {0, 1};
-    std::vector<Texture> textures;
-    textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::LINES);
+    return Mesh(std::move(positions), std::move(indices), DrawMode::LINES);
 }
 
 Mesh Geometry2D::rect(glm::vec2 minCorner, glm::vec2 maxCorner)
@@ -25,10 +23,8 @@ Mesh Geometry2D::rect(glm::vec2 minCorner, glm::vec2 maxCorner)
         0, 1, 2,
         2, 1, 3
     };
-    std::vector<Texture> textures;
-    textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::TRIANGLES);
+    return Mesh(std::move(positions), std::move(indices), DrawMode::TRIANGLES);
 }
 
 Mesh Geometry2D::rectOutline(glm::vec2 minCorner, glm::vec2 maxCorner)
@@ -45,10 +41,8 @@ Mesh Geometry2D::rectOutline(glm::vec2 minCorner, glm::vec2 maxCorner)
         2, 3,
         3, 0
     };
-    std::vector<Texture> textures;
-    textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::LINES);
+    return Mesh(std::move(positions), std::move(indices), DrawMode::LINES);
 }
 
 Mesh Geometry2D::triangle(glm::vec2 a, glm::vec2 b, glm::vec2 c)
@@ -59,8 +53,6 @@ Mesh Geometry2D::triangle(glm::vec2 a, glm::vec2 b, glm::vec2 c)
         {c.x, c.y, 0.0f}
     };
     std::vector<unsigned int> indices = {0, 1, 2};
-    std::vector<Texture> textures;
-    textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::TRIANGLES);
+    return Mesh(std::move(positions), std::move(indices), DrawMode::TRIANGLES);
 }

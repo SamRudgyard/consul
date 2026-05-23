@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
+#include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/texture/texture.hpp"
 #include "glm/glm.hpp"
@@ -8,6 +9,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 using json = nlohmann::json;
 
@@ -15,18 +17,33 @@ class IShader;
 class Model
 {
 public:
+	Model() = default;
+
 	/**
 	 * Load the given glTF model.
 	 * @param file Path to the .gltf model file.
 	 */
 	Model(const char* file);
 
-	/*
+	/**
+	 * Create a model from a single mesh.
+	 * @param mesh Mesh to initialize the model with.
+	 */
+	Model(Mesh mesh);
+
+	/**
 	 * Gets the meshes loaded from this model.
 	 * @returns Vector of meshes. 
 	 */
 	std::vector<Mesh>& getMeshes() { return meshes; }
 	const std::vector<Mesh>& getMeshes() const { return meshes; }
+
+	void addMesh(Mesh mesh, const glm::mat4& initialTransform = glm::mat4(1.0f));
+
+	std::shared_ptr<Material> getMaterialForMesh(unsigned int meshIndex);
+	std::shared_ptr<const Material> getMaterialForMesh(unsigned int meshIndex) const;
+
+	void setMeshMaterial(Mesh mesh, std::shared_ptr<Material> material);
 
 	/**
 	 * Gets the transformation matrices for each mesh in the model, with the
@@ -74,13 +91,13 @@ public:
 	const std::string& getFilePath() const { return file; }
 
 private:
-	// Variables for easy access
 	std::string file;
 	std::string fileDirectory;
 	std::vector<unsigned char> binaryData;
 	json jsonContents;
 
 	std::vector<Mesh> meshes;
+	std::vector<std::shared_ptr<Material>> materials;
 	std::vector<glm::mat4> initialTransformations;
 	std::vector<glm::mat4> combinedTransforms;
 	glm::mat4 modelTransform = glm::mat4(1.0f);
@@ -90,7 +107,7 @@ private:
 	 * Load a single mesh.
 	 * @param iMesh Index of the mesh, as found in the glTF file.
 	 */
-	void loadMesh(unsigned int iMesh);
+	void loadMesh(unsigned int iMesh, const glm::mat4& initialTransform);
 
 	/**
 	 * Traverse a node within the glTF file recursively to collect meshes and construct transforms.
@@ -121,11 +138,11 @@ private:
 	std::string getTexturePathFromUri(unsigned int textureIndex) const;
 
 	/**
-	 * Collect textures referenced by a material.
+	 * Create a material from glTF material data.
 	 * @param materialIndex Index into the glTF materials array.
-	 * @returns Vector of textures referenced by the material.
+	 * @returns Material with textures referenced by the glTF material.
 	 */
-	std::vector<Texture> getTexturesForMaterial(int materialIndex) const;
+	std::shared_ptr<Material> loadMaterial(int materialIndex) const;
 
 	/**
 	 * Convert a float array to a vec2 array.

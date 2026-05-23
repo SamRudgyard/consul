@@ -304,8 +304,11 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
     glCheckError();
 
-    for (Texture& texture : mesh.getTextures()) {
-        uploadTexture(texture);
+    std::shared_ptr<Material> material = mesh.getMaterial();
+    if (material) {
+        for (Texture& texture : material->getTextures()) {
+            uploadTexture(texture);
+        }
     }
 
     Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + std::to_string(mesh.getID()) + " to GPU.");
@@ -414,31 +417,33 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
             continue;
         }
         const Mesh& mesh = *meshBuffer.mesh;
-        const std::vector<Texture>& textures = mesh.getTextures();
+        std::shared_ptr<Material> material = mesh.getMaterial();
 
         unsigned int iDiffuse = 0;
         unsigned int iSpecular = 0;
 
-        for (unsigned int iTexture = 0; iTexture < textures.size(); iTexture++) {
-            const Texture& texture = textures[iTexture];
-            if (texture.getType() == TextureType::DIFFUSE) {
-                const std::string uniformName = "diffuse" + std::to_string(iDiffuse);
-                glCheckError();
-                bindTexture(programID, iTexture, uniformName.c_str(), texture);
-                iDiffuse++;
-            }
-            else if (texture.getType() == TextureType::SPECULAR) {
-                const std::string uniformName = "specular" + std::to_string(iSpecular);
-                bindTexture(programID, iTexture, uniformName.c_str(), texture);
-                glCheckError();
-                iSpecular++;
+        if (material) {
+            const std::vector<Texture>& textures = material->getTextures();
+            for (unsigned int iTexture = 0; iTexture < textures.size(); iTexture++) {
+                const Texture& texture = textures[iTexture];
+                if (texture.getType() == TextureType::DIFFUSE) {
+                    const std::string uniformName = "diffuse" + std::to_string(iDiffuse);
+                    glCheckError();
+                    bindTexture(programID, iTexture, uniformName.c_str(), texture);
+                    iDiffuse++;
+                }
+                else if (texture.getType() == TextureType::SPECULAR) {
+                    const std::string uniformName = "specular" + std::to_string(iSpecular);
+                    bindTexture(programID, iTexture, uniformName.c_str(), texture);
+                    glCheckError();
+                    iSpecular++;
+                }
             }
         }
 
         const glm::mat4& modelMatrix = mesh.getModelMatrix();
         const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
-        std::shared_ptr<Material> material = mesh.getMaterial();
         if (material) {
             for (const ShaderUniform& uniform : material->getUniforms()) {
                 const char* uniformName = uniform.name.c_str();

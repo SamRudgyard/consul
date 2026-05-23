@@ -1,11 +1,13 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "core/console/console.hpp"
 #include "graphics/camera/camera.hpp"
+#include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/renderer/renderer.hpp"

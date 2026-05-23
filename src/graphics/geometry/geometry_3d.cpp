@@ -203,11 +203,7 @@ Mesh Geometry3D::capsule(float radius, float height, unsigned int nLatitudes, un
     // - Bottom hemisphere equator ring (sphere normals) is connected to bottom hemi.
     // There is no need to stitch by indices because they are separate vertex rings with different normals.
 
-    // Default texture
-    std::vector<Texture> textures;
-    textures.emplace_back(Texture());
-
-    return Mesh(positions, normals, uvs, tangents, indices, textures);
+    return Mesh(positions, normals, uvs, tangents, indices);
 }
 
 Mesh Geometry3D::cube(float width)
@@ -219,10 +215,8 @@ Mesh Geometry3D::line(glm::vec3 startPosition, glm::vec3 endPosition)
 {
     std::vector<glm::vec3> positions = {startPosition, endPosition};
     std::vector<unsigned int> indices = {0, 1};
-    std::vector<Texture> textures;
-    textures.emplace_back(Texture());
 
-    return Mesh(std::move(positions), std::move(indices), std::move(textures), DrawMode::LINES);
+    return Mesh(std::move(positions), std::move(indices), DrawMode::LINES);
 }
 
 Mesh Geometry3D::cone(float radius, float height, unsigned int sides)
@@ -383,10 +377,7 @@ Mesh Geometry3D::cylinder(float radiusTop, float radiusBottom, float height, uns
         indices.push_back(b);
     }
 
-    std::vector<Texture> textures;
-    textures.emplace_back(Texture());
-
-    return Mesh(positions, normals, uvs, tangents, indices, textures);
+    return Mesh(positions, normals, uvs, tangents, indices);
 }
 
 Mesh Geometry3D::cuboid(float width, float height, float depth)
@@ -449,11 +440,7 @@ Mesh Geometry3D::cuboid(float width, float height, float depth)
         20, 22, 21, 20, 23, 22,
     };
 
-    // Default texture
-    std::vector<Texture> textures;
-    textures.push_back(Texture());
-
-    return Mesh(positions, normals, uvs, tangents, indices, textures);
+    return Mesh(positions, normals, uvs, tangents, indices);
 }
 
 Mesh Geometry3D::plane(float width, float depth)
@@ -509,10 +496,7 @@ Mesh Geometry3D::plane(float width, float depth)
     indices.push_back(2);
     indices.push_back(3);
 
-    std::vector<Texture> textures;
-    textures.emplace_back(Texture());
-
-    return Mesh(positions, normals, uvs, tangents, indices, textures);
+    return Mesh(positions, normals, uvs, tangents, indices);
 }
 
 Mesh Geometry3D::pyramidSquare(float baseSize, float height)
@@ -629,10 +613,7 @@ Mesh Geometry3D::pyramidSquare(float baseSize, float height)
     indices.push_back(baseStart + 2u);
     indices.push_back(baseStart + 3u);
 
-    std::vector<Texture> textures;
-    textures.emplace_back(Texture());
-
-    return Mesh(positions, normals, uvs, tangents, indices, textures);
+    return Mesh(positions, normals, uvs, tangents, indices);
 }
 
 Mesh Geometry3D::sphereUV(float radius, unsigned int nLatitudes, unsigned int nLongitudes)
@@ -694,11 +675,7 @@ Mesh Geometry3D::sphereUV(float radius, unsigned int nLatitudes, unsigned int nL
             }
         }
 
-    // Default texture
-    std::vector<Texture> textures;
-    textures.push_back(Texture());
-
-    return Mesh(positions, normals, uvs, tangents, indices, textures);
+    return Mesh(positions, normals, uvs, tangents, indices);
 }
 
 Mesh Geometry3D::sphereIcosphere(float radius, unsigned int nDivisions)
@@ -789,9 +766,5 @@ Mesh Geometry3D::sphereIcosphere(float radius, unsigned int nDivisions)
         tangents.push_back({1.0f, 0.0f, 0.0f, 1.0f});
     }
 
-    // Default texture
-    std::vector<Texture> textures;
-    textures.push_back(Texture());
-
-    return Mesh(positions, normals, uvs, tangents, indices, textures);
+    return Mesh(positions, normals, uvs, tangents, indices);
 }

@@ -1,6 +1,7 @@
 #include "model.hpp"
 
 #include <algorithm>
+#include <stdexcept>
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -53,6 +54,22 @@ Model::Model(const char* modelPath)
     }
 }
 
+Model::Model(Mesh mesh)
+{
+    addMesh(mesh);
+}
+
+void Model::addMesh(Mesh mesh, const glm::mat4& initialTransform)
+{
+    if (!mesh.getMaterial()) {
+        mesh.setMaterial(std::make_shared<Material>());
+    }
+
+    meshes.push_back(std::move(mesh));
+    initialTransformations.push_back(initialTransform);
+    recalcTransformation = true;
+}
+
 std::vector<glm::mat4> Model::getTransformationMatrices()
 {
     if (!recalcTransformation) {
@@ -100,7 +117,7 @@ void Model::resetTransform()
     recalcTransformation = true;
 }
 
-void Model::loadMesh(unsigned int iMesh)
+void Model::loadMesh(unsigned int iMesh, const glm::mat4& initialTransform)
 {
 	// Get all accessor indices
     json primitives = jsonContents["meshes"][iMesh]["primitives"];
@@ -122,11 +139,11 @@ void Model::loadMesh(unsigned int iMesh)
     std::vector<glm::vec4> tangents; // Empty tangents vector, TODO: implement reading tangents if needed
 	std::vector<unsigned int> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
 
-    int materialIndex = primitives[0].value("material", -1);
-    std::vector<Texture> textures = getTexturesForMaterial(materialIndex);
-
-    Mesh mesh(positions, normals, textureUVs, tangents, indices, textures);
-    meshes.push_back(mesh); // TODO: Remove when we get rid of mesh owning its textures
+    const int materialIndex = primitives[0].value("material", -1);
+    std::shared_ptr<Material> material = loadMaterial(materialIndex);
+    Mesh mesh(positions, normals, textureUVs, tangents, indices);
+    mesh.setMaterial(material);
+    addMesh(mesh, initialTransform);
 }
 
 void Model::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
@@ -156,10 +173,7 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
 
 	if (node.contains("mesh"))
 	{
-        // Only store the transformation matrix if there is a mesh to go with it
-        initialTransformations.push_back(transformationMatrix);
-        recalcTransformation = true;
-		loadMesh(node["mesh"]);
+		loadMesh(node["mesh"], transformationMatrix);
 	}
 
 	if (node.contains("children"))
@@ -283,19 +297,19 @@ std::string Model::getTexturePathFromUri(unsigned int textureIndex) const
     return fileDirectory + uri;
 }
 
-std::vector<Texture> Model::getTexturesForMaterial(int materialIndex) const
+std::shared_ptr<Material> Model::loadMaterial(int materialIndex) const
 {
-    std::vector<Texture> textures;
+    std::shared_ptr<Material> material = std::make_shared<Material>();
 
     if (materialIndex < 0 || !jsonContents.contains("materials")) {
-        return textures;
+        return material;
     }
     if (materialIndex >= jsonContents["materials"].size()) {
-        Console::get().warn("[Model::getTexturesForMaterial] Invalid material index: '" + std::to_string(materialIndex) + "'");
-        return textures;
+        Console::get().warn("[Model::loadMaterial] Invalid material index: '" + std::to_string(materialIndex) + "'");
+        return material;
     }
 
-    const json& material = jsonContents["materials"][materialIndex];
+    const json& materialJson = jsonContents["materials"][materialIndex];
 
     auto addTextureIfPresent = [&](const json& parent, const char* key, TextureType type) {
         if (!parent.contains(key)) {
@@ -308,19 +322,19 @@ std::vector<Texture> Model::getTexturesForMaterial(int materialIndex) const
         unsigned int textureIndex = textureInfo["index"];
         std::string uri = getTexturePathFromUri(textureIndex);
         if (!uri.empty()) {
-            textures.emplace_back(Texture(uri, type));
+            material->setTexture(Texture(uri, type));
         }
     };
 
-    if (material.contains("pbrMetallicRoughness")) {
-        const json& pbr = material["pbrMetallicRoughness"];
+    if (materialJson.contains("pbrMetallicRoughness")) {
+        const json& pbr = materialJson["pbrMetallicRoughness"];
         addTextureIfPresent(pbr, "baseColorTexture", TextureType::DIFFUSE);
         addTextureIfPresent(pbr, "metallicRoughnessTexture", TextureType::SPECULAR);
     }
 
-    addTextureIfPresent(material, "normalTexture", TextureType::NORMAL);
+    addTextureIfPresent(materialJson, "normalTexture", TextureType::NORMAL);
 
-    return textures;
+    return material;
 }
 
 std::vector<glm::vec2> Model::toVec2(std::vector<float> floatVec)

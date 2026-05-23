@@ -11,7 +11,6 @@
 #include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/material/material.hpp"
-#include "graphics/texture/texture.hpp"
 #include "glad/glad.h"
 
 enum class AttributeType
@@ -38,9 +37,8 @@ public:
     Mesh(
         std::vector<glm::vec3> positions,
         std::vector<unsigned int> indices,
-        std::vector<Texture> textures = {},
         DrawMode drawMode = DrawMode::TRIANGLES
-    ) : Mesh(std::move(positions), {}, {}, {}, std::move(indices), std::move(textures), drawMode) {}
+    ) : Mesh(std::move(positions), {}, {}, {}, std::move(indices), drawMode) {}
 
     Mesh(
         std::vector<glm::vec3> positions,
@@ -48,7 +46,6 @@ public:
         std::vector<glm::vec2> textureCoords,
         std::vector<glm::vec4> tangents,
         std::vector<unsigned int> indices,
-        std::vector<Texture> textures,
         DrawMode drawMode = DrawMode::TRIANGLES
     );
 
@@ -87,19 +84,16 @@ public:
     std::vector<unsigned int> getIndices() const;
 
     /**
-     * Gets the textures associated with this Mesh.
-     * @return Textures on this Mesh.
+     * Sets the material for this Mesh.
+     * @param material The new material for this Mesh.
      */
-    std::vector<Texture>& getTextures() { return textures; }
-    const std::vector<Texture>& getTextures() const { return textures; }
+    void setMaterial(std::shared_ptr<Material> material) { this->material = material; }
 
     /**
-     * Gets the Material associated with this Mesh.
-     * @return Material of this Mesh.
+     * Gets the material for this Mesh.
+     * @return The material for this Mesh.
      */
     std::shared_ptr<Material> getMaterial() const { return material; }
-
-    void setMaterial(std::shared_ptr<Material> newMaterial) { material = newMaterial; }
 
     /**
      * Set the draw mode of this Mesh.
@@ -172,8 +166,7 @@ private:
     std::vector<glm::vec2> textureCoords;
     std::vector<glm::vec4> tangents; // TODO: Why vec4 for tangents?
     std::vector<unsigned int> indices;
-    std::vector<Texture> textures;
-    std::shared_ptr<Material> material = std::make_shared<Material>();
+    std::shared_ptr<Material> material;
     DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
     std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(5, 0);
