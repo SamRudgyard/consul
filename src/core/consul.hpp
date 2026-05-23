@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/asset_manager.hpp"
 #include "core/console/console.hpp"
 #include "core/engine_context.hpp"
 #include "core/scene.hpp"
@@ -73,6 +74,7 @@ private:
     Platform* platform = nullptr;
     Renderer* renderer = nullptr;
     bool close = false;
+    AssetManager assetManager;
     SceneManager sceneManager;
 
     void initialiseWindow(PlatformType platformType);
