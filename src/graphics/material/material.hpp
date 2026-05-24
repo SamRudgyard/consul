@@ -16,6 +16,9 @@ public:
         this->setTexture(Texture::getDefaultSpecularTexture());
     };
 
+    /**
+     * Registers the properties of the Material class, allowing them to be edited in the UI.
+     */
     static void registerProperties()
     {
         PropertyRegistry& registry = PropertyRegistry::get();

@@ -51,18 +51,35 @@ struct RegisteredProperty {
 class PropertyRegistry
 {
 public:
+    /**
+     * Gets the singleton instance of the PropertyRegistry.
+     * @returns Reference to the PropertyRegistry instance.
+     */
     static PropertyRegistry& get()
     {
         static PropertyRegistry instance;
         return instance;
     }
 
+    /**
+     * Registers a property for a given class, with the specified getter and setter functions.
+     * @tparam Owner The class that owns the property.
+     * @tparam Value The value that the getter accepts and the setter returns.
+     * @param propertyInfo Information about the property.
+     * @param getter Pointer to the getter function.
+     * @param setter Pointer to the setter function.
+     */
     template<typename Owner, typename Value>
     void registerProperty(PropertyInfo propertyInfo, Value (Owner::*getter)() const, void (Owner::*setter)(Value))
     {
         registerPropertyForOwner<Owner>(std::move(propertyInfo), getter, setter);
     }
 
+    /**
+     * Gets the registered properties for a given class name.
+     * @param className The name of the class to get properties for.
+     * @returns Reference to the vector of registered properties.
+     */
     const std::vector<RegisteredProperty>& getProperties(const std::string& className) const
     {
         static const std::vector<RegisteredProperty> emptyProperties;
