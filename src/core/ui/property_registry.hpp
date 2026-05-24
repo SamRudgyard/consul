@@ -92,6 +92,7 @@ private:
     template<typename Owner, typename Value>
     void registerPropertyForOwner(PropertyInfo propertyInfo, Value (Owner::*getter)() const, void (Owner::*setter)(Value))
     {
+        std::string className = propertyInfo.className;
         RegisteredProperty property = {
             std::move(propertyInfo),
             [getter](void* instance) -> PropertyValue {
@@ -103,7 +104,7 @@ private:
                 (owner->*setter)(std::get<Value>(value));
             }
         };
-        properties[propertyInfo.className].push_back(property);
+        properties[className].push_back(property);
     }
 
     std::unordered_map<std::string, std::vector<RegisteredProperty>> properties;
