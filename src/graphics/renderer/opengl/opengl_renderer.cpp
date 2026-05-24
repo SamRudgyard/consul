@@ -188,11 +188,16 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
 {
     CONSUL_PROFILE_METHOD();
 
-    if (!mesh.isAnyDirty()) return;
-
+    // This is required to refresh the MeshBuffer reference to the Mesh.
+    // We do this prior to checking if the Mesh is dirty, as if a new Mesh
+    // was added then the pointer may be stale. TODO: This isn't a solid
+    // solution, so refactor when we have a way to track the meshes
+    // present in the scene.
     auto [it, inserted] = meshes.try_emplace(mesh.getID());
     MeshBuffer& meshBuffer = it->second;
     meshBuffer.mesh = &mesh;
+
+    if (!mesh.isAnyDirty()) return;
 
     if (inserted) {
         glGenVertexArrays(1, &meshBuffer.vao);
