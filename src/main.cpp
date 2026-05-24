@@ -19,7 +19,7 @@ public:
         outlineMesh.setDrawMode(DrawMode::LINES);
 
         material = std::make_shared<Material>();
-        material->setUniform("albedo", Colour(20, 200, 200));
+        material->setAlbedo(Colour(20, 200, 200));
 
         mesh.setMaterial(material);
 

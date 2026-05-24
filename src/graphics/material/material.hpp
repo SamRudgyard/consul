@@ -26,35 +26,24 @@ public:
      * Gets the shader uniforms associated with this material.
      * @returns Vector of shader uniforms.
      */
-    std::vector<ShaderUniform>& getUniforms() { return uniforms; }
-
-    /**
-     * Gets the shader uniforms associated with this material.
-     * @returns Vector of shader uniforms.
-     */
-    const std::vector<ShaderUniform>& getUniforms() const { return uniforms; }
+    std::vector<ShaderUniform> getUniforms()
+    {
+        std::vector<ShaderUniform> uniforms;
+        uniforms.push_back({"albedo", albedo});
+        return uniforms;
+    }
 
     /**
      * Sets the albedo colour for this material.
      * @param colour Albedo colour to set.
      */
-    void setAlbedo(Colour colour) { this->albedo = colour; }
+    void setAlbedo(Colour colour) { albedo = colour; }
 
     /**
      * Gets the albedo colour for this material.
      * @returns Albedo colour.
      */
     Colour getAlbedo() const { return albedo; }
-
-    /**
-     * Sets a shader uniform on this material.
-     * @param name Name of the uniform.
-     * @param value Value of the uniform.
-     */
-    void setUniform(const std::string& name, UniformValue value)
-    {
-        uniforms.push_back({name, value});
-    }
 
     /**
      * Gets the textures associated with this material.
@@ -90,6 +79,5 @@ public:
 
 private:
     Colour albedo = Colour(255, 255, 255);
-    std::vector<ShaderUniform> uniforms;
     std::vector<Texture> textures;
 };
