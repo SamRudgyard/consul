@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/ui/property_registry.hpp"
 #include "graphics/shader/uniform.hpp"
 #include "graphics/texture/texture.hpp"
 
@@ -11,10 +12,15 @@ class Material
 {
 public:
     Material() {
-        this->setUniform("albedo", Colour(255, 255, 255));
         this->setTexture(Texture::getDefaultDiffuseTexture());
         this->setTexture(Texture::getDefaultSpecularTexture());
     };
+
+    static void registerProperties()
+    {
+        PropertyRegistry& registry = PropertyRegistry::get();
+        registry.registerProperty(PropertyInfo("Material", PropertyType::COLOUR, "Albedo"), &Material::getAlbedo, &Material::setAlbedo);
+    }
 
     /**
      * Gets the shader uniforms associated with this material.
@@ -27,6 +33,18 @@ public:
      * @returns Vector of shader uniforms.
      */
     const std::vector<ShaderUniform>& getUniforms() const { return uniforms; }
+
+    /**
+     * Sets the albedo colour for this material.
+     * @param colour Albedo colour to set.
+     */
+    void setAlbedo(Colour colour) { this->albedo = colour; }
+
+    /**
+     * Gets the albedo colour for this material.
+     * @returns Albedo colour.
+     */
+    Colour getAlbedo() const { return albedo; }
 
     /**
      * Sets a shader uniform on this material.
@@ -71,6 +89,7 @@ public:
     }
 
 private:
+    Colour albedo = Colour(255, 255, 255);
     std::vector<ShaderUniform> uniforms;
     std::vector<Texture> textures;
 };

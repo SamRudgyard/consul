@@ -1,5 +1,6 @@
 #include "user_interface.hpp"
 #include "core/profiling/profile_method.hpp"
+#include "graphics/material/material.hpp"
 
 UserInterface::UserInterface()
 #ifndef CONSUL_CONSOLE_STDOUT
@@ -9,6 +10,7 @@ UserInterface::UserInterface()
     : windows{&performanceWindow}
 #endif
 {
+    Material::registerProperties();
 }
 
 void UserInterface::update()

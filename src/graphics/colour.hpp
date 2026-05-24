@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include <glm/glm.hpp>
+
 struct Colour
 {
     std::uint8_t r;
