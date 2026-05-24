@@ -6,16 +6,12 @@ Mesh::Mesh(
     std::vector<glm::vec2> textureCoords,
     std::vector<glm::vec4> tangents,
     std::vector<unsigned int> indices,
-    std::vector<Texture> textures,
-    Colour tint,
     DrawMode drawMode
 ) : positions(positions),
     normals(normals),
     textureCoords(textureCoords),
     tangents(tangents),
     indices(indices),
-    textures(textures),
-    tint(tint),
     drawMode(drawMode),
     indexCount(indices.size())
 {

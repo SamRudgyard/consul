@@ -6,6 +6,7 @@
 #include <stb_image.h>
 
 #include "core/profiling/profile_method.hpp"
+#include "graphics/colour.hpp"
 
 OpenGLRenderer::~OpenGLRenderer()
 {
@@ -187,11 +188,16 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
 {
     CONSUL_PROFILE_METHOD();
 
-    if (!mesh.isAnyDirty()) return;
-
+    // This is required to refresh the MeshBuffer reference to the Mesh.
+    // We do this prior to checking if the Mesh is dirty, as if a new Mesh
+    // was added then the pointer may be stale. TODO: This isn't a solid
+    // solution, so refactor when we have a way to track the meshes
+    // present in the scene.
     auto [it, inserted] = meshes.try_emplace(mesh.getID());
     MeshBuffer& meshBuffer = it->second;
     meshBuffer.mesh = &mesh;
+
+    if (!mesh.isAnyDirty()) return;
 
     if (inserted) {
         glGenVertexArrays(1, &meshBuffer.vao);
@@ -303,8 +309,11 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
     glCheckError();
 
-    for (Texture& texture : mesh.getTextures()) {
-        uploadTexture(texture);
+    std::shared_ptr<Material> material = mesh.getMaterial();
+    if (material) {
+        for (Texture& texture : material->getTextures()) {
+            uploadTexture(texture);
+        }
     }
 
     Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + std::to_string(mesh.getID()) + " to GPU.");
@@ -413,40 +422,62 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
             continue;
         }
         const Mesh& mesh = *meshBuffer.mesh;
-        const std::vector<Texture>& textures = mesh.getTextures();
+        std::shared_ptr<Material> material = mesh.getMaterial();
+        if (!material) {
+            Console::get().logOnDebug("[OpenGLRenderer::render] Mesh " + std::to_string(mesh.getID()) + " has no material, so will be rendered with default material.");
+            material = Material::getDefaultMaterial();
+        }
 
         unsigned int iDiffuse = 0;
         unsigned int iSpecular = 0;
 
-        for (unsigned int iTexture = 0; iTexture < textures.size(); iTexture++) {
-            const Texture& texture = textures[iTexture];
-            if (texture.getType() == TextureType::DIFFUSE) {
-                const std::string uniformName = "diffuse" + std::to_string(iDiffuse);
-                glCheckError();
-                bindTexture(programID, iTexture, uniformName.c_str(), texture);
-                iDiffuse++;
-            }
-            else if (texture.getType() == TextureType::SPECULAR) {
-                const std::string uniformName = "specular" + std::to_string(iSpecular);
-                bindTexture(programID, iTexture, uniformName.c_str(), texture);
-                glCheckError();
-                iSpecular++;
+        if (material) {
+            const std::vector<Texture>& textures = material->getTextures();
+            for (unsigned int iTexture = 0; iTexture < textures.size(); iTexture++) {
+                const Texture& texture = textures[iTexture];
+                if (texture.getType() == TextureType::DIFFUSE) {
+                    const std::string uniformName = "diffuse" + std::to_string(iDiffuse);
+                    glCheckError();
+                    bindTexture(programID, iTexture, uniformName.c_str(), texture);
+                    iDiffuse++;
+                }
+                else if (texture.getType() == TextureType::SPECULAR) {
+                    const std::string uniformName = "specular" + std::to_string(iSpecular);
+                    bindTexture(programID, iTexture, uniformName.c_str(), texture);
+                    glCheckError();
+                    iSpecular++;
+                }
             }
         }
 
         const glm::mat4& modelMatrix = mesh.getModelMatrix();
         const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-        const Colour tint = mesh.getTint();
-        const glm::vec4 tintValue(
-            tint.r / 255.0f,
-            tint.g / 255.0f,
-            tint.b / 255.0f,
-            tint.alpha / 255.0f
-        );
+
+        if (material) {
+            for (const ShaderUniform& uniform : material->getUniforms()) {
+                const char* uniformName = uniform.name.c_str();
+                if (const int* intUniform = std::get_if<int>(&uniform.value)) {
+                    setUniformInt(programID, uniformName, *intUniform);
+                } else if (const float* floatUniform = std::get_if<float>(&uniform.value)) {
+                    setUniformFloat(programID, uniformName, *floatUniform);
+                } else if (const glm::vec2* vec2Uniform = std::get_if<glm::vec2>(&uniform.value)) {
+                    setUniformVec2(programID, uniformName, *vec2Uniform); 
+                } else if (const glm::vec3* vec3Uniform = std::get_if<glm::vec3>(&uniform.value)) {
+                    setUniformVec3(programID, uniformName, *vec3Uniform);
+                } else if (const glm::vec4* vec4Uniform = std::get_if<glm::vec4>(&uniform.value)) {
+                    setUniformVec4(programID, uniformName, *vec4Uniform);
+                } else if (const Colour* colourUniform = std::get_if<Colour>(&uniform.value)) {
+                    setUniformVec4(programID, uniformName, colourUniform->toVec4());
+                } else if (const glm::mat4* mat4Uniform = std::get_if<glm::mat4>(&uniform.value)) {
+                    setUniformMat4(programID, uniformName, *mat4Uniform);
+                } else {
+                    Console::get().error("[OpenGLRenderer::render] Unsupported uniform type for uniform '" + uniform.name + "'");
+                }
+            }
+        }
 
         setUniformMat4(programID, "model", modelMatrix);
         setUniformMat3(programID, "normalMatrix", normalMatrix);
-        setUniformVec4(programID, "meshTint", tintValue);
         setUniformInt(programID, "useLighting", mesh.hasAttribute(AttributeType::NORMAL) ? 1 : 0);
 
         glBindVertexArray(meshBuffer.vao);
@@ -540,6 +571,26 @@ void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, in
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
         glUniform1i(location, value);
+    }
+}
+
+void OpenGLRenderer::setUniformFloat(GLuint programID, const char* uniformName, float value)
+{
+    CONSUL_PROFILE_METHOD();
+
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform1f(location, value);
+    }
+}
+
+void OpenGLRenderer::setUniformVec2(GLuint programID, const char* uniformName, const glm::vec2& value)
+{
+    CONSUL_PROFILE_METHOD();
+
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform2fv(location, 1, glm::value_ptr(value));
     }
 }
 

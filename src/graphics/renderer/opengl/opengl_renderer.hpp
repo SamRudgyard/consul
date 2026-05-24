@@ -1,11 +1,13 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "core/console/console.hpp"
 #include "graphics/camera/camera.hpp"
+#include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/renderer/renderer.hpp"
@@ -125,6 +127,8 @@ private:
     unsigned int enableVertexBuffer(const std::vector<glm::vec4>& data, AttributeType attribute, bool useDynamicDraw);
     void bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture);
     static void setUniformInt(GLuint programID, const char* uniformName, int value);
+    static void setUniformFloat(GLuint programID, const char* uniformName, float value);
+    static void setUniformVec2(GLuint programID, const char* uniformName, const glm::vec2& value);
     static void setUniformVec3(GLuint programID, const char* uniformName, const glm::vec3& value);
     static void setUniformVec4(GLuint programID, const char* uniformName, const glm::vec4& value);
     static void setUniformMat3(GLuint programID, const char* uniformName, const glm::mat3& value);

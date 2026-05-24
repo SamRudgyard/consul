@@ -5,6 +5,7 @@
 #include "core/scene.hpp"
 #include "graphics/camera/camera_3d.hpp"
 #include "graphics/shader/shader.hpp"
+#include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/geometry/geometry_3d.hpp"
 
@@ -13,15 +14,19 @@ class CubeNode : public Node
 public:
     void initialise(Renderer& renderer)
     {
-        mesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
-        outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
-
-        mesh.setTint(Colour(20, 200, 200));
+        Mesh mesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
+        Mesh outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
         outlineMesh.setDrawMode(DrawMode::LINES);
-        outlineMesh.setTint(Colour(255, 255, 255));
 
-        renderer.uploadMesh(mesh);
-        renderer.uploadMesh(outlineMesh);
+        material = std::make_shared<Material>();
+        material->setAlbedo(Colour(20, 200, 200));
+
+        mesh.setMaterial(material);
+
+        model.addMesh(mesh);
+        model.addMesh(outlineMesh);
+
+        renderer.uploadModel(model);
     }
 
 protected:
@@ -35,16 +40,13 @@ protected:
 
     void onRender(Renderer& renderer) override
     {
-        mesh.setModelMatrix(getWorldTransform());
-        outlineMesh.setModelMatrix(getWorldTransform());
-
-        renderer.uploadMesh(mesh);
-        renderer.uploadMesh(outlineMesh);
+        model.setTransform(getWorldTransform());
+        renderer.uploadModel(model);
     }
 
 private:
-    Mesh mesh;
-    Mesh outlineMesh;
+    Model model;
+    std::shared_ptr<Material> material;
     float angle = 0.0f;
 };
 
