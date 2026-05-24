@@ -16,6 +16,12 @@ public:
         this->setTexture(Texture::getDefaultSpecularTexture());
     };
 
+    static std::shared_ptr<Material> getDefaultMaterial()
+    {
+        static std::shared_ptr<Material> defaultMaterial = std::make_shared<Material>();
+        return defaultMaterial;
+    }
+
     /**
      * Registers the properties of the Material class, allowing them to be edited in the UI.
      */

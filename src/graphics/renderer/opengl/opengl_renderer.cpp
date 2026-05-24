@@ -423,6 +423,10 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
         }
         const Mesh& mesh = *meshBuffer.mesh;
         std::shared_ptr<Material> material = mesh.getMaterial();
+        if (!material) {
+            Console::get().logOnDebug("[OpenGLRenderer::render] Mesh " + std::to_string(mesh.getID()) + " has no material, so will be rendered with default material.");
+            material = Material::getDefaultMaterial();
+        }
 
         unsigned int iDiffuse = 0;
         unsigned int iSpecular = 0;
