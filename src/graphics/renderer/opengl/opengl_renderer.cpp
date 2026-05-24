@@ -454,6 +454,10 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
                 const char* uniformName = uniform.name.c_str();
                 if (const int* intUniform = std::get_if<int>(&uniform.value)) {
                     setUniformInt(programID, uniformName, *intUniform);
+                } else if (const float* floatUniform = std::get_if<float>(&uniform.value)) {
+                    setUniformFloat(programID, uniformName, *floatUniform);
+                } else if (const glm::vec2* vec2Uniform = std::get_if<glm::vec2>(&uniform.value)) {
+                    setUniformVec2(programID, uniformName, *vec2Uniform); 
                 } else if (const glm::vec3* vec3Uniform = std::get_if<glm::vec3>(&uniform.value)) {
                     setUniformVec3(programID, uniformName, *vec3Uniform);
                 } else if (const glm::vec4* vec4Uniform = std::get_if<glm::vec4>(&uniform.value)) {
@@ -563,6 +567,26 @@ void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, in
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
         glUniform1i(location, value);
+    }
+}
+
+void OpenGLRenderer::setUniformFloat(GLuint programID, const char* uniformName, float value)
+{
+    CONSUL_PROFILE_METHOD();
+
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform1f(location, value);
+    }
+}
+
+void OpenGLRenderer::setUniformVec2(GLuint programID, const char* uniformName, const glm::vec2& value)
+{
+    CONSUL_PROFILE_METHOD();
+
+    const GLint location = glGetUniformLocation(programID, uniformName);
+    if (location >= 0) {
+        glUniform2fv(location, 1, glm::value_ptr(value));
     }
 }
 
