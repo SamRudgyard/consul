@@ -2,9 +2,10 @@
 
 #include "core/console/console.hpp"
 #include "core/engine_context.hpp"
-#include "core/scene.hpp"
-#include "core/scene_manager.hpp"
 #include "core/ui/user_interface.hpp"
+#include "core/project/project_manager.hpp"
+#include "core/project/scene.hpp"
+#include "core/project/scene_manager.hpp"
 #include "platforms/platform.hpp"
 #include "graphics/renderer/renderer.hpp"
 #include "time.hpp"
@@ -73,6 +74,7 @@ private:
     Platform* platform = nullptr;
     Renderer* renderer = nullptr;
     bool close = false;
+    std::shared_ptr<ProjectManager> projectManager = nullptr;
     SceneManager sceneManager;
 
     void initialiseWindow(PlatformType platformType);

@@ -2,7 +2,7 @@
 
 #include "core/consul.hpp"
 #include "core/window.hpp"
-#include "core/scene.hpp"
+#include "core/project/scene.hpp"
 #include "graphics/camera/camera_3d.hpp"
 #include "graphics/shader/shader.hpp"
 #include "graphics/material/material.hpp"

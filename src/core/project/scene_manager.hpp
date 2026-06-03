@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "core/scene.hpp"
+#include "core/project/scene.hpp"
 
 class Renderer;
 

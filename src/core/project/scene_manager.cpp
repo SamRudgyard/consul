@@ -1,6 +1,6 @@
-#include "core/scene_manager.hpp"
+#include "core/project/scene_manager.hpp"
 
-#include "console/console.hpp"
+#include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
 #include "graphics/renderer/renderer.hpp"
 

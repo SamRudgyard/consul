@@ -91,6 +91,8 @@ bool isSubstring(const std::string& str, const std::string& substr);
  */
 std::vector<std::size_t> getAlphabeticalStringOrder(const std::vector<std::string>& strings);
 
+bool contains(const std::vector<std::string>& vec, const std::string& value);
+
 void waitTime(double seconds);
 
 /** 
