@@ -37,7 +37,6 @@ public:
     const AssetMetadata* getMetadata(AssetID id) const;
 
 private:
-    AssetID nextID = 1;
     std::unordered_map<AssetID, AssetMetadata> metadata;
     std::unordered_map<AssetID, std::shared_ptr<Model>> models;
     std::unordered_map<AssetID, std::shared_ptr<Mesh>> meshes;
@@ -50,8 +49,6 @@ private:
     static inline const std::vector<std::string> supportedMeshExtensions = {};
     static inline const std::vector<std::string> supportedMaterialExtensions = {};
     static inline const std::vector<std::string> supportedShaderExtensions = {};
-
-    AssetID reserveID();
 
     void addMetadata(AssetID id, AssetType type, const std::string& name);
     static std::string getLowerExtension(const std::string& path);

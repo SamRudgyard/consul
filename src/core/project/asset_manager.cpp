@@ -14,12 +14,13 @@
 
 AssetID AssetManager::addModel(const std::string& name, std::shared_ptr<Model> model)
 {
+    AssetID id = INVALID_ASSET_ID;
+
     if (!model) {
         Console::get().warn("[AssetManager::addModel] Cannot add null model asset: '" + name + "'");
-        return INVALID_ASSET_ID;
+        return id;
     }
 
-    AssetID id = reserveID();
     models[id] = std::move(model);
     addMetadata(id, AssetType::MODEL, name);
     return id;
@@ -27,12 +28,13 @@ AssetID AssetManager::addModel(const std::string& name, std::shared_ptr<Model> m
 
 AssetID AssetManager::addMesh(const std::string& name, std::shared_ptr<Mesh> mesh)
 {
+    AssetID id = INVALID_ASSET_ID;
+
     if (!mesh) {
         Console::get().warn("[AssetManager::addMesh] Cannot add null mesh asset: '" + name + "'");
-        return INVALID_ASSET_ID;
+        return id;
     }
 
-    AssetID id = reserveID();
     meshes[id] = std::move(mesh);
     addMetadata(id, AssetType::MESH, name);
     return id;
@@ -40,12 +42,13 @@ AssetID AssetManager::addMesh(const std::string& name, std::shared_ptr<Mesh> mes
 
 AssetID AssetManager::addTexture(const std::string& name, std::shared_ptr<Texture> texture)
 {
+    AssetID id = INVALID_ASSET_ID;
+
     if (!texture) {
         Console::get().warn("[AssetManager::addTexture] Cannot add null texture asset: '" + name + "'");
-        return INVALID_ASSET_ID;
+        return id;
     }
 
-    AssetID id = reserveID();
     textures[id] = std::move(texture);
     addMetadata(id, AssetType::TEXTURE, name);
     return id;
@@ -53,12 +56,13 @@ AssetID AssetManager::addTexture(const std::string& name, std::shared_ptr<Textur
 
 AssetID AssetManager::addMaterial(const std::string& name, std::shared_ptr<Material> material)
 {
+    AssetID id = INVALID_ASSET_ID;
+
     if (!material) {
         Console::get().warn("[AssetManager::addMaterial] Cannot add null material asset: '" + name + "'");
-        return INVALID_ASSET_ID;
+        return id;
     }
 
-    AssetID id = reserveID();
     materials[id] = std::move(material);
     addMetadata(id, AssetType::MATERIAL, name);
     return id;
@@ -71,7 +75,7 @@ AssetID AssetManager::addShader(const std::string& name, std::shared_ptr<Shader>
         return INVALID_ASSET_ID;
     }
 
-    AssetID id = reserveID();
+    AssetID id;
     shaders[id] = std::move(shader);
     addMetadata(id, AssetType::SHADER, name);
     return id;
@@ -79,14 +83,14 @@ AssetID AssetManager::addShader(const std::string& name, std::shared_ptr<Shader>
 
 AssetID AssetManager::importAsset(const std::string& name, const std::string& path)
 {
+    AssetID id = INVALID_ASSET_ID;
+
     if (!doesFileExist(path.c_str())) {
         Console::get().warn("[AssetManager::importAsset] Invalid asset path: '" + path + "'");
-        return INVALID_ASSET_ID;
+        return id;
     }
 
     const std::string extension = getFileExtension(path.c_str());
-    AssetID id = INVALID_ASSET_ID;
-
     if (contains(supportedModelExtensions, extension)) {
         id = addModel(name, std::make_shared<Model>(path.c_str()));
     } else if (contains(supportedTextureExtensions, extension)) {
@@ -103,6 +107,8 @@ AssetID AssetManager::importAsset(const std::string& name, const std::string& pa
 
 AssetID AssetManager::importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath)
 {
+    AssetID id = INVALID_ASSET_ID;
+
     if (!doesFileExist(vertexPath.c_str())) {
         Console::get().warn("[AssetManager::importShader] Invalid vertex shader path: '" + vertexPath + "'");
         return INVALID_ASSET_ID;
@@ -112,7 +118,7 @@ AssetID AssetManager::importShader(const std::string& name, const std::string& v
         return INVALID_ASSET_ID;
     }
 
-    AssetID id = addShader(name, std::make_shared<Shader>(vertexPath.c_str(), fragmentPath.c_str()));
+    id = addShader(name, std::make_shared<Shader>(vertexPath.c_str(), fragmentPath.c_str()));
     metadata[id].sourcePath = vertexPath;
     metadata[id].secondarySourcePath = fragmentPath;
     metadata[id].importedFromFile = true;
@@ -153,11 +159,6 @@ const AssetMetadata* AssetManager::getMetadata(AssetID id) const
 {
     auto it = metadata.find(id);
     return it == metadata.end() ? nullptr : &it->second;
-}
-
-AssetID AssetManager::reserveID()
-{
-    return nextID++;
 }
 
 void AssetManager::addMetadata(AssetID id, AssetType type, const std::string& name)
