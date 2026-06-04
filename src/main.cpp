@@ -27,11 +27,11 @@ public:
         std::shared_ptr<Model> model = std::make_shared<Model>();
         model->addMesh(mesh);
         model->addMesh(outlineMesh);
-        assetManager->addModel("cubeModel", model);
+        modelID = assetManager->addModel("cubeModel", model);
     }
 
 protected:
-    void onUpdate(double deltaTime) override
+    void onUpdate(std::shared_ptr<AssetManager> assetManager, double deltaTime) override
     {
         static float r = 1.5f;
         static float anglePerSecond = glm::radians(45.0f);
@@ -39,7 +39,13 @@ protected:
         incrementRotationRad({0.0f, anglePerSecond*((float)deltaTime), 0.0f});
         float currentAngle = getRotationY();
         setPosition({r*std::cos(currentAngle), 0.0f, r*std::sin(currentAngle)});
+
+        // Update the model's mesh data to reflect the new position/rotation
+        std::shared_ptr<Model> model = assetManager->getModel(modelID);
+        model->setTransform(getWorldTransform());
     }
+private:
+    AssetID modelID;
 };
 
 class ExampleScene : public Scene

@@ -23,7 +23,7 @@ void Scene::update(std::shared_ptr<AssetManager> assetManager, double deltaTime)
     CONSUL_PROFILE_METHOD();
 
     onUpdate(assetManager, deltaTime);
-    updateNodes(deltaTime);
+    updateNodes(assetManager, deltaTime);
 }
 
 void Scene::shutdown()

@@ -26,7 +26,7 @@ protected:
     virtual void onUpdate(std::shared_ptr<AssetManager> assetManager, double deltaTime) {} // User hook for scene-specific update logic
     virtual void onShutdown() {} // User hook for scene-specific shutdown logic
 
-    void updateNodes(double deltaTime) { root.update(deltaTime, glm::mat4(1.0f)); }
+    void updateNodes(std::shared_ptr<AssetManager> assetManager, double deltaTime) { root.update(assetManager, deltaTime, glm::mat4(1.0f)); }
 
 private:
     Node root;
