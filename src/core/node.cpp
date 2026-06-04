@@ -37,6 +37,18 @@ void Node::setRotationRad(glm::vec3 rotationRad)
     recalcLocalTransformation();
 }
 
+void Node::incrementRotationDeg(glm::vec3 deltaRotationDeg)
+{
+    glm::vec3 deltaRotationRad = {DEG_TO_RAD*deltaRotationDeg.x, DEG_TO_RAD*deltaRotationDeg.y, DEG_TO_RAD*deltaRotationDeg.z};
+    incrementRotationRad(deltaRotationRad);
+}
+
+void Node::incrementRotationRad(glm::vec3 deltaRotationRad)
+{
+    rotation += deltaRotationRad;
+    recalcLocalTransformation();
+}
+
 const glm::mat4& Node::getLocalTransform() const
 {
     return localTransform;
@@ -67,8 +79,6 @@ void Node::render(Renderer& renderer)
     if (!isVisible) {
         return;
     }
-
-    onRender(renderer);
 
     for (const auto& child : children) {
         child->render(renderer);

@@ -4,6 +4,7 @@
 
 #include "core/project/scene.hpp"
 
+class AssetManager;
 class Renderer;
 
 class SceneManager
@@ -12,11 +13,15 @@ public:
     SceneManager() = default;
     ~SceneManager() = default;
 
-    void loadScene(std::unique_ptr<Scene> newScene, Renderer& renderer);
+    void loadScene(Scene& newScene);
 
-    void update(Renderer& renderer, double deltaTime);
-    void shutdown(Renderer& renderer);
+    void assignAssetManager(std::shared_ptr<AssetManager> assetManager);
+
+    void update(double deltaTime);
+    void render(Renderer& renderer);
+    void shutdown();
 
 private:
-    std::unique_ptr<Scene> currentScene;
+    Scene* currentScene = nullptr;
+    std::shared_ptr<AssetManager> assetManager;
 };

@@ -62,10 +62,16 @@ public:
     Renderer& getRenderer() { return *renderer; }
 
     /**
-     * Loads a scene. Ownership is transferred to the engine.
+     * Gets the project manager instance.
+     * @returns Reference to the project manager.
+     */
+    ProjectManager& getProjectManager() { return *projectManager; }
+
+    /**
+     * Loads a scene.
      * The previous scene (if any) will be shut down.
      */
-    void loadScene(std::unique_ptr<Scene> newScene);
+    void loadScene(Scene& newScene);
 
 private:
     Console& console = Console::get();
@@ -75,7 +81,6 @@ private:
     Renderer* renderer = nullptr;
     bool close = false;
     std::shared_ptr<ProjectManager> projectManager = nullptr;
-    SceneManager sceneManager;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);

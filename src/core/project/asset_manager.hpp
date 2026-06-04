@@ -35,6 +35,11 @@ public:
     std::shared_ptr<Shader> getShader(AssetID id) const;
 
     const AssetMetadata* getMetadata(AssetID id) const;
+    const std::unordered_map<AssetID, std::shared_ptr<Model>>& getModels() const { return models; }
+    const std::unordered_map<AssetID, std::shared_ptr<Mesh>>& getMeshes() const { return meshes; }
+    const std::unordered_map<AssetID, std::shared_ptr<Shader>>& getShaders() const { return shaders; }
+
+    void clearAssets();
 
 private:
     std::unordered_map<AssetID, AssetMetadata> metadata;

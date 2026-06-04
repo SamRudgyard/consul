@@ -23,6 +23,20 @@ public:
      */
     std::shared_ptr<SceneManager> getSceneManager() const { return sceneManager; }
 
+    void assignAssetManagerToSceneManager()
+    {
+        if (!sceneManager) {
+            Console::get().error("[ProjectManager::assignAssetManagerToSceneManager] Scene manager is not initialised!");
+            return;
+        }
+        if (!assetManager) {
+            Console::get().error("[ProjectManager::assignAssetManagerToSceneManager] Asset manager is not initialised!");
+            return;
+        }
+
+        sceneManager->assignAssetManager(assetManager);
+    }
+
 private:
     std::shared_ptr<AssetManager> assetManager = std::make_shared<AssetManager>();
     std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();

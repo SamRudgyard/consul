@@ -1,36 +1,39 @@
 #include "scene.hpp"
+#include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
-#include "graphics/renderer/renderer.hpp"
+#include "core/project/asset_manager.hpp"
 
-void Scene::init(Renderer& renderer)
+void Scene::init(std::shared_ptr<AssetManager> assetManager)
 {
     CONSUL_PROFILE_METHOD();
 
+    if (!assetManager) {
+        Console::get().error("[Scene::init] Provided asset manager is null_ptr!");
+        return;
+    }
+
     if (!isInitialised) {
-        onInit(renderer);
+        onInit(assetManager);
         isInitialised = true;
     }
 }
 
-void Scene::update(double deltaTime)
+void Scene::update(std::shared_ptr<AssetManager> assetManager, double deltaTime)
 {
     CONSUL_PROFILE_METHOD();
 
-    onUpdate(deltaTime);
+    onUpdate(assetManager, deltaTime);
     updateNodes(deltaTime);
-}
-
-void Scene::render(Renderer& renderer)
-{
-    CONSUL_PROFILE_METHOD();
-
-    renderNodes(renderer);
-    onRender(renderer);
 }
 
 void Scene::shutdown()
 {
     CONSUL_PROFILE_METHOD();
+
+    if (!isInitialised) {
+        Console::get().error("[Scene::shutdown] Scene is not initialised!");
+        return;
+    }
 
     isInitialised = false;
     onShutdown();

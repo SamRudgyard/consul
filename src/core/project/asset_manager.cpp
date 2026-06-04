@@ -14,13 +14,12 @@
 
 AssetID AssetManager::addModel(const std::string& name, std::shared_ptr<Model> model)
 {
-    AssetID id = INVALID_ASSET_ID;
-
     if (!model) {
         Console::get().warn("[AssetManager::addModel] Cannot add null model asset: '" + name + "'");
-        return id;
+        return INVALID_ASSET_ID;
     }
 
+    AssetID id;
     models[id] = std::move(model);
     addMetadata(id, AssetType::MODEL, name);
     return id;
@@ -28,13 +27,12 @@ AssetID AssetManager::addModel(const std::string& name, std::shared_ptr<Model> m
 
 AssetID AssetManager::addMesh(const std::string& name, std::shared_ptr<Mesh> mesh)
 {
-    AssetID id = INVALID_ASSET_ID;
-
     if (!mesh) {
         Console::get().warn("[AssetManager::addMesh] Cannot add null mesh asset: '" + name + "'");
-        return id;
+        return INVALID_ASSET_ID;
     }
 
+    AssetID id;
     meshes[id] = std::move(mesh);
     addMetadata(id, AssetType::MESH, name);
     return id;
@@ -42,13 +40,12 @@ AssetID AssetManager::addMesh(const std::string& name, std::shared_ptr<Mesh> mes
 
 AssetID AssetManager::addTexture(const std::string& name, std::shared_ptr<Texture> texture)
 {
-    AssetID id = INVALID_ASSET_ID;
-
     if (!texture) {
         Console::get().warn("[AssetManager::addTexture] Cannot add null texture asset: '" + name + "'");
-        return id;
+        return INVALID_ASSET_ID;
     }
 
+    AssetID id;
     textures[id] = std::move(texture);
     addMetadata(id, AssetType::TEXTURE, name);
     return id;
@@ -56,13 +53,12 @@ AssetID AssetManager::addTexture(const std::string& name, std::shared_ptr<Textur
 
 AssetID AssetManager::addMaterial(const std::string& name, std::shared_ptr<Material> material)
 {
-    AssetID id = INVALID_ASSET_ID;
-
     if (!material) {
         Console::get().warn("[AssetManager::addMaterial] Cannot add null material asset: '" + name + "'");
-        return id;
+        return INVALID_ASSET_ID;
     }
 
+    AssetID id;
     materials[id] = std::move(material);
     addMetadata(id, AssetType::MATERIAL, name);
     return id;
@@ -180,4 +176,14 @@ std::string AssetManager::getLowerExtension(const std::string& path)
         return static_cast<char>(std::tolower(c));
     });
     return extension;
+}
+
+void AssetManager::clearAssets()
+{
+    metadata.clear();
+    models.clear();
+    meshes.clear();
+    textures.clear();
+    materials.clear();
+    shaders.clear();
 }

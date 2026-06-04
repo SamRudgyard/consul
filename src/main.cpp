@@ -12,77 +12,62 @@
 class CubeNode : public Node
 {
 public:
-    void initialise(Renderer& renderer)
+    void initialise(std::shared_ptr<AssetManager> assetManager)
     {
         Mesh mesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
         Mesh outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
         outlineMesh.setDrawMode(DrawMode::LINES);
 
-        material = std::make_shared<Material>();
+        std::shared_ptr<Material> material = std::make_shared<Material>();
         material->setAlbedo(Colour(20, 200, 200));
+        assetManager->addMaterial("cubeMaterial", material);
 
         mesh.setMaterial(material);
 
-        model.addMesh(mesh);
-        model.addMesh(outlineMesh);
-
-        renderer.uploadModel(model);
+        std::shared_ptr<Model> model = std::make_shared<Model>();
+        model->addMesh(mesh);
+        model->addMesh(outlineMesh);
+        assetManager->addModel("cubeModel", model);
     }
 
 protected:
     void onUpdate(double deltaTime) override
     {
-        angle += deltaTime;
-        setRotationRad({0.0f, angle, 0.0f});
         static float r = 1.5f;
-        setPosition({r * std::cos(angle), 0.0f, r * std::sin(angle)});
-    }
+        static float anglePerSecond = glm::radians(45.0f);
 
-    void onRender(Renderer& renderer) override
-    {
-        model.setTransform(getWorldTransform());
-        renderer.uploadModel(model);
+        incrementRotationRad({0.0f, anglePerSecond*((float)deltaTime), 0.0f});
+        float currentAngle = getRotationY();
+        setPosition({r*std::cos(currentAngle), 0.0f, r*std::sin(currentAngle)});
     }
-
-private:
-    Model model;
-    std::shared_ptr<Material> material;
-    float angle = 0.0f;
 };
 
 class ExampleScene : public Scene
 {
 public:
-    ExampleScene()
-        : model("assets/shiba/scene.gltf"),
-          shader("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl")
-    {}
+    ExampleScene() = default;
 
-    void onInit(Renderer& renderer) override
+    void onInit(std::shared_ptr<AssetManager> assetManager) override
     {
         camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
-        renderer.uploadShader(shader);
-        renderer.uploadModel(model);
+        assetManager->addShader("default", std::make_shared<Shader>("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl"));
+        assetManager->addModel("shiba", std::make_shared<Model>("assets/shiba/scene.gltf"));
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
-        rotatingCube->initialise(renderer);
+        rotatingCube->initialise(assetManager);
     }
 
-    void onUpdate(double deltaTime) override
+    void onUpdate(std::shared_ptr<AssetManager> assetManager, double deltaTime) override
     {
         camera.handleInputs(deltaTime);
     }
 
-    void onRender(Renderer& renderer) override
-    {
-        renderer.render(shader, camera);
-    }
+    // A bit hacky, but will do for the moment
+    Camera* getActiveCamera() override { return &camera; }
 
 private:
     Camera3D camera;
-    Model model;
-    Shader shader;
 };
 
 int main(int argc, char **argv)
@@ -92,7 +77,8 @@ int main(int argc, char **argv)
     window.isMaximised = true;
 
     Consul consul(window);
-    consul.loadScene(std::make_unique<ExampleScene>());
+    ExampleScene scene = ExampleScene();
+    consul.loadScene(scene);
     consul.run();
 
     return 0;
