@@ -2,6 +2,8 @@
 
 #include "core/console/console.hpp"
 #include "core/engine_context.hpp"
+#include "core/ecs/entity_manager.hpp"
+#include "core/ecs/component_manager.hpp"
 #include "core/ui/user_interface.hpp"
 #include "core/project/asset_manager.hpp"
 #include "core/project/asset_library.hpp"
@@ -107,6 +109,8 @@ private:
     std::shared_ptr<GLTFImporter> gltfImporter = nullptr;
     std::shared_ptr<AssetLibrary> assets = nullptr;
     std::shared_ptr<SceneManager> sceneManager = nullptr;
+    std::shared_ptr<EntityManager> entityManager = nullptr;
+    std::shared_ptr<ComponentManager> componentManager = nullptr;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);
