@@ -4,15 +4,26 @@
 #include <vector>
 
 #include "ecs_types.hpp"
+#include "component_manager.hpp"
 
 struct EntityContainer {
     Entity entity; // ID of a given entity
     ComponentMask mask; // Mask of the components of a given entity
 };
 
+/**
+ * The EntityManager class is a singleton that manages entities and their
+ * associated components. It provides functions for adding, removing, and
+ * retrieving entities and their components.
+ * 
+ * As it simply holds a bitmask of components for each entity, it is not
+ * intended for modifying the components of an entity directly. Instead, use
+ * the ComponentManager class to add, remove, and retrieve components
+ * directly.
+ */
 class EntityManager {
 public:
-    EntityManager() = default;
+    EntityManager(std::shared_ptr<ComponentManager> componentManager) : componentManager(componentManager) {}
     ~EntityManager() = default;
 
     /**
@@ -45,27 +56,59 @@ public:
      */
     void DestroyEntity(Entity entity);
 
-     /**
-     * Adds a component of the specified type to the specified entity.
+    /**
+     * Adds a component of type T to the specified entity (with default value).
      *
-     * @param entity The entity to which the component is to be added.
-     * @param componentID The ID of the component to be added.
+     * @param entity The ID of the entity to add the component to.
      */
-    void Add(Entity entity, unsigned int componentID) {
+    template<class T>
+    void AddComponent(Entity entity) {
+        if (!componentManager) {
+            Console::get().error("[EntityManager::AddComponent] Component manager is not assigned!");
+            return;
+        }
+
+        unsigned int componentID = componentManager->GetComponentID<T>();
         entities[entity].mask.set(componentID);
+        componentManager->AddComponent<T>(entity, T());
     }
 
     /**
-     * Removes a component of the specified type from the specified entity.
+     * Adds a component of type T to the specified entity (with specified value).
      *
-     * @param entity The entity from which the component is to be removed.
-     * @param componentID The ID of the component to be removed.
+     * @param entity The ID of the entity to add the component to.
+     * @param component The value of the component to add.
+     */
+    template<class T>
+    void AddComponent(Entity entity, const T& component) {
+        if (!componentManager) {
+            Console::get().error("[EntityManager::AddComponent] Component manager is not assigned!");
+            return;
+        }
+
+        unsigned int componentID = componentManager->GetComponentID<T>();
+        entities[entity].mask.set(componentID);
+        componentManager->AddComponent<T>(entity, component);
+    }
+
+    /**
+     * Removes a component of type T from the specified entity.
+     *
+     * @tparam T The type of the component to remove.
+     * @param entity The ID of the entity from which to remove the component.
      */
     template<typename T>
-    void Remove(Entity entity, unsigned int componentID) {
+    void RemoveComponent(Entity entity) {
+        if (!componentManager) {
+            Console::get().error("[EntityManager::RemoveComponent] Component manager is not assigned!");
+            return;
+        }
+
+        unsigned int componentID = componentManager->GetComponentID<T>();
         entities[entity].mask.reset(componentID);
     }
 
 private:
     std::vector<EntityContainer> entities;
+    std::shared_ptr<ComponentManager> componentManager = nullptr;
 };

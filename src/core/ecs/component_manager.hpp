@@ -17,8 +17,14 @@ public:
 template<class T>
 class ComponentArray : public IComponentArray {
 private:
-    std::vector<T> components;
+    std::vector<T> components; // Array of components, where the index corresponds to the entity
 public:
+    /**
+     * Sets the component of a given entity to a specified value.
+     *
+     * @param entity The entity for which to set the component.
+     * @param component The value of the component to set.
+     */
     void SetComponent(Entity entity, T component) {
         if (entity >= components.size()) {
             components.resize(entity + 1);
@@ -26,6 +32,12 @@ public:
         components[entity] = component;
     }
 
+    /**
+     * Gets the component of a given entity.
+     *
+     * @param entity The entity for which to retrieve the component.
+     * @return The component of the entity.
+     */
     T& GetComponent(Entity entity) {
         if (entity >= components.size()) {
             Console::get().error("[ComponentArray::GetComponent] Entity ID '" + std::to_string(entity) + "' out of bounds for component array of size '" + std::to_string(components.size()) + "'");
@@ -40,6 +52,12 @@ private:
     std::unordered_map<std::type_index, std::unique_ptr<IComponentArray>> components;
     std::unordered_map<std::type_index, unsigned int> typeToID;
 
+    /**
+     * Gets the component array of a specified type.
+     *
+     * @tparam T The type of the component.
+     * @return A pointer to the ComponentArray of type T.
+     */
     template<class T>
     ComponentArray<T>* GetComponentArray() {
         type_index typeIdx = typeid(T);
@@ -72,11 +90,26 @@ public:
         return typeToID[typeIdx];
     }
 
+    /**
+     * Adds a component of type T to the specified entity (with specified value).
+     *
+     * @tparam T The type of the component to add.
+     * @param entity The entity to add the component to.
+     * @param component The value of the component to add.
+     */
     template<class T>
     void AddComponent(Entity entity, const T& component) {
         GetComponentArray<T>()->SetComponent(entity, component);
     }
 
+    /**
+     * Gets a component of type T from the specified entity.
+     *
+     * @tparam T The type of the component to retrieve.
+     * @param entity The entity to add the component to.
+     * 
+     * @return The component of type T from the specified entity.
+     */
     template <class T>
     T& GetComponent(Entity entity) {
         return GetComponentArray<T>()->GetComponent(entity);
