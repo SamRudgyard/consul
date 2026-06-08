@@ -1,8 +1,11 @@
 #include "core/consul.hpp"
-#include "core/scene.hpp"
+#include "core/project/asset_manager.hpp"
+#include "core/project/scene.hpp"
 #include "graphics/camera/camera_2d.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
+#include "graphics/material/material.hpp"
+#include "graphics/models/model.hpp"
 #include "graphics/shader/shader.hpp"
 
 class RotatingCamera2D : public Camera2D {
@@ -28,70 +31,65 @@ private:
 
 class ColouredQuadNode : public Node {
 public:
-    explicit ColouredQuadNode(const Colour& tint)
-        : tint(tint)
-    {}
-
-    void initialise(Renderer& renderer)
+    void initialise(std::shared_ptr<AssetManager> assetManager, const Colour& tint)
     {
-        mesh = std::make_unique<Mesh>(Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f}));
-        mesh->setTint(tint);
-        renderer.uploadMesh(*mesh);
+        Mesh mesh = Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f});
+
+        std::shared_ptr<Material> material = std::make_shared<Material>();
+        material->setAlbedo(tint);
+        assetManager->addMaterial("quadMaterial", material);
+
+        mesh.setMaterial(material);
+
+        std::shared_ptr<Model> model = std::make_shared<Model>();
+        model->addMesh(mesh);
+        modelID = assetManager->addModel("quadModel", model);
     }
 
 protected:
-    void onRender(Renderer& renderer) override
+    void onUpdate(std::shared_ptr<AssetManager> assetManager, double deltaTime) override
     {
-        if (!mesh) {
+        std::shared_ptr<Model> model = assetManager->getModel(modelID);
+        if (!model) {
             return;
         }
 
-        mesh->setModelMatrix(getWorldTransform());
-        renderer.uploadMesh(*mesh);
+        model->setTransform(getLocalTransform());
     }
 
 private:
-    Colour tint;
-    std::unique_ptr<Mesh> mesh;
+    AssetID modelID;
 };
 
 class RotateCameraScene : public Scene {
 public:
-    RotateCameraScene()
-        : shader("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl")
-    {}
-
-    void onInit(Renderer& renderer) override
+    void onInit(std::shared_ptr<AssetManager> assetManager) override
     {
         camera.setPosition({0.0f, 0.0f});
-        renderer.uploadShader(shader);
+        assetManager->addShader("default", std::make_shared<Shader>("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl"));
 
-        createQuad(renderer, {-1.25f, 0.0f, 0.0f}, Colour(220, 80, 80));
-        createQuad(renderer, {0.0f, 0.0f, 0.0f}, Colour(240, 200, 90));
-        createQuad(renderer, {1.25f, 0.0f, 0.0f}, Colour(80, 180, 220));
-        createQuad(renderer, {0.0f, 1.15f, 0.0f}, Colour(110, 220, 140));
-        createQuad(renderer, {0.0f, -1.15f, 0.0f}, Colour(170, 120, 230));
+        createQuad(assetManager, {-1.25f, 0.0f, 0.0f}, Colour(220, 80, 80));
+        createQuad(assetManager, {0.0f, 0.0f, 0.0f}, Colour(240, 200, 90));
+        createQuad(assetManager, {1.25f, 0.0f, 0.0f}, Colour(80, 180, 220));
+        createQuad(assetManager, {0.0f, 1.15f, 0.0f}, Colour(110, 220, 140));
+        createQuad(assetManager, {0.0f, -1.15f, 0.0f}, Colour(170, 120, 230));
     }
 
-    void onUpdate(double deltaTime) override
+    void onUpdate(std::shared_ptr<AssetManager> assetManager, double deltaTime) override
     {
         camera.handleInputs(deltaTime);
     }
 
-    void onRender(Renderer& renderer) override
-    {
-        renderer.render(shader, camera);
-    }
+    Camera* getActiveCamera() override { return &camera; }
 
 private:
-    void createQuad(Renderer& renderer, const glm::vec3& position, const Colour& tint)
+    void createQuad(std::shared_ptr<AssetManager> assetManager, const glm::vec3& position, const Colour& tint)
     {
-        ColouredQuadNode* quad = getRoot().createChild<ColouredQuadNode>(tint);
+        ColouredQuadNode* quad = getRoot().createChild<ColouredQuadNode>();
         quad->setPosition(position);
-        quad->initialise(renderer);
+        quad->initialise(assetManager, tint);
     }
 
-    Shader shader;
     RotatingCamera2D camera;
 };
 
@@ -102,7 +100,8 @@ int main()
 
     Consul consul(window);
     consul.setTargetFPS(60);
-    consul.loadScene(std::make_unique<RotateCameraScene>());
+    RotateCameraScene scene;
+    consul.loadScene(scene);
     consul.run();
     return 0;
 }
