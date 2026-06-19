@@ -20,6 +20,8 @@ void Consul::initialiseEngine()
     console.log("[Consul] Initialising Consul...");
     projectManager = std::make_shared<ProjectManager>();
     projectManager->assignAssetManagerToSceneManager();
+    std::shared_ptr<AssetManager> assetManager = projectManager->getAssetManager();
+    assetManager->registerLoader(std::make_unique<ModelLoader>());
 
     initialiseWindow(PlatformType::GLFW);
     console.log("[Consul] Windowing platform initialised.");

@@ -24,9 +24,9 @@ public:
 
         mesh.setMaterial(material);
 
-        std::shared_ptr<Model> model = std::make_shared<Model>();
-        model->addMesh(mesh);
-        model->addMesh(outlineMesh);
+        Model model;
+        model.addMesh(mesh);
+        model.addMesh(outlineMesh);
         modelID = assetManager->addModel("cubeModel", model);
     }
 

@@ -1,11 +1,14 @@
 #pragma once
 
 #include "core/project/asset_types.hpp"
+#include "core/project/importers/gltf_importer.hpp"
 
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "loaders/model_loader.hpp"
 
 class Material;
 class Mesh;
@@ -19,11 +22,11 @@ public:
     AssetManager() = default;
     ~AssetManager() = default;
 
-    AssetID addModel(const std::string& name, std::shared_ptr<Model> model);
-    AssetID addMesh(const std::string& name, std::shared_ptr<Mesh> mesh);
-    AssetID addTexture(const std::string& name, std::shared_ptr<Texture> texture);
-    AssetID addMaterial(const std::string& name, std::shared_ptr<Material> material);
-    AssetID addShader(const std::string& name, std::shared_ptr<Shader> shader);
+    AssetID addModel(const std::string& name, const Model& model);
+    AssetID addMesh(const std::string& name, const Mesh& mesh);
+    AssetID addTexture(const std::string& name, const Texture& texture);
+    AssetID addMaterial(const std::string& name, const Material& material);
+    AssetID addShader(const std::string& name, const Shader& shader);
 
     AssetID importAsset(const std::string& name, const std::string& path);
     AssetID importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath);
@@ -49,11 +52,7 @@ private:
     std::unordered_map<AssetID, std::shared_ptr<Material>> materials;
     std::unordered_map<AssetID, std::shared_ptr<Shader>> shaders;
 
-    static inline const std::vector<std::string> supportedModelExtensions = { ".gltf" };
-    static inline const std::vector<std::string> supportedTextureExtensions = { ".png", ".jpg", ".jpeg" };
-    static inline const std::vector<std::string> supportedMeshExtensions = {};
-    static inline const std::vector<std::string> supportedMaterialExtensions = {};
-    static inline const std::vector<std::string> supportedShaderExtensions = {};
+    GLTFImporter gltfImporter;
 
     void addMetadata(AssetID id, AssetType type, const std::string& name);
     static std::string getLowerExtension(const std::string& path);

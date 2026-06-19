@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "core/console/console.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
@@ -12,67 +13,127 @@
 #include "graphics/texture/texture.hpp"
 #include "utils.hpp"
 
-AssetID AssetManager::addModel(const std::string& name, std::shared_ptr<Model> model)
+using json = nlohmann::json;
+
+AssetID AssetManager::loadAsset(const std::string& name, const std::string& path)
 {
-    if (!model) {
-        Console::get().warn("[AssetManager::addModel] Cannot add null model asset: '" + name + "'");
+    if (!doesFileExist(path.c_str())) {
+        Console::get().warn("[AssetManager::loadAsset] Invalid asset path: '" + path + "'");
         return INVALID_ASSET_ID;
     }
 
+    const std::string extension = getFileExtension(path.c_str());
+    if (extension.empty()) {
+        Console::get().warn("[AssetManager::loadAsset] Asset file has no extension: '" + path + "'");
+        return INVALID_ASSET_ID;
+    }
+
+    for (const auto& loader : loaders) {
+        if (loader->isSupportedExtension(extension)) {
+            loader->load(path);
+            return INVALID_ASSET_ID; // TODO: Return the actual AssetID after loading
+        }
+    }
+}
+
+AssetID AssetManager::loadFromGLTF(const std::string& name, const std::string& path)
+{
+    // Make a JSON object
+	std::string text = readFile(path.c_str());
+	json jsonContents = json::parse(text);
+
+    // The uri (unique resource identifier) of the binary data
+	std::string uri = jsonContents["buffers"][0]["uri"];
+
+    std::string fileDirectory = path.substr(0, path.find_last_of('/') + 1);
+	std::string binaryContents = readFile((fileDirectory + uri).c_str());
+    std::vector<unsigned char> binaryData = std::vector<unsigned char>(binaryContents.begin(), binaryContents.end());
+
+    if (!jsonContents.contains("scenes") || jsonContents["scenes"].empty()) {
+        Console::get().warn("[AssetManager::loadFromGLTF] No scenes found in glTF file: '" + path + "'");
+        return INVALID_ASSET_ID;
+    }
+
+    unsigned int sceneIndex = jsonContents.value("scene", 0);
+
+    if (sceneIndex >= jsonContents["scenes"].size()) {
+        Console::get().warn("[AssetManager::loadFromGLTF] Scene index (" + std::to_string(sceneIndex) + ") > number of scenes (" + std::to_string(jsonContents["scenes"].size() - 1) + ") in glTF file: '" + path + "'");
+        return INVALID_ASSET_ID;
+    }
+
+    const auto& traverseNode = [&](unsigned int nodeIndex, glm::mat4 parentTransform = glm::mat4(1.0f)) {
+        glm::mat4 localTransform = glm::mat4(1.0f);
+        json node = jsonContents["nodes"][nodeIndex];
+
+        if (node.contains("matrix")) {
+            localTransform = glm::make_mat4(node["matrix"].get<std::vector<float>>().data());
+        } else {
+            // If there is no local transformation matrix, check for translation, rotation, and scale
+
+            std::vector<float> tVec = node.value("translation", std::vector<float>{0.0f, 0.0f, 0.0f});
+            std::vector<float> rVec = node.value("rotation", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f});
+            std::vector<float> sVec = node.value("scale", std::vector<float>{1.0f, 1.0f, 1.0f});
+
+            glm::vec3 t = glm::vec3(tVec[0], tVec[1], tVec[2]);
+            glm::quat r = glm::quat(rVec[3], rVec[0], rVec[1], rVec[2]); // NOTE: glm::quat(w, x, y, z) NOT glm::quat(x, y, z, w)
+            glm::vec3 s = glm::vec3(sVec[0], sVec[1], sVec[2]);
+
+            localTransform = glm::translate(glm::mat4(1.0f), t) * glm::mat4_cast(r) * glm::scale(glm::mat4(1.0f), s);
+        }
+
+        glm::mat4 transformation = parentTransform * localTransform;
+
+        if (node.contains("mesh")) {
+            loadMesh(node["mesh"], transformation);
+        }
+
+        if (node.contains("children")) {
+            for (unsigned int ic = 0; ic < node["children"].size(); ic++)
+                traverseNode(node["children"][ic], transformation);
+        }
+    };
+
+    for (const auto& nodeIndex : jsonContents["scenes"][sceneIndex]["nodes"]) {
+        traverseNode(nodeIndex);
+    }
+}
+
+AssetID AssetManager::addModel(const std::string& name, const Model& model)
+{
     AssetID id;
-    models[id] = std::move(model);
+    models[id] = std::make_shared<Model>(model);
     addMetadata(id, AssetType::MODEL, name);
     return id;
 }
 
-AssetID AssetManager::addMesh(const std::string& name, std::shared_ptr<Mesh> mesh)
+AssetID AssetManager::addMesh(const std::string& name, const Mesh& mesh)
 {
-    if (!mesh) {
-        Console::get().warn("[AssetManager::addMesh] Cannot add null mesh asset: '" + name + "'");
-        return INVALID_ASSET_ID;
-    }
-
     AssetID id;
-    meshes[id] = std::move(mesh);
+    meshes[id] = std::make_shared<Mesh>(mesh);
     addMetadata(id, AssetType::MESH, name);
     return id;
 }
 
-AssetID AssetManager::addTexture(const std::string& name, std::shared_ptr<Texture> texture)
+AssetID AssetManager::addTexture(const std::string& name, const Texture& texture)
 {
-    if (!texture) {
-        Console::get().warn("[AssetManager::addTexture] Cannot add null texture asset: '" + name + "'");
-        return INVALID_ASSET_ID;
-    }
-
     AssetID id;
-    textures[id] = std::move(texture);
+    textures[id] = std::make_shared<Texture>(texture);
     addMetadata(id, AssetType::TEXTURE, name);
     return id;
 }
 
-AssetID AssetManager::addMaterial(const std::string& name, std::shared_ptr<Material> material)
+AssetID AssetManager::addMaterial(const std::string& name, const Material& material)
 {
-    if (!material) {
-        Console::get().warn("[AssetManager::addMaterial] Cannot add null material asset: '" + name + "'");
-        return INVALID_ASSET_ID;
-    }
-
     AssetID id;
-    materials[id] = std::move(material);
+    materials[id] = std::make_shared<Material>(material);
     addMetadata(id, AssetType::MATERIAL, name);
     return id;
 }
 
-AssetID AssetManager::addShader(const std::string& name, std::shared_ptr<Shader> shader)
+AssetID AssetManager::addShader(const std::string& name, const Shader& shader)
 {
-    if (!shader) {
-        Console::get().warn("[AssetManager::addShader] Cannot add null shader asset: '" + name + "'");
-        return INVALID_ASSET_ID;
-    }
-
     AssetID id;
-    shaders[id] = std::move(shader);
+    shaders[id] = std::make_shared<Shader>(shader);
     addMetadata(id, AssetType::SHADER, name);
     return id;
 }
@@ -87,10 +148,8 @@ AssetID AssetManager::importAsset(const std::string& name, const std::string& pa
     }
 
     const std::string extension = getFileExtension(path.c_str());
-    if (contains(supportedModelExtensions, extension)) {
-        id = addModel(name, std::make_shared<Model>(path.c_str()));
-    } else if (contains(supportedTextureExtensions, extension)) {
-        id = addTexture(name, std::make_shared<Texture>(path.c_str(), TextureType::DIFFUSE));
+    if (extension == ".gltf") {
+        id = loadModelFromGLTF(name, path);
     } else {
         Console::get().warn("[AssetManager::importAsset] Unsupported asset extension: '" + extension + "'");
         return INVALID_ASSET_ID;
@@ -186,4 +245,9 @@ void AssetManager::clearAssets()
     textures.clear();
     materials.clear();
     shaders.clear();
+}
+
+AssetID AssetManager::loadModelFromGLTF(const std::string& name, const std::string& path)
+{
+    
 }
