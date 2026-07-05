@@ -169,6 +169,5 @@ private:
     AssetID materialID = INVALID_ASSET_ID;
     DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
-    std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(5, 0);
     MeshUploadMask uploadMask;
 };
