@@ -93,7 +93,6 @@ void OpenGLRenderer::clearSceneResources()
         releaseMesh(meshBuffer);
     }
     meshes.clear();
-    meshDrawOrder.clear();
 
     for (auto& [shaderID, shaderBuffer] : shaders) {
         releaseShader(shaderBuffer);

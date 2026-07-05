@@ -111,7 +111,6 @@ private:
     std::unordered_map<unsigned int, ShaderBuffer> shaders;
     std::unordered_map<unsigned int, MeshBuffer> meshes;
     std::unordered_map<unsigned int, TextureBuffer> textures;
-    std::vector<unsigned int> meshDrawOrder;
 
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw);
