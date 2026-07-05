@@ -1,12 +1,17 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <glm/glm.hpp>
 #include "nlohmann/json.hpp"
 
-#include "core/project/asset_manager.hpp"
+#include "core/project/asset_types.hpp"
+#include "graphics/mesh/mesh.hpp"
 
 using json = nlohmann::json;
+
+class AssetManager;
+class Model;
 
 class GLTFImporter
 {
@@ -14,21 +19,20 @@ public:
     GLTFImporter() = default;
     ~GLTFImporter() = default;
 
-    void setAssetManager(std::shared_ptr<AssetManager> assetManager)
-    {
-        this->assetManager = assetManager;
-    }
-
     /**
      * Load a model from the given glTF file path.
+     * @param assetManager Asset manager that will own created model, mesh, material, and texture assets.
+     * @param name Name for the imported model asset.
      * @param filePath Path to the .gltf model file.
      * @returns Model loaded from the glTF file.
      */
-    AssetID import(const std::string& filePath);
+    AssetID import(AssetManager& assetManager, const std::string& name, const std::string& filePath);
 
 private:
-    std::weak_ptr<AssetManager> assetManager;
-    std::string fileDirectory = "";
+    AssetManager* currentAssetManager = nullptr;
+    Model* currentModel = nullptr;
+    std::string currentFileDirectory = "";
+    std::string currentFilePath = "";
     std::vector<unsigned char> binaryData;
     json jsonContents;
 
@@ -61,11 +65,19 @@ private:
 	std::string getTexturePathFromUri(unsigned int textureIndex) const;
 
 	/**
+	 * Load a mesh from glTF mesh data.
+	 * @param meshIndex Index into the glTF meshes array.
+	 * @param initialTransform Initial transform matrix. Defaults to the identity matrix (i.e. no initial transform).
+	 * @returns AssetID of the loaded mesh.
+	 */
+	AssetID loadMesh(unsigned int meshIndex, const glm::mat4& initialTransform = glm::mat4(1.0f));
+
+	/**
 	 * Create a material from glTF material data.
 	 * @param materialIndex Index into the glTF materials array.
 	 * @returns Material with textures referenced by the glTF material.
 	 */
-	std::shared_ptr<Material> loadMaterial(int materialIndex) const;
+	AssetID loadMaterial(int materialIndex);
 
 	/**
 	 * Convert a float array to a vec2 array.

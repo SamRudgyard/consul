@@ -8,8 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "loaders/model_loader.hpp"
-
 class Material;
 class Mesh;
 class Model;
@@ -21,6 +19,9 @@ class AssetManager
 public:
     AssetManager() = default;
     ~AssetManager() = default;
+
+    AssetID getDefaultMaterial();
+    AssetID getDefaultTexture();
 
     AssetID addModel(const std::string& name, const Model& model);
     AssetID addMesh(const std::string& name, const Mesh& mesh);
@@ -55,5 +56,6 @@ private:
     GLTFImporter gltfImporter;
 
     void addMetadata(AssetID id, AssetType type, const std::string& name);
+    AssetID loadModelFromGLTF(const std::string& name, const std::string& path);
     static std::string getLowerExtension(const std::string& path);
 };

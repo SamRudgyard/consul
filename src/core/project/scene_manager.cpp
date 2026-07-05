@@ -84,16 +84,16 @@ void SceneManager::render(Renderer& renderer)
     }
     for (const auto& [modelID, model] : assetManager->getModels()) {
         if (model) {
-            renderer.uploadModel(*model);
+            renderer.uploadModel(*model, *assetManager);
         }
     }
     for (const auto& [meshID, mesh] : assetManager->getMeshes()) {
         if (mesh) {
-            renderer.uploadMesh(*mesh);
+            renderer.uploadMesh(*mesh, *assetManager);
         }
     }
 
-    renderer.render(*shaders.begin()->second, *camera);
+    renderer.render(*shaders.begin()->second, *camera, *assetManager);
 }
 
 void SceneManager::shutdown()

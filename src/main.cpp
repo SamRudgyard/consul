@@ -18,15 +18,17 @@ public:
         Mesh outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
         outlineMesh.setDrawMode(DrawMode::LINES);
 
-        std::shared_ptr<Material> material = std::make_shared<Material>();
-        material->setAlbedo(Colour(20, 200, 200));
-        assetManager->addMaterial("cubeMaterial", material);
+        Material material;
+        material.setAlbedo(Colour(20, 200, 200));
+        AssetID materialID = assetManager->addMaterial("cubeMaterial", material);
 
-        mesh.setMaterial(material);
+        mesh.setMaterial(materialID);
+        AssetID meshID = assetManager->addMesh("cubeMesh", mesh);
+        AssetID outlineMeshID = assetManager->addMesh("cubeOutlineMesh", outlineMesh);
 
         Model model;
-        model.addMesh(mesh);
-        model.addMesh(outlineMesh);
+        model.addMesh(meshID);
+        model.addMesh(outlineMeshID);
         modelID = assetManager->addModel("cubeModel", model);
     }
 
@@ -57,8 +59,8 @@ public:
     {
         camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
-        assetManager->addShader("default", std::make_shared<Shader>("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl"));
-        assetManager->addModel("shiba", std::make_shared<Model>("assets/shiba/scene.gltf"));
+        assetManager->addShader("default", Shader("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl"));
+        assetManager->importAsset("shiba", "assets/shiba/scene.gltf");
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
         rotatingCube->initialise(assetManager);

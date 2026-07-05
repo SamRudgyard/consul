@@ -13,89 +13,22 @@
 #include "graphics/texture/texture.hpp"
 #include "utils.hpp"
 
-using json = nlohmann::json;
-
-AssetID AssetManager::loadAsset(const std::string& name, const std::string& path)
+AssetID AssetManager::getDefaultMaterial()
 {
-    if (!doesFileExist(path.c_str())) {
-        Console::get().warn("[AssetManager::loadAsset] Invalid asset path: '" + path + "'");
-        return INVALID_ASSET_ID;
+    static AssetID defaultMaterialID = INVALID_ASSET_ID;
+    if (defaultMaterialID == INVALID_ASSET_ID || !getMaterial(defaultMaterialID)) {
+        defaultMaterialID = addMaterial("Default Material", Material());
     }
-
-    const std::string extension = getFileExtension(path.c_str());
-    if (extension.empty()) {
-        Console::get().warn("[AssetManager::loadAsset] Asset file has no extension: '" + path + "'");
-        return INVALID_ASSET_ID;
-    }
-
-    for (const auto& loader : loaders) {
-        if (loader->isSupportedExtension(extension)) {
-            loader->load(path);
-            return INVALID_ASSET_ID; // TODO: Return the actual AssetID after loading
-        }
-    }
+    return defaultMaterialID;
 }
 
-AssetID AssetManager::loadFromGLTF(const std::string& name, const std::string& path)
+AssetID AssetManager::getDefaultTexture()
 {
-    // Make a JSON object
-	std::string text = readFile(path.c_str());
-	json jsonContents = json::parse(text);
-
-    // The uri (unique resource identifier) of the binary data
-	std::string uri = jsonContents["buffers"][0]["uri"];
-
-    std::string fileDirectory = path.substr(0, path.find_last_of('/') + 1);
-	std::string binaryContents = readFile((fileDirectory + uri).c_str());
-    std::vector<unsigned char> binaryData = std::vector<unsigned char>(binaryContents.begin(), binaryContents.end());
-
-    if (!jsonContents.contains("scenes") || jsonContents["scenes"].empty()) {
-        Console::get().warn("[AssetManager::loadFromGLTF] No scenes found in glTF file: '" + path + "'");
-        return INVALID_ASSET_ID;
+    static AssetID defaultTextureID = INVALID_ASSET_ID;
+    if (defaultTextureID == INVALID_ASSET_ID || !getTexture(defaultTextureID)) {
+        defaultTextureID = addTexture("Default Texture", Texture());
     }
-
-    unsigned int sceneIndex = jsonContents.value("scene", 0);
-
-    if (sceneIndex >= jsonContents["scenes"].size()) {
-        Console::get().warn("[AssetManager::loadFromGLTF] Scene index (" + std::to_string(sceneIndex) + ") > number of scenes (" + std::to_string(jsonContents["scenes"].size() - 1) + ") in glTF file: '" + path + "'");
-        return INVALID_ASSET_ID;
-    }
-
-    const auto& traverseNode = [&](unsigned int nodeIndex, glm::mat4 parentTransform = glm::mat4(1.0f)) {
-        glm::mat4 localTransform = glm::mat4(1.0f);
-        json node = jsonContents["nodes"][nodeIndex];
-
-        if (node.contains("matrix")) {
-            localTransform = glm::make_mat4(node["matrix"].get<std::vector<float>>().data());
-        } else {
-            // If there is no local transformation matrix, check for translation, rotation, and scale
-
-            std::vector<float> tVec = node.value("translation", std::vector<float>{0.0f, 0.0f, 0.0f});
-            std::vector<float> rVec = node.value("rotation", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f});
-            std::vector<float> sVec = node.value("scale", std::vector<float>{1.0f, 1.0f, 1.0f});
-
-            glm::vec3 t = glm::vec3(tVec[0], tVec[1], tVec[2]);
-            glm::quat r = glm::quat(rVec[3], rVec[0], rVec[1], rVec[2]); // NOTE: glm::quat(w, x, y, z) NOT glm::quat(x, y, z, w)
-            glm::vec3 s = glm::vec3(sVec[0], sVec[1], sVec[2]);
-
-            localTransform = glm::translate(glm::mat4(1.0f), t) * glm::mat4_cast(r) * glm::scale(glm::mat4(1.0f), s);
-        }
-
-        glm::mat4 transformation = parentTransform * localTransform;
-
-        if (node.contains("mesh")) {
-            loadMesh(node["mesh"], transformation);
-        }
-
-        if (node.contains("children")) {
-            for (unsigned int ic = 0; ic < node["children"].size(); ic++)
-                traverseNode(node["children"][ic], transformation);
-        }
-    };
-
-    for (const auto& nodeIndex : jsonContents["scenes"][sceneIndex]["nodes"]) {
-        traverseNode(nodeIndex);
-    }
+    return defaultTextureID;
 }
 
 AssetID AssetManager::addModel(const std::string& name, const Model& model)
@@ -109,7 +42,11 @@ AssetID AssetManager::addModel(const std::string& name, const Model& model)
 AssetID AssetManager::addMesh(const std::string& name, const Mesh& mesh)
 {
     AssetID id;
-    meshes[id] = std::make_shared<Mesh>(mesh);
+    Mesh meshWithDefaults = mesh;
+    if (meshWithDefaults.getMaterial() == INVALID_ASSET_ID) {
+        meshWithDefaults.setMaterial(getDefaultMaterial());
+    }
+    meshes[id] = std::make_shared<Mesh>(meshWithDefaults);
     addMetadata(id, AssetType::MESH, name);
     return id;
 }
@@ -125,7 +62,14 @@ AssetID AssetManager::addTexture(const std::string& name, const Texture& texture
 AssetID AssetManager::addMaterial(const std::string& name, const Material& material)
 {
     AssetID id;
-    materials[id] = std::make_shared<Material>(material);
+    Material materialWithDefaults = material;
+    if (materialWithDefaults.getAlbedoTextureID() == INVALID_ASSET_ID) {
+        materialWithDefaults.setAlbedoTextureID(getDefaultTexture());
+    }
+    if (materialWithDefaults.getSpecularTextureID() == INVALID_ASSET_ID) {
+        materialWithDefaults.setSpecularTextureID(getDefaultTexture());
+    }
+    materials[id] = std::make_shared<Material>(materialWithDefaults);
     addMetadata(id, AssetType::MATERIAL, name);
     return id;
 }
@@ -155,6 +99,10 @@ AssetID AssetManager::importAsset(const std::string& name, const std::string& pa
         return INVALID_ASSET_ID;
     }
 
+    if (id == INVALID_ASSET_ID) {
+        return INVALID_ASSET_ID;
+    }
+
     metadata[id].sourcePath = path;
     metadata[id].importedFromFile = true;
     return id;
@@ -173,7 +121,7 @@ AssetID AssetManager::importShader(const std::string& name, const std::string& v
         return INVALID_ASSET_ID;
     }
 
-    id = addShader(name, std::make_shared<Shader>(vertexPath.c_str(), fragmentPath.c_str()));
+    id = addShader(name, Shader(vertexPath.c_str(), fragmentPath.c_str()));
     metadata[id].sourcePath = vertexPath;
     metadata[id].secondarySourcePath = fragmentPath;
     metadata[id].importedFromFile = true;
@@ -249,5 +197,5 @@ void AssetManager::clearAssets()
 
 AssetID AssetManager::loadModelFromGLTF(const std::string& name, const std::string& path)
 {
-    
+    return gltfImporter.import(*this, name, path);
 }

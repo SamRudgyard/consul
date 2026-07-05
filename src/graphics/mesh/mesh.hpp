@@ -87,13 +87,13 @@ public:
      * Sets the material for this Mesh.
      * @param material The new material for this Mesh.
      */
-    void setMaterial(std::shared_ptr<Material> material) { this->material = material; }
+    void setMaterial(AssetID materialID) { this->materialID = materialID; }
 
     /**
      * Gets the material for this Mesh.
      * @return The material for this Mesh.
      */
-    std::shared_ptr<Material> getMaterial() const { return material; }
+    AssetID getMaterial() const { return materialID; }
 
     /**
      * Set the draw mode of this Mesh.
@@ -159,14 +159,14 @@ public:
     void clean(AttributeType attribute);
 
 private:
-    unsigned int id;
+    unsigned int id; // TODO: Can this be removed? AssetManager holds the ID of this Mesh.
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> textureCoords;
     std::vector<glm::vec4> tangents; // TODO: Why vec4 for tangents?
     std::vector<unsigned int> indices;
-    std::shared_ptr<Material> material;
+    AssetID materialID = INVALID_ASSET_ID;
     DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
     std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(5, 0);

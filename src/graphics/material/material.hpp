@@ -1,26 +1,19 @@
 #pragma once
 
+#include "core/project/asset_types.hpp"
 #include "core/ui/property_registry.hpp"
 #include "graphics/shader/uniform.hpp"
 #include "graphics/texture/texture.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
 class Material
 {
 public:
-    Material() {
-        this->setTexture(Texture::getDefaultDiffuseTexture());
-        this->setTexture(Texture::getDefaultSpecularTexture());
-    };
-
-    static std::shared_ptr<Material> getDefaultMaterial()
-    {
-        static std::shared_ptr<Material> defaultMaterial = std::make_shared<Material>();
-        return defaultMaterial;
-    }
+    Material() = default;
 
     /**
      * Registers the properties of the Material class, allowing them to be edited in the UI.
@@ -55,38 +48,44 @@ public:
     Colour getAlbedo() const { return albedo; }
 
     /**
-     * Gets the textures associated with this material.
-     * @returns Vector of textures.
+     * Sets the texture ID for the albedo texture of this material.
+     * @param textureID AssetID of the albedo texture to set.
      */
-    std::vector<Texture>& getTextures() { return textures; }
+    void setAlbedoTextureID(AssetID textureID) { albedoTextureID = textureID; }
 
     /**
-     * Gets the textures associated with this material.
-     * @returns Vector of textures.
+     * Gets the texture ID for the albedo texture of this material.
+     * @returns AssetID of the albedo texture.
      */
-    const std::vector<Texture>& getTextures() const { return textures; }
+    AssetID getAlbedoTextureID() const { return albedoTextureID; }
 
     /**
-     * Sets a texture for this material.
-     * @param texture Texture to set.
+     * Sets the texture ID for the specular texture of this material.
+     * @param textureID AssetID of the specular texture to set.
      */
-    void setTexture(Texture texture)
-    {
-        const TextureType textureType = texture.getType();
-        textures.erase(
-            std::remove_if(
-                textures.begin(),
-                textures.end(),
-                [textureType](const Texture& existingTexture) {
-                    return existingTexture.getType() == textureType;
-                }
-            ),
-            textures.end()
-        );
-        textures.push_back(std::move(texture));
-    }
+    void setSpecularTextureID(AssetID textureID) { specularTextureID = textureID; }
+
+    /**
+     * Gets the texture ID for the specular texture of this material.
+     * @returns AssetID of the specular texture.
+     */
+    AssetID getSpecularTextureID() const { return specularTextureID; }
+
+    /**
+     * Sets the texture ID for the normal texture of this material.
+     * @param textureID AssetID of the normal texture to set.
+     */
+    void setNormalTextureID(AssetID textureID) { normalTextureID = textureID; }
+
+    /**
+     * Gets the texture ID for the normal texture of this material.
+     * @returns AssetID of the normal texture.
+     */
+    AssetID getNormalTextureID() const { return normalTextureID; }
 
 private:
     Colour albedo = Colour(255, 255, 255);
-    std::vector<Texture> textures;
+    AssetID albedoTextureID = INVALID_ASSET_ID;
+    AssetID specularTextureID = INVALID_ASSET_ID;
+    AssetID normalTextureID = INVALID_ASSET_ID;
 };

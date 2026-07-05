@@ -95,13 +95,13 @@ public:
      * Uploads the given Mesh to the GPU.
      * @param mesh The mesh to upload to the GPU.
      */
-    void uploadMesh(Mesh& mesh) override;
+    void uploadMesh(Mesh& mesh, AssetManager& assetManager) override;
 
     /**
      * Uploads the given Model to the GPU.
      * @param model The model to upload to the GPU.
      */
-    void uploadModel(Model& model) override;
+    void uploadModel(Model& model, AssetManager& assetManager) override;
 
     /**
      * Uploads the given Texture to the GPU.
@@ -114,7 +114,7 @@ public:
      * @param shader The shader to render with.
      * @param camera The camera, from which the models/meshes are viewed. 
      */
-    void render(const Shader& shader, const Camera& camera) override;
+    void render(const Shader& shader, const Camera& camera, AssetManager& assetManager) override;
 
 private:
     std::unordered_map<unsigned int, ShaderBuffer> shaders;
