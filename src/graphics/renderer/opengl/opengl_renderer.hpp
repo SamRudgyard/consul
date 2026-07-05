@@ -1,22 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "core/console/console.hpp"
-#include "graphics/camera/camera.hpp"
-#include "graphics/material/material.hpp"
-#include "graphics/mesh/mesh.hpp"
-#include "graphics/models/model.hpp"
 #include "graphics/renderer/renderer.hpp"
-#include "graphics/shader/shader.hpp"
-#include "graphics/texture/texture.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include "glm/fwd.hpp"
 #include "glad/glad.h"
-#include "imgui_impl_opengl3.h"
-#include "utils.hpp"
+
+enum class AttributeType;
 
 struct ShaderBuffer
 {

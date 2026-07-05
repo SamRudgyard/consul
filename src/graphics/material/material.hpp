@@ -2,12 +2,9 @@
 
 #include "core/project/asset_types.hpp"
 #include "core/ui/property_registry.hpp"
+#include "graphics/colour.hpp"
 #include "graphics/shader/uniform.hpp"
-#include "graphics/texture/texture.hpp"
 
-#include <algorithm>
-#include <memory>
-#include <utility>
 #include <vector>
 
 class Material

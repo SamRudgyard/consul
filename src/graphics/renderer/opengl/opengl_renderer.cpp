@@ -1,13 +1,27 @@
 #include "opengl_renderer.hpp"
 
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "glm/gtc/type_ptr.hpp"
+#include "imgui_impl_opengl3.h"
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #endif
 #include <stb_image.h>
 
+#include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
 #include "core/project/asset_manager.hpp"
+#include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
+#include "graphics/material/material.hpp"
+#include "graphics/mesh/mesh.hpp"
+#include "graphics/models/model.hpp"
+#include "graphics/shader/shader.hpp"
+#include "graphics/texture/texture.hpp"
+#include "utils.hpp"
 
 OpenGLRenderer::~OpenGLRenderer()
 {

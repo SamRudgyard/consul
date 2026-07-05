@@ -2,10 +2,8 @@
 
 #include <algorithm>
 #include <cctype>
-#include <utility>
 
 #include "core/console/console.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
