@@ -18,8 +18,9 @@ void Consul::initialiseEngine()
     console.log("---- CONSUL ----");
 
     console.log("[Consul] Initialising Consul...");
-    projectManager = std::make_shared<ProjectManager>();
-    projectManager->assignAssetManagerToSceneManager();
+    assetManager = std::make_shared<AssetManager>();
+    sceneManager = std::make_shared<SceneManager>();
+    sceneManager->assignAssetManager(assetManager);
 
     initialiseWindow(PlatformType::GLFW);
     console.log("[Consul] Windowing platform initialised.");
@@ -84,12 +85,12 @@ void Consul::loadScene(Scene& newScene)
 {
     CONSUL_PROFILE_METHOD();
 
-    if (!projectManager) {
-        console.error("[Consul::loadScene] Cannot load scene - project manager is not initialised!");
+    if (!sceneManager) {
+        console.error("[Consul::loadScene] Cannot load scene - scene manager is not initialised!");
         return;
     }
 
-    projectManager->getSceneManager()->loadScene(newScene);
+    sceneManager->loadScene(newScene);
 }
 
 void Consul::run()
@@ -97,7 +98,7 @@ void Consul::run()
     while (!close) {
         beginTick();
         Time& time = context->time;
-        projectManager->getSceneManager()->update(time.deltaTime);
+        sceneManager->update(time.deltaTime);
         endTick();
 
         close = context->window.shouldClose && platform->shouldClose();
@@ -146,7 +147,7 @@ void Consul::endTick()
     time.frameCount++;
 
     // Rendering
-    projectManager->getSceneManager()->render(*renderer);
+    sceneManager->render(*renderer);
 
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -165,7 +166,9 @@ void Consul::terminate()
 {
     console.log("[Consul] Shutting down Game Engine...");
 
-    projectManager->getSceneManager()->shutdown();
+    if (sceneManager) {
+        sceneManager->shutdown();
+    }
 
     ImGui_ImplGlfw_Shutdown();
 

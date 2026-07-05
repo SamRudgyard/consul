@@ -3,12 +3,14 @@
 #include "core/console/console.hpp"
 #include "core/engine_context.hpp"
 #include "core/ui/user_interface.hpp"
-#include "core/project/project_manager.hpp"
+#include "core/project/asset_manager.hpp"
 #include "core/project/scene.hpp"
 #include "core/project/scene_manager.hpp"
 #include "platforms/platform.hpp"
 #include "graphics/renderer/renderer.hpp"
 #include "time.hpp"
+
+#include <memory>
 
 enum class PlatformType;
 
@@ -62,10 +64,16 @@ public:
     Renderer& getRenderer() { return *renderer; }
 
     /**
-     * Gets the project manager instance.
-     * @returns Reference to the project manager.
+     * Gets the asset manager instance.
+     * @returns Reference to the asset manager.
      */
-    ProjectManager& getProjectManager() { return *projectManager; }
+    AssetManager& getAssetManager() { return *assetManager; }
+
+    /**
+     * Gets the scene manager instance.
+     * @returns Reference to the scene manager.
+     */
+    SceneManager& getSceneManager() { return *sceneManager; }
 
     /**
      * Loads a scene.
@@ -80,7 +88,8 @@ private:
     Platform* platform = nullptr;
     Renderer* renderer = nullptr;
     bool close = false;
-    std::shared_ptr<ProjectManager> projectManager = nullptr;
+    std::shared_ptr<AssetManager> assetManager = nullptr;
+    std::shared_ptr<SceneManager> sceneManager = nullptr;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);
