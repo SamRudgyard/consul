@@ -57,5 +57,4 @@ private:
 
     void addMetadata(AssetID id, AssetType type, const std::string& name);
     AssetID loadModelFromGLTF(const std::string& name, const std::string& path);
-    static std::string getLowerExtension(const std::string& path);
 };

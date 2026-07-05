@@ -174,15 +174,6 @@ void AssetManager::addMetadata(AssetID id, AssetType type, const std::string& na
     };
 }
 
-std::string AssetManager::getLowerExtension(const std::string& path)
-{
-    std::string extension = path.substr(path.find_last_of('.') + 1);
-    std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    return extension;
-}
-
 void AssetManager::clearAssets()
 {
     metadata.clear();
