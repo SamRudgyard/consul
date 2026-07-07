@@ -13,39 +13,6 @@ class Shader;
 class Texture;
 
 template <typename T>
-struct AssetTypeFor;
-
-template <>
-struct AssetTypeFor<Material>
-{
-    static constexpr AssetType value = AssetType::MATERIAL;
-};
-
-template <>
-struct AssetTypeFor<Mesh>
-{
-    static constexpr AssetType value = AssetType::MESH;
-};
-
-template <>
-struct AssetTypeFor<Model>
-{
-    static constexpr AssetType value = AssetType::MODEL;
-};
-
-template <>
-struct AssetTypeFor<Shader>
-{
-    static constexpr AssetType value = AssetType::SHADER;
-};
-
-template <>
-struct AssetTypeFor<Texture>
-{
-    static constexpr AssetType value = AssetType::TEXTURE;
-};
-
-template <typename T>
 class AssetManager
 {
 public:
@@ -102,7 +69,6 @@ private:
     {
         metadata[id] = AssetMetadata{
             id,
-            AssetTypeFor<T>::value,
             name,
             {},
             {},

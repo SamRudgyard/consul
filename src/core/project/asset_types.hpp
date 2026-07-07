@@ -25,19 +25,9 @@ private:
 
 static const AssetID INVALID_ASSET_ID = AssetID(0); // Reserve ID 0 for invalid AssetID
 
-enum class AssetType
-{
-    MATERIAL,
-    MESH,
-    MODEL,
-    SHADER,
-    TEXTURE
-};
-
 struct AssetMetadata
 {
     AssetID id = INVALID_ASSET_ID;
-    AssetType type;
     std::string name;
     std::string sourcePath;
     std::string secondarySourcePath;
