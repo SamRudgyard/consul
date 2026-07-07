@@ -27,7 +27,6 @@ static const AssetID INVALID_ASSET_ID = AssetID(0); // Reserve ID 0 for invalid 
 
 struct AssetMetadata
 {
-    AssetID id = INVALID_ASSET_ID;
     std::string name;
     std::string sourcePath;
     std::string secondarySourcePath;

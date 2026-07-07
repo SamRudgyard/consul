@@ -68,7 +68,6 @@ private:
     void addMetadata(AssetID id, const std::string& name)
     {
         metadata[id] = AssetMetadata{
-            id,
             name,
             {},
             {},
