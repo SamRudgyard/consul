@@ -18,7 +18,6 @@
 #include "graphics/colour.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
-#include "graphics/models/model.hpp"
 #include "graphics/shader/shader.hpp"
 #include "graphics/texture/texture.hpp"
 #include "utils.hpp"
@@ -121,7 +120,7 @@ void OpenGLRenderer::setViewport(int x, int y, int width, int height)
     glViewport(x, y, width, height);
 }
 
-void OpenGLRenderer::uploadShader(Shader& shader, AssetLibrary& assets)
+void OpenGLRenderer::uploadShader(Shader& shader, const VertexShader& vertexShader, const FragmentShader& fragmentShader)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -133,12 +132,6 @@ void OpenGLRenderer::uploadShader(Shader& shader, AssetLibrary& assets)
     }
 
     Console& console = Console::get();
-    std::shared_ptr<VertexShader> vertexShader = assets.getVertexShader(shader.getVertexShader());
-    std::shared_ptr<FragmentShader> fragmentShader = assets.getFragmentShader(shader.getFragmentShader());
-    if (!vertexShader || !fragmentShader) {
-        console.error("[OpenGLRenderer::uploadShader] Shader references a missing vertex or fragment shader asset.");
-        return;
-    }
 
     unsigned int vertexID, fragmentID;
     vertexID = glCreateShader(GL_VERTEX_SHADER);
@@ -146,7 +139,7 @@ void OpenGLRenderer::uploadShader(Shader& shader, AssetLibrary& assets)
     glCheckError();
 
     // Compile vertex shader
-    const char* vertexCString = vertexShader->getSource().c_str();
+    const char* vertexCString = vertexShader.getSource().c_str();
     glShaderSource(vertexID, 1, &vertexCString, NULL);
     glCompileShader(vertexID);
     glCheckError();
@@ -163,7 +156,7 @@ void OpenGLRenderer::uploadShader(Shader& shader, AssetLibrary& assets)
     console.logOnDebug("[OpenGLRenderer::uploadShader] Vertex shader successfully compiled.");
 
     // Compile fragment shader
-    const char* fragmentCString = fragmentShader->getSource().c_str();
+    const char* fragmentCString = fragmentShader.getSource().c_str();
     glShaderSource(fragmentID, 1, &fragmentCString, NULL);
     glCompileShader(fragmentID);
     glCheckError();
@@ -204,7 +197,7 @@ void OpenGLRenderer::uploadShader(Shader& shader, AssetLibrary& assets)
     Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader " + std::to_string(shader.getID()) + " to GPU.");
 }
 
-void OpenGLRenderer::uploadMesh(Mesh& mesh, AssetLibrary& assets)
+void OpenGLRenderer::uploadMesh(Mesh& mesh)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -329,36 +322,7 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh, AssetLibrary& assets)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
     glCheckError();
 
-    std::shared_ptr<Material> material = assets.getMaterial(mesh.getMaterial());
-    if (material) {
-        std::shared_ptr<Texture> albedoTexture = assets.getTexture(material->getAlbedoTextureID());
-        std::shared_ptr<Texture> specularTexture = assets.getTexture(material->getSpecularTextureID());
-        std::shared_ptr<Texture> normalTexture = assets.getTexture(material->getNormalTextureID());
-        if (albedoTexture) uploadTexture(*albedoTexture);
-        if (specularTexture) uploadTexture(*specularTexture);
-        if (normalTexture) uploadTexture(*normalTexture);
-    }
-
     Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + std::to_string(mesh.getID()) + " to GPU.");
-}
-
-void OpenGLRenderer::uploadModel(Model& model, AssetLibrary& assets)
-{
-    CONSUL_PROFILE_METHOD();
-
-    const std::vector<AssetID>& meshIDs = model.getMeshIDs();
-    std::vector<glm::mat4> transforms = model.getTransformationMatrices();
-    for (unsigned int iMesh = 0; iMesh < meshIDs.size(); iMesh++) {
-        std::shared_ptr<Mesh> meshAsset = assets.getMesh(meshIDs[iMesh]);
-        if (!meshAsset) {
-            continue;
-        }
-        Mesh& mesh = *meshAsset;
-        mesh.setModelMatrix(transforms[iMesh]);
-        uploadMesh(mesh, assets);
-    }
-
-    Console::get().logOnDebug("[OpenGLRenderer::uploadModel] Successfully uploaded Model '" + model.getFilePath() + "' to GPU.");
 }
 
 void OpenGLRenderer::uploadTexture(Texture& texture)

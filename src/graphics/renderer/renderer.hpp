@@ -10,10 +10,11 @@ enum class GraphicsAPI
 
 class Camera;
 class AssetLibrary;
+class FragmentShader;
 class Mesh;
-class Model;
 class Shader;
 class Texture;
+class VertexShader;
 
 class Renderer
 {
@@ -31,13 +32,11 @@ public:
 
     virtual void setViewport(int x, int y, int width, int height) = 0;
 
-    virtual void uploadShader(Shader& shader, AssetLibrary& assets) = 0;
+    virtual void uploadShader(Shader& shader, const VertexShader& vertexShader, const FragmentShader& fragmentShader) = 0;
 
-    virtual void uploadMesh(Mesh& mesh, AssetLibrary& assets) = 0;
+    virtual void uploadMesh(Mesh& mesh) = 0;
 
     virtual void uploadTexture(Texture& texture) = 0;
-
-    virtual void uploadModel(Model& model, AssetLibrary& assets) = 0;
 
     virtual void clearSceneResources() = 0;
 

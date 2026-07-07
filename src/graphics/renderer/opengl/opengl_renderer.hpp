@@ -79,21 +79,16 @@ public:
     /**
      * Uploads the given Shader to the GPU.
      * @param shader The shader to upload to the GPU.
-     * @param assets Assets containing the shader source stages.
+     * @param vertexShader Vertex shader source stage.
+     * @param fragmentShader Fragment shader source stage.
      */
-    void uploadShader(Shader& shader, AssetLibrary& assets) override;
+    void uploadShader(Shader& shader, const VertexShader& vertexShader, const FragmentShader& fragmentShader) override;
 
     /**
      * Uploads the given Mesh to the GPU.
      * @param mesh The mesh to upload to the GPU.
      */
-    void uploadMesh(Mesh& mesh, AssetLibrary& assets) override;
-
-    /**
-     * Uploads the given Model to the GPU.
-     * @param model The model to upload to the GPU.
-     */
-    void uploadModel(Model& model, AssetLibrary& assets) override;
+    void uploadMesh(Mesh& mesh) override;
 
     /**
      * Uploads the given Texture to the GPU.
