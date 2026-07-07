@@ -9,25 +9,39 @@
 
 #include "core/console/console.hpp"
 #include "core/project/asset_manager.hpp"
+#include "core/project/asset_defaults.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/texture/texture.hpp"
 #include "utils.hpp"
 
-AssetID GLTFImporter::import(AssetManager& assetManager, const std::string& name, const std::string& filePath)
+GLTFImporter::GLTFImporter(
+    std::shared_ptr<ModelAssetManager> modelManager,
+    std::shared_ptr<MeshAssetManager> meshManager,
+    std::shared_ptr<MaterialAssetManager> materialManager,
+    std::shared_ptr<TextureAssetManager> textureManager,
+    std::shared_ptr<AssetDefaults> assetDefaults
+) : modelManager(modelManager),
+    meshManager(meshManager),
+    materialManager(materialManager),
+    textureManager(textureManager),
+    assetDefaults(assetDefaults)
 {
-    currentAssetManager = &assetManager;
+}
+
+AssetID GLTFImporter::import(const std::string& name, const std::string& filePath)
+{
     currentFilePath = filePath;
 
     if (!doesFileExist(filePath.c_str())) {
         Console::get().error("[GLTFImporter::import] Invalid file path: '" + currentFilePath + "'");
-        currentAssetManager = nullptr;
+        resetImportState();
         return INVALID_ASSET_ID;
     }
 
     if (getFileExtension(filePath.c_str()) != ".gltf") {
         Console::get().error("[GLTFImporter::import] Invalid file extension (expected .gltf): '" + currentFilePath + "'");
-        currentAssetManager = nullptr;
+        resetImportState();
         return INVALID_ASSET_ID;
     }
 
@@ -46,8 +60,7 @@ AssetID GLTFImporter::import(AssetManager& assetManager, const std::string& name
 
     if (!jsonContents.contains("scenes") || jsonContents["scenes"].empty()) {
         Console::get().warn("[GLTFImporter::import] No scenes found in glTF file: '" + currentFilePath + "'");
-        currentModel = nullptr;
-        currentAssetManager = nullptr;
+        resetImportState();
         return INVALID_ASSET_ID;
     }
 
@@ -60,8 +73,7 @@ AssetID GLTFImporter::import(AssetManager& assetManager, const std::string& name
     const json& scene = jsonContents["scenes"][sceneIndex];
     if (!scene.contains("nodes")) {
         Console::get().warn("[GLTFImporter::import] Scene contains no nodes: '" + currentFilePath + "'");
-        currentModel = nullptr;
-        currentAssetManager = nullptr;
+        resetImportState();
         return INVALID_ASSET_ID;
     }
 
@@ -69,16 +81,20 @@ AssetID GLTFImporter::import(AssetManager& assetManager, const std::string& name
         traverseNode(nodeIndex);
     }
 
-    AssetID modelID = currentAssetManager->addModel(name, model);
+    AssetID modelID = modelManager->add(name, model);
 
+    resetImportState();
+
+    return modelID;
+}
+
+void GLTFImporter::resetImportState()
+{
     currentModel = nullptr;
-    currentAssetManager = nullptr;
     currentFileDirectory.clear();
     currentFilePath.clear();
     binaryData.clear();
     jsonContents.clear();
-
-    return modelID;
 }
 
 void GLTFImporter::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
@@ -275,12 +291,17 @@ AssetID GLTFImporter::loadMesh(unsigned int meshIndex, const glm::mat4& initialT
     Mesh mesh(positions, normals, textureUVs, tangents, indices);
     mesh.setMaterial(materialID);
 
-    AssetID meshID = currentAssetManager->addMesh("Mesh_" + std::to_string(meshIndex), mesh);
+    AssetID meshID = addMesh("Mesh_" + std::to_string(meshIndex), mesh);
     if (currentModel) {
         currentModel->addMesh(meshID, initialTransform);
     }
 
     return meshID;
+}
+
+AssetID GLTFImporter::addMesh(const std::string& name, const Mesh& mesh)
+{
+    return meshManager->add(name, assetDefaults->applyToMesh(mesh));
 }
 
 AssetID GLTFImporter::loadMaterial(int materialIndex)
@@ -311,7 +332,7 @@ AssetID GLTFImporter::loadMaterial(int materialIndex)
             return;
         }
 
-        AssetID textureID = currentAssetManager->addTexture(uri, Texture(uri, type));
+        AssetID textureID = textureManager->add(uri, Texture(uri, type));
         switch (type) {
             case TextureType::DIFFUSE:
                 material.setAlbedoTextureID(textureID);
@@ -332,7 +353,12 @@ AssetID GLTFImporter::loadMaterial(int materialIndex)
     }
     addTextureIfPresent(materialJson, "normalTexture", TextureType::NORMAL);
 
-    return currentAssetManager->addMaterial("Material_" + std::to_string(materialIndex), material);
+    return addMaterial("Material_" + std::to_string(materialIndex), material);
+}
+
+AssetID GLTFImporter::addMaterial(const std::string& name, const Material& material)
+{
+    return materialManager->add(name, assetDefaults->applyToMaterial(material));
 }
 
 std::vector<glm::vec2> GLTFImporter::toVec2(const std::vector<float> floatVec)

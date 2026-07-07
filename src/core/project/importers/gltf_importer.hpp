@@ -1,40 +1,55 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
 #include "nlohmann/json.hpp"
 
+#include "core/project/asset_manager.hpp"
+#include "core/project/asset_defaults.hpp"
 #include "core/project/asset_types.hpp"
 #include "graphics/mesh/mesh.hpp"
 
 using json = nlohmann::json;
 
-class AssetManager;
+class Material;
 class Model;
 
 class GLTFImporter
 {
 public:
-    GLTFImporter() = default;
+    GLTFImporter(
+        std::shared_ptr<ModelAssetManager> modelManager,
+        std::shared_ptr<MeshAssetManager> meshManager,
+        std::shared_ptr<MaterialAssetManager> materialManager,
+        std::shared_ptr<TextureAssetManager> textureManager,
+        std::shared_ptr<AssetDefaults> assetDefaults
+    );
     ~GLTFImporter() = default;
 
     /**
      * Load a model from the given glTF file path.
-     * @param assetManager Asset manager that will own created model, mesh, material, and texture assets.
      * @param name Name for the imported model asset.
      * @param filePath Path to the .gltf model file.
      * @returns Model loaded from the glTF file.
      */
-    AssetID import(AssetManager& assetManager, const std::string& name, const std::string& filePath);
+    AssetID import(const std::string& name, const std::string& filePath);
 
 private:
-    AssetManager* currentAssetManager = nullptr;
+    std::shared_ptr<ModelAssetManager> modelManager;
+    std::shared_ptr<MeshAssetManager> meshManager;
+    std::shared_ptr<MaterialAssetManager> materialManager;
+    std::shared_ptr<TextureAssetManager> textureManager;
+    std::shared_ptr<AssetDefaults> assetDefaults;
+
     Model* currentModel = nullptr;
     std::string currentFileDirectory = "";
     std::string currentFilePath = "";
     std::vector<unsigned char> binaryData;
     json jsonContents;
+
+    void resetImportState();
 
     /**
 	 * Traverse a node within the glTF file recursively to collect meshes and construct transforms.
@@ -72,12 +87,16 @@ private:
 	 */
 	AssetID loadMesh(unsigned int meshIndex, const glm::mat4& initialTransform = glm::mat4(1.0f));
 
+    AssetID addMesh(const std::string& name, const Mesh& mesh);
+
 	/**
 	 * Create a material from glTF material data.
 	 * @param materialIndex Index into the glTF materials array.
 	 * @returns Material with textures referenced by the glTF material.
 	 */
 	AssetID loadMaterial(int materialIndex);
+
+    AssetID addMaterial(const std::string& name, const Material& material);
 
 	/**
 	 * Convert a float array to a vec2 array.

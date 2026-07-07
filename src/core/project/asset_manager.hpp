@@ -1,12 +1,10 @@
 #pragma once
 
 #include "core/project/asset_types.hpp"
-#include "core/project/importers/gltf_importer.hpp"
 
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 class Material;
 class Mesh;
@@ -14,47 +12,107 @@ class Model;
 class Shader;
 class Texture;
 
+template <typename T>
+struct AssetTypeFor;
+
+template <>
+struct AssetTypeFor<Material>
+{
+    static constexpr AssetType value = AssetType::MATERIAL;
+};
+
+template <>
+struct AssetTypeFor<Mesh>
+{
+    static constexpr AssetType value = AssetType::MESH;
+};
+
+template <>
+struct AssetTypeFor<Model>
+{
+    static constexpr AssetType value = AssetType::MODEL;
+};
+
+template <>
+struct AssetTypeFor<Shader>
+{
+    static constexpr AssetType value = AssetType::SHADER;
+};
+
+template <>
+struct AssetTypeFor<Texture>
+{
+    static constexpr AssetType value = AssetType::TEXTURE;
+};
+
+template <typename T>
 class AssetManager
 {
 public:
+    using AssetMap = std::unordered_map<AssetID, std::shared_ptr<T>>;
+
     AssetManager() = default;
     ~AssetManager() = default;
 
-    AssetID getDefaultMaterial();
-    AssetID getDefaultTexture();
+    AssetID add(const std::string& name, const T& asset)
+    {
+        AssetID id;
+        assets[id] = std::make_shared<T>(asset);
+        addMetadata(id, name);
+        return id;
+    }
 
-    AssetID addModel(const std::string& name, const Model& model);
-    AssetID addMesh(const std::string& name, const Mesh& mesh);
-    AssetID addTexture(const std::string& name, const Texture& texture);
-    AssetID addMaterial(const std::string& name, const Material& material);
-    AssetID addShader(const std::string& name, const Shader& shader);
+    std::shared_ptr<T> get(AssetID id) const
+    {
+        auto it = assets.find(id);
+        return it == assets.end() ? nullptr : it->second;
+    }
 
-    AssetID importAsset(const std::string& name, const std::string& path);
-    AssetID importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath);
+    const AssetMetadata* getMetadata(AssetID id) const
+    {
+        auto it = metadata.find(id);
+        return it == metadata.end() ? nullptr : &it->second;
+    }
 
-    std::shared_ptr<Model> getModel(AssetID id) const;
-    std::shared_ptr<Mesh> getMesh(AssetID id) const;
-    std::shared_ptr<Texture> getTexture(AssetID id) const;
-    std::shared_ptr<Material> getMaterial(AssetID id) const;
-    std::shared_ptr<Shader> getShader(AssetID id) const;
+    const AssetMap& getAssets() const { return assets; }
 
-    const AssetMetadata* getMetadata(AssetID id) const;
-    const std::unordered_map<AssetID, std::shared_ptr<Model>>& getModels() const { return models; }
-    const std::unordered_map<AssetID, std::shared_ptr<Mesh>>& getMeshes() const { return meshes; }
-    const std::unordered_map<AssetID, std::shared_ptr<Shader>>& getShaders() const { return shaders; }
+    void markImported(AssetID id, const std::string& sourcePath, const std::string& secondarySourcePath = "")
+    {
+        auto it = metadata.find(id);
+        if (it == metadata.end()) {
+            return;
+        }
 
-    void clearAssets();
+        it->second.sourcePath = sourcePath;
+        it->second.secondarySourcePath = secondarySourcePath;
+        it->second.importedFromFile = true;
+    }
+
+    void clearAssets()
+    {
+        metadata.clear();
+        assets.clear();
+    }
 
 private:
     std::unordered_map<AssetID, AssetMetadata> metadata;
-    std::unordered_map<AssetID, std::shared_ptr<Model>> models;
-    std::unordered_map<AssetID, std::shared_ptr<Mesh>> meshes;
-    std::unordered_map<AssetID, std::shared_ptr<Texture>> textures;
-    std::unordered_map<AssetID, std::shared_ptr<Material>> materials;
-    std::unordered_map<AssetID, std::shared_ptr<Shader>> shaders;
+    AssetMap assets;
 
-    GLTFImporter gltfImporter;
-
-    void addMetadata(AssetID id, AssetType type, const std::string& name);
-    AssetID loadModelFromGLTF(const std::string& name, const std::string& path);
+    void addMetadata(AssetID id, const std::string& name)
+    {
+        metadata[id] = AssetMetadata{
+            id,
+            AssetTypeFor<T>::value,
+            name,
+            {},
+            {},
+            false
+        };
+    }
 };
+
+using MaterialAssetManager = AssetManager<Material>;
+using MeshAssetManager = AssetManager<Mesh>;
+using ModelAssetManager = AssetManager<Model>;
+using ShaderAssetManager = AssetManager<Shader>;
+using TextureAssetManager = AssetManager<Texture>;
