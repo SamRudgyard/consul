@@ -8,7 +8,7 @@
 
 #include "glm/glm.hpp"
 
-class AssetManager;
+class AssetLibrary;
 class Renderer;
 
 class Node
@@ -55,11 +55,11 @@ public:
     const float getRotationY() const { return rotation.y; }
     const float getRotationZ() const { return rotation.z; }
 
-    void update(std::shared_ptr<AssetManager> assetManager, float dt, const glm::mat4& parentTransform);
+    void update(std::shared_ptr<AssetLibrary> assets, float dt, const glm::mat4& parentTransform);
     void render(Renderer& renderer);
 
 protected:
-    virtual void onUpdate(std::shared_ptr<AssetManager> assetManager, double deltaTime) {}
+    virtual void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) {}
 
 private:
     glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);

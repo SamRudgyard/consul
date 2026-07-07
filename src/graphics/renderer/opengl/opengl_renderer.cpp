@@ -13,7 +13,7 @@
 
 #include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
-#include "core/project/asset_manager.hpp"
+#include "core/project/asset_library.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/material/material.hpp"
@@ -198,7 +198,7 @@ void OpenGLRenderer::uploadShader(Shader& shader)
     Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader " + std::to_string(shader.getID()) + " to GPU.");
 }
 
-void OpenGLRenderer::uploadMesh(Mesh& mesh, AssetManager& assetManager)
+void OpenGLRenderer::uploadMesh(Mesh& mesh, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -323,11 +323,11 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh, AssetManager& assetManager)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
     glCheckError();
 
-    std::shared_ptr<Material> material = assetManager.getMaterial(mesh.getMaterial());
+    std::shared_ptr<Material> material = assets.getMaterial(mesh.getMaterial());
     if (material) {
-        std::shared_ptr<Texture> albedoTexture = assetManager.getTexture(material->getAlbedoTextureID());
-        std::shared_ptr<Texture> specularTexture = assetManager.getTexture(material->getSpecularTextureID());
-        std::shared_ptr<Texture> normalTexture = assetManager.getTexture(material->getNormalTextureID());
+        std::shared_ptr<Texture> albedoTexture = assets.getTexture(material->getAlbedoTextureID());
+        std::shared_ptr<Texture> specularTexture = assets.getTexture(material->getSpecularTextureID());
+        std::shared_ptr<Texture> normalTexture = assets.getTexture(material->getNormalTextureID());
         if (albedoTexture) uploadTexture(*albedoTexture);
         if (specularTexture) uploadTexture(*specularTexture);
         if (normalTexture) uploadTexture(*normalTexture);
@@ -336,20 +336,20 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh, AssetManager& assetManager)
     Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + std::to_string(mesh.getID()) + " to GPU.");
 }
 
-void OpenGLRenderer::uploadModel(Model& model, AssetManager& assetManager)
+void OpenGLRenderer::uploadModel(Model& model, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
 
     const std::vector<AssetID>& meshIDs = model.getMeshIDs();
     std::vector<glm::mat4> transforms = model.getTransformationMatrices();
     for (unsigned int iMesh = 0; iMesh < meshIDs.size(); iMesh++) {
-        std::shared_ptr<Mesh> meshAsset = assetManager.getMesh(meshIDs[iMesh]);
+        std::shared_ptr<Mesh> meshAsset = assets.getMesh(meshIDs[iMesh]);
         if (!meshAsset) {
             continue;
         }
         Mesh& mesh = *meshAsset;
         mesh.setModelMatrix(transforms[iMesh]);
-        uploadMesh(mesh, assetManager);
+        uploadMesh(mesh, assets);
     }
 
     Console::get().logOnDebug("[OpenGLRenderer::uploadModel] Successfully uploaded Model '" + model.getFilePath() + "' to GPU.");
@@ -419,7 +419,7 @@ void OpenGLRenderer::uploadTexture(Texture& texture)
     glCheckError();
 }
 
-void OpenGLRenderer::render(const Shader& shader, const Camera& camera, AssetManager& assetManager)
+void OpenGLRenderer::render(const Shader& shader, const Camera& camera, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -443,15 +443,15 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera, AssetMan
             continue;
         }
         const Mesh& mesh = *meshBuffer.mesh;
-        std::shared_ptr<Material> material = assetManager.getMaterial(mesh.getMaterial());
+        std::shared_ptr<Material> material = assets.getMaterial(mesh.getMaterial());
         if (!material) {
             Console::get().logOnDebug("[OpenGLRenderer::render] Mesh " + std::to_string(mesh.getID()) + " has no material, so will be rendered with default material.");
         }
 
         if (material) {
             unsigned int textureUnit = 0;
-            std::shared_ptr<Texture> albedoTexture = assetManager.getTexture(material->getAlbedoTextureID());
-            std::shared_ptr<Texture> specularTexture = assetManager.getTexture(material->getSpecularTextureID());
+            std::shared_ptr<Texture> albedoTexture = assets.getTexture(material->getAlbedoTextureID());
+            std::shared_ptr<Texture> specularTexture = assets.getTexture(material->getSpecularTextureID());
 
             if (albedoTexture) {
                 bindTexture(programID, textureUnit++, "diffuse0", *albedoTexture);

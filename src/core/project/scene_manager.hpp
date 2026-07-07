@@ -4,7 +4,7 @@
 
 #include "core/project/scene.hpp"
 
-class AssetManager;
+class AssetLibrary;
 class Renderer;
 
 class SceneManager
@@ -15,7 +15,7 @@ public:
 
     void loadScene(Scene& newScene);
 
-    void assignAssetManager(std::shared_ptr<AssetManager> assetManager);
+    void assignAssets(std::shared_ptr<AssetLibrary> assets);
 
     void update(double deltaTime);
     void render(Renderer& renderer);
@@ -23,5 +23,5 @@ public:
 
 private:
     Scene* currentScene = nullptr;
-    std::shared_ptr<AssetManager> assetManager;
+    std::shared_ptr<AssetLibrary> assets;
 };

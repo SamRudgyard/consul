@@ -2,7 +2,7 @@
 #include "core/profiling/profile_method.hpp"
 #include "maths/unit_conversions.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "core/project/asset_manager.hpp"
+#include "core/project/asset_library.hpp"
 
 Node::Node(const glm::mat4& localTransform)
     : localTransform(localTransform) {}
@@ -60,16 +60,16 @@ const glm::mat4& Node::getWorldTransform() const
     return worldTransform;
 }
 
-void Node::update(std::shared_ptr<AssetManager> assetManager, float dt, const glm::mat4& parentTransform)
+void Node::update(std::shared_ptr<AssetLibrary> assets, float dt, const glm::mat4& parentTransform)
 {
     CONSUL_PROFILE_METHOD();
 
-    onUpdate(assetManager, dt);
+    onUpdate(assets, dt);
 
     worldTransform = parentTransform*localTransform;
 
     for (const auto& child : children) {
-        child->update(assetManager, dt, worldTransform);
+        child->update(assets, dt, worldTransform);
     }
 }
 

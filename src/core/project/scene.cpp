@@ -1,29 +1,29 @@
 #include "scene.hpp"
 #include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
-#include "core/project/asset_manager.hpp"
+#include "core/project/asset_library.hpp"
 
-void Scene::init(std::shared_ptr<AssetManager> assetManager)
+void Scene::init(std::shared_ptr<AssetLibrary> assets)
 {
     CONSUL_PROFILE_METHOD();
 
-    if (!assetManager) {
-        Console::get().error("[Scene::init] Provided asset manager is null_ptr!");
+    if (!assets) {
+        Console::get().error("[Scene::init] Provided asset library is null_ptr!");
         return;
     }
 
     if (!isInitialised) {
-        onInit(assetManager);
+        onInit(assets);
         isInitialised = true;
     }
 }
 
-void Scene::update(std::shared_ptr<AssetManager> assetManager, double deltaTime)
+void Scene::update(std::shared_ptr<AssetLibrary> assets, double deltaTime)
 {
     CONSUL_PROFILE_METHOD();
 
-    onUpdate(assetManager, deltaTime);
-    updateNodes(assetManager, deltaTime);
+    onUpdate(assets, deltaTime);
+    updateNodes(assets, deltaTime);
 }
 
 void Scene::shutdown()

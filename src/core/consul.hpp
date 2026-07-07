@@ -4,6 +4,7 @@
 #include "core/engine_context.hpp"
 #include "core/ui/user_interface.hpp"
 #include "core/project/asset_manager.hpp"
+#include "core/project/asset_library.hpp"
 #include "core/project/scene.hpp"
 #include "core/project/scene_manager.hpp"
 #include "platforms/platform.hpp"
@@ -13,6 +14,8 @@
 #include <memory>
 
 enum class PlatformType;
+class AssetDefaults;
+class GLTFImporter;
 
 class Consul
 {
@@ -64,10 +67,18 @@ public:
     Renderer& getRenderer() { return *renderer; }
 
     /**
-     * Gets the asset manager instance.
-     * @returns Reference to the asset manager.
+     * Gets the scene-facing asset library.
+     * @returns Reference to the asset library.
      */
-    AssetManager& getAssetManager() { return *assetManager; }
+    AssetLibrary& getAssets() { return *assets; }
+    AssetLibrary& getAssetManager() { return *assets; }
+
+    ModelAssetManager& getModelAssetManager() { return *modelAssets; }
+    MeshAssetManager& getMeshAssetManager() { return *meshAssets; }
+    MaterialAssetManager& getMaterialAssetManager() { return *materialAssets; }
+    TextureAssetManager& getTextureAssetManager() { return *textureAssets; }
+    ShaderAssetManager& getShaderAssetManager() { return *shaderAssets; }
+    GLTFImporter& getGLTFImporter() { return *gltfImporter; }
 
     /**
      * Gets the scene manager instance.
@@ -88,7 +99,14 @@ private:
     Platform* platform = nullptr;
     Renderer* renderer = nullptr;
     bool close = false;
-    std::shared_ptr<AssetManager> assetManager = nullptr;
+    std::shared_ptr<ModelAssetManager> modelAssets = nullptr;
+    std::shared_ptr<MeshAssetManager> meshAssets = nullptr;
+    std::shared_ptr<MaterialAssetManager> materialAssets = nullptr;
+    std::shared_ptr<TextureAssetManager> textureAssets = nullptr;
+    std::shared_ptr<ShaderAssetManager> shaderAssets = nullptr;
+    std::shared_ptr<AssetDefaults> assetDefaults = nullptr;
+    std::shared_ptr<GLTFImporter> gltfImporter = nullptr;
+    std::shared_ptr<AssetLibrary> assets = nullptr;
     std::shared_ptr<SceneManager> sceneManager = nullptr;
 
     void initialiseWindow(PlatformType platformType);

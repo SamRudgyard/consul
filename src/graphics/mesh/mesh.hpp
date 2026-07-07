@@ -159,7 +159,7 @@ public:
     void clean(AttributeType attribute);
 
 private:
-    unsigned int id; // TODO: Can this be removed? AssetManager holds the ID of this Mesh.
+    unsigned int id; // TODO: Can this be removed? MeshAssetManager holds the asset ID.
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;

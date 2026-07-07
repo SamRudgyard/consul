@@ -9,7 +9,7 @@ enum class GraphicsAPI
 };
 
 class Camera;
-class AssetManager;
+class AssetLibrary;
 class Mesh;
 class Model;
 class Shader;
@@ -33,13 +33,13 @@ public:
 
     virtual void uploadShader(Shader& shader) = 0;
 
-    virtual void uploadMesh(Mesh& mesh, AssetManager& assetManager) = 0;
+    virtual void uploadMesh(Mesh& mesh, AssetLibrary& assets) = 0;
 
     virtual void uploadTexture(Texture& texture) = 0;
 
-    virtual void uploadModel(Model& model, AssetManager& assetManager) = 0;
+    virtual void uploadModel(Model& model, AssetLibrary& assets) = 0;
 
     virtual void clearSceneResources() = 0;
 
-    virtual void render(const Shader& shader, const Camera& camera, AssetManager& assetManager) = 0;
+    virtual void render(const Shader& shader, const Camera& camera, AssetLibrary& assets) = 0;
 };

@@ -2,7 +2,7 @@
 
 #include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
-#include "core/project/asset_manager.hpp"
+#include "core/project/asset_library.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
@@ -13,14 +13,14 @@ void SceneManager::loadScene(Scene& scene)
 {
     CONSUL_PROFILE_METHOD();
 
-    if (!assetManager) {
-        Console::get().error("[SceneManager::loadScene] Cannot load scene - asset manager is not assigned!");
+    if (!assets) {
+        Console::get().error("[SceneManager::loadScene] Cannot load scene - assets are not assigned!");
         return;
     }
 
     // Close previous scene's assets
     if (currentScene) {
-        assetManager->clearAssets();
+        assets->clearAssets();
 
         if (currentScene->isInitialised) {
             currentScene->shutdown();
@@ -28,17 +28,17 @@ void SceneManager::loadScene(Scene& scene)
     }
 
     currentScene = &scene;
-    currentScene->init(assetManager);
+    currentScene->init(assets);
 }
 
-void SceneManager::assignAssetManager(std::shared_ptr<AssetManager> assetManager)
+void SceneManager::assignAssets(std::shared_ptr<AssetLibrary> assets)
 {
-    if (!assetManager) {
-        Console::get().error("[SceneManager::assignAssetManager] Provided asset manager is null_ptr!");
+    if (!assets) {
+        Console::get().error("[SceneManager::assignAssets] Provided assets are null_ptr!");
         return;
     }
 
-    this->assetManager = assetManager;
+    this->assets = assets;
 }
 
 void SceneManager::update(double deltaTime)
@@ -54,14 +54,14 @@ void SceneManager::update(double deltaTime)
         return;
     }
 
-    currentScene->update(assetManager, deltaTime);
+    currentScene->update(assets, deltaTime);
 }
 
 void SceneManager::render(Renderer& renderer)
 {
     CONSUL_PROFILE_METHOD();
 
-    if (!currentScene || !currentScene->isInitialised || !assetManager) {
+    if (!currentScene || !currentScene->isInitialised || !assets) {
         return;
     }
 
@@ -71,7 +71,7 @@ void SceneManager::render(Renderer& renderer)
         return;
     }
 
-    const auto& shaders = assetManager->getShaders();
+    const auto& shaders = assets->getShaders();
     if (shaders.empty()) {
         Console::get().error("[SceneManager::render] Cannot render assets without a shader!");
         return;
@@ -82,26 +82,26 @@ void SceneManager::render(Renderer& renderer)
             renderer.uploadShader(*shader);
         }
     }
-    for (const auto& [modelID, model] : assetManager->getModels()) {
+    for (const auto& [modelID, model] : assets->getModels()) {
         if (model) {
-            renderer.uploadModel(*model, *assetManager);
+            renderer.uploadModel(*model, *assets);
         }
     }
-    for (const auto& [meshID, mesh] : assetManager->getMeshes()) {
+    for (const auto& [meshID, mesh] : assets->getMeshes()) {
         if (mesh) {
-            renderer.uploadMesh(*mesh, *assetManager);
+            renderer.uploadMesh(*mesh, *assets);
         }
     }
 
-    renderer.render(*shaders.begin()->second, *camera, *assetManager);
+    renderer.render(*shaders.begin()->second, *camera, *assets);
 }
 
 void SceneManager::shutdown()
 {
     CONSUL_PROFILE_METHOD();
 
-    if (assetManager) {
-        assetManager->clearAssets();
+    if (assets) {
+        assets->clearAssets();
     }
 
     if (!currentScene) {
