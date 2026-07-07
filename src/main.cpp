@@ -12,7 +12,7 @@
 class CubeNode : public Node
 {
 public:
-    void initialise(std::shared_ptr<AssetManager> assetManager)
+    void initialise(std::shared_ptr<AssetLibrary> assets)
     {
         Mesh mesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
         Mesh outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
@@ -20,20 +20,20 @@ public:
 
         Material material;
         material.setAlbedo(Colour(20, 200, 200));
-        AssetID materialID = assetManager->addMaterial("cubeMaterial", material);
+        AssetID materialID = assets->addMaterial("cubeMaterial", material);
 
         mesh.setMaterial(materialID);
-        AssetID meshID = assetManager->addMesh("cubeMesh", mesh);
-        AssetID outlineMeshID = assetManager->addMesh("cubeOutlineMesh", outlineMesh);
+        AssetID meshID = assets->addMesh("cubeMesh", mesh);
+        AssetID outlineMeshID = assets->addMesh("cubeOutlineMesh", outlineMesh);
 
         Model model;
         model.addMesh(meshID);
         model.addMesh(outlineMeshID);
-        modelID = assetManager->addModel("cubeModel", model);
+        modelID = assets->addModel("cubeModel", model);
     }
 
 protected:
-    void onUpdate(std::shared_ptr<AssetManager> assetManager, double deltaTime) override
+    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override
     {
         static float r = 1.5f;
         static float anglePerSecond = glm::radians(45.0f);
@@ -43,7 +43,7 @@ protected:
         setPosition({r*std::cos(currentAngle), 0.0f, r*std::sin(currentAngle)});
 
         // Update the model's mesh data to reflect the new position/rotation
-        std::shared_ptr<Model> model = assetManager->getModel(modelID);
+        std::shared_ptr<Model> model = assets->getModel(modelID);
         model->setTransform(getWorldTransform());
     }
 private:
@@ -55,18 +55,18 @@ class ExampleScene : public Scene
 public:
     ExampleScene() = default;
 
-    void onInit(std::shared_ptr<AssetManager> assetManager) override
+    void onInit(std::shared_ptr<AssetLibrary> assets) override
     {
         camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
-        assetManager->addShader("default", Shader("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl"));
-        assetManager->importAsset("shiba", "assets/shiba/scene.gltf");
+        assets->addShader("default", Shader("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl"));
+        assets->importAsset("shiba", "assets/shiba/scene.gltf");
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
-        rotatingCube->initialise(assetManager);
+        rotatingCube->initialise(assets);
     }
 
-    void onUpdate(std::shared_ptr<AssetManager> assetManager, double deltaTime) override
+    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override
     {
         camera.handleInputs(deltaTime);
     }
