@@ -31,7 +31,7 @@ public:
 
     virtual void setViewport(int x, int y, int width, int height) = 0;
 
-    virtual void uploadShader(Shader& shader) = 0;
+    virtual void uploadShader(Shader& shader, AssetLibrary& assets) = 0;
 
     virtual void uploadMesh(Mesh& mesh, AssetLibrary& assets) = 0;
 

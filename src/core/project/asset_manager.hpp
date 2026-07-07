@@ -10,7 +10,9 @@ class Material;
 class Mesh;
 class Model;
 class Shader;
+class FragmentShader;
 class Texture;
+class VertexShader;
 
 template <typename T>
 class AssetManager
@@ -43,7 +45,7 @@ public:
 
     const AssetMap& getAssets() const { return assets; }
 
-    void markImported(AssetID id, const std::string& sourcePath, const std::string& secondarySourcePath = "")
+    void setSourcePath(AssetID id, const std::string& sourcePath)
     {
         auto it = metadata.find(id);
         if (it == metadata.end()) {
@@ -51,8 +53,6 @@ public:
         }
 
         it->second.sourcePath = sourcePath;
-        it->second.secondarySourcePath = secondarySourcePath;
-        it->second.importedFromFile = true;
     }
 
     void clearAssets()
@@ -69,9 +69,7 @@ private:
     {
         metadata[id] = AssetMetadata{
             name,
-            {},
-            {},
-            false
+            {}
         };
     }
 };
@@ -80,4 +78,6 @@ using MaterialAssetManager = AssetManager<Material>;
 using MeshAssetManager = AssetManager<Mesh>;
 using ModelAssetManager = AssetManager<Model>;
 using ShaderAssetManager = AssetManager<Shader>;
+using FragmentShaderAssetManager = AssetManager<FragmentShader>;
 using TextureAssetManager = AssetManager<Texture>;
+using VertexShaderAssetManager = AssetManager<VertexShader>;

@@ -25,6 +25,8 @@ void Consul::initialiseEngine()
     materialAssets = std::make_shared<MaterialAssetManager>();
     textureAssets = std::make_shared<TextureAssetManager>();
     shaderAssets = std::make_shared<ShaderAssetManager>();
+    vertexShaderAssets = std::make_shared<VertexShaderAssetManager>();
+    fragmentShaderAssets = std::make_shared<FragmentShaderAssetManager>();
     assetDefaults = std::make_shared<AssetDefaults>(materialAssets, textureAssets);
     gltfImporter = std::make_shared<GLTFImporter>(modelAssets, meshAssets, materialAssets, textureAssets, assetDefaults);
     assets = std::make_shared<AssetLibrary>(
@@ -33,6 +35,8 @@ void Consul::initialiseEngine()
         materialAssets,
         textureAssets,
         shaderAssets,
+        vertexShaderAssets,
+        fragmentShaderAssets,
         assetDefaults,
         gltfImporter
     );

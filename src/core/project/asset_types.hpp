@@ -29,8 +29,6 @@ struct AssetMetadata
 {
     std::string name;
     std::string sourcePath;
-    std::string secondarySourcePath;
-    bool importedFromFile;
 };
 
 // Custom hash function for AssetID, allowing it to be used as a key in std::unordered_map

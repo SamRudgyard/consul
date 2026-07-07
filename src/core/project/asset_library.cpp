@@ -16,6 +16,8 @@ AssetLibrary::AssetLibrary(
     std::shared_ptr<MaterialAssetManager> materialManager,
     std::shared_ptr<TextureAssetManager> textureManager,
     std::shared_ptr<ShaderAssetManager> shaderManager,
+    std::shared_ptr<VertexShaderAssetManager> vertexShaderManager,
+    std::shared_ptr<FragmentShaderAssetManager> fragmentShaderManager,
     std::shared_ptr<AssetDefaults> assetDefaults,
     std::shared_ptr<GLTFImporter> gltfImporter
 ) : modelManager(modelManager),
@@ -23,6 +25,8 @@ AssetLibrary::AssetLibrary(
     materialManager(materialManager),
     textureManager(textureManager),
     shaderManager(shaderManager),
+    vertexShaderManager(vertexShaderManager),
+    fragmentShaderManager(fragmentShaderManager),
     assetDefaults(assetDefaults),
     gltfImporter(gltfImporter)
 {
@@ -63,6 +67,16 @@ AssetID AssetLibrary::addShader(const std::string& name, const Shader& shader)
     return shaderManager->add(name, shader);
 }
 
+AssetID AssetLibrary::addVertexShader(const std::string& name, const VertexShader& shader)
+{
+    return vertexShaderManager->add(name, shader);
+}
+
+AssetID AssetLibrary::addFragmentShader(const std::string& name, const FragmentShader& shader)
+{
+    return fragmentShaderManager->add(name, shader);
+}
+
 AssetID AssetLibrary::importAsset(const std::string& name, const std::string& path)
 {
     if (!doesFileExist(path.c_str())) {
@@ -78,7 +92,7 @@ AssetID AssetLibrary::importAsset(const std::string& name, const std::string& pa
 
     AssetID id = gltfImporter->import(name, path);
     if (id != INVALID_ASSET_ID) {
-        modelManager->markImported(id, path);
+        modelManager->setSourcePath(id, path);
     }
 
     return id;
@@ -95,9 +109,13 @@ AssetID AssetLibrary::importShader(const std::string& name, const std::string& v
         return INVALID_ASSET_ID;
     }
 
-    AssetID id = addShader(name, Shader(vertexPath.c_str(), fragmentPath.c_str()));
-    shaderManager->markImported(id, vertexPath, fragmentPath);
-    return id;
+    AssetID vertexShaderID = addVertexShader(name + "_VertexShader", VertexShader(readFile(vertexPath.c_str())));
+    vertexShaderManager->setSourcePath(vertexShaderID, vertexPath);
+
+    AssetID fragmentShaderID = addFragmentShader(name + "_FragmentShader", FragmentShader(readFile(fragmentPath.c_str())));
+    fragmentShaderManager->setSourcePath(fragmentShaderID, fragmentPath);
+
+    return addShader(name, Shader(vertexShaderID, fragmentShaderID));
 }
 
 std::shared_ptr<Model> AssetLibrary::getModel(AssetID id) const
@@ -125,6 +143,16 @@ std::shared_ptr<Shader> AssetLibrary::getShader(AssetID id) const
     return shaderManager->get(id);
 }
 
+std::shared_ptr<VertexShader> AssetLibrary::getVertexShader(AssetID id) const
+{
+    return vertexShaderManager->get(id);
+}
+
+std::shared_ptr<FragmentShader> AssetLibrary::getFragmentShader(AssetID id) const
+{
+    return fragmentShaderManager->get(id);
+}
+
 const AssetMetadata* AssetLibrary::getMetadata(AssetID id) const
 {
     if (const AssetMetadata* metadata = modelManager->getMetadata(id)) {
@@ -139,7 +167,13 @@ const AssetMetadata* AssetLibrary::getMetadata(AssetID id) const
     if (const AssetMetadata* metadata = materialManager->getMetadata(id)) {
         return metadata;
     }
-    return shaderManager->getMetadata(id);
+    if (const AssetMetadata* metadata = shaderManager->getMetadata(id)) {
+        return metadata;
+    }
+    if (const AssetMetadata* metadata = vertexShaderManager->getMetadata(id)) {
+        return metadata;
+    }
+    return fragmentShaderManager->getMetadata(id);
 }
 
 const ModelAssetManager::AssetMap& AssetLibrary::getModels() const
@@ -167,6 +201,16 @@ const ShaderAssetManager::AssetMap& AssetLibrary::getShaders() const
     return shaderManager->getAssets();
 }
 
+const VertexShaderAssetManager::AssetMap& AssetLibrary::getVertexShaders() const
+{
+    return vertexShaderManager->getAssets();
+}
+
+const FragmentShaderAssetManager::AssetMap& AssetLibrary::getFragmentShaders() const
+{
+    return fragmentShaderManager->getAssets();
+}
+
 void AssetLibrary::clearAssets()
 {
     modelManager->clearAssets();
@@ -174,5 +218,7 @@ void AssetLibrary::clearAssets()
     textureManager->clearAssets();
     materialManager->clearAssets();
     shaderManager->clearAssets();
+    vertexShaderManager->clearAssets();
+    fragmentShaderManager->clearAssets();
     assetDefaults->reset();
 }

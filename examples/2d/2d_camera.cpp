@@ -5,7 +5,6 @@
 #include "graphics/geometry/geometry_2d.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
-#include "graphics/shader/shader.hpp"
 
 class CubeNode : public Node {
 public:
@@ -42,7 +41,7 @@ class ExampleScene : public Scene {
 public:
     void onInit(std::shared_ptr<AssetLibrary> assets) override {
         camera.setPosition({0.0f, 0.0f});
-        assets->addShader("default", Shader("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl"));
+        assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
 
         CubeNode* cubeNode = getRoot().createChild<CubeNode>();
         cubeNode->setPosition({0.0f, 0.0f, 0.0f});

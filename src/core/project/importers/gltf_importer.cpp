@@ -333,6 +333,7 @@ AssetID GLTFImporter::loadMaterial(int materialIndex)
         }
 
         AssetID textureID = textureManager->add(uri, Texture(uri, type));
+        textureManager->setSourcePath(textureID, uri);
         switch (type) {
             case TextureType::DIFFUSE:
                 material.setAlbedoTextureID(textureID);

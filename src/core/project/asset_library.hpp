@@ -17,6 +17,8 @@ public:
         std::shared_ptr<MaterialAssetManager> materialManager,
         std::shared_ptr<TextureAssetManager> textureManager,
         std::shared_ptr<ShaderAssetManager> shaderManager,
+        std::shared_ptr<VertexShaderAssetManager> vertexShaderManager,
+        std::shared_ptr<FragmentShaderAssetManager> fragmentShaderManager,
         std::shared_ptr<AssetDefaults> assetDefaults,
         std::shared_ptr<GLTFImporter> gltfImporter
     );
@@ -30,6 +32,8 @@ public:
     AssetID addTexture(const std::string& name, const Texture& texture);
     AssetID addMaterial(const std::string& name, const Material& material);
     AssetID addShader(const std::string& name, const Shader& shader);
+    AssetID addVertexShader(const std::string& name, const VertexShader& shader);
+    AssetID addFragmentShader(const std::string& name, const FragmentShader& shader);
 
     AssetID importAsset(const std::string& name, const std::string& path);
     AssetID importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath);
@@ -39,6 +43,8 @@ public:
     std::shared_ptr<Texture> getTexture(AssetID id) const;
     std::shared_ptr<Material> getMaterial(AssetID id) const;
     std::shared_ptr<Shader> getShader(AssetID id) const;
+    std::shared_ptr<VertexShader> getVertexShader(AssetID id) const;
+    std::shared_ptr<FragmentShader> getFragmentShader(AssetID id) const;
 
     const AssetMetadata* getMetadata(AssetID id) const;
     const ModelAssetManager::AssetMap& getModels() const;
@@ -46,6 +52,8 @@ public:
     const MaterialAssetManager::AssetMap& getMaterials() const;
     const TextureAssetManager::AssetMap& getTextures() const;
     const ShaderAssetManager::AssetMap& getShaders() const;
+    const VertexShaderAssetManager::AssetMap& getVertexShaders() const;
+    const FragmentShaderAssetManager::AssetMap& getFragmentShaders() const;
 
     void clearAssets();
 
@@ -55,6 +63,8 @@ private:
     std::shared_ptr<MaterialAssetManager> materialManager;
     std::shared_ptr<TextureAssetManager> textureManager;
     std::shared_ptr<ShaderAssetManager> shaderManager;
+    std::shared_ptr<VertexShaderAssetManager> vertexShaderManager;
+    std::shared_ptr<FragmentShaderAssetManager> fragmentShaderManager;
     std::shared_ptr<AssetDefaults> assetDefaults;
     std::shared_ptr<GLTFImporter> gltfImporter;
 };

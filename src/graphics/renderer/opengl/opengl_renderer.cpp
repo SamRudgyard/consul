@@ -121,7 +121,7 @@ void OpenGLRenderer::setViewport(int x, int y, int width, int height)
     glViewport(x, y, width, height);
 }
 
-void OpenGLRenderer::uploadShader(Shader& shader)
+void OpenGLRenderer::uploadShader(Shader& shader, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -133,6 +133,12 @@ void OpenGLRenderer::uploadShader(Shader& shader)
     }
 
     Console& console = Console::get();
+    std::shared_ptr<VertexShader> vertexShader = assets.getVertexShader(shader.getVertexShader());
+    std::shared_ptr<FragmentShader> fragmentShader = assets.getFragmentShader(shader.getFragmentShader());
+    if (!vertexShader || !fragmentShader) {
+        console.error("[OpenGLRenderer::uploadShader] Shader references a missing vertex or fragment shader asset.");
+        return;
+    }
 
     unsigned int vertexID, fragmentID;
     vertexID = glCreateShader(GL_VERTEX_SHADER);
@@ -140,7 +146,7 @@ void OpenGLRenderer::uploadShader(Shader& shader)
     glCheckError();
 
     // Compile vertex shader
-    const char* vertexCString = shader.getVertexSource().c_str();
+    const char* vertexCString = vertexShader->getSource().c_str();
     glShaderSource(vertexID, 1, &vertexCString, NULL);
     glCompileShader(vertexID);
     glCheckError();
@@ -157,7 +163,7 @@ void OpenGLRenderer::uploadShader(Shader& shader)
     console.logOnDebug("[OpenGLRenderer::uploadShader] Vertex shader successfully compiled.");
 
     // Compile fragment shader
-    const char* fragmentCString = shader.getFragmentSource().c_str();
+    const char* fragmentCString = fragmentShader->getSource().c_str();
     glShaderSource(fragmentID, 1, &fragmentCString, NULL);
     glCompileShader(fragmentID);
     glCheckError();

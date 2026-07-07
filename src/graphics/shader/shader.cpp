@@ -1,11 +1,21 @@
 #include "shader.hpp"
-#include "utils.hpp"
 
-Shader::Shader(const std::string& vertexFilePath, const std::string& fragmentFilePath)
+#include <utility>
+
+VertexShader::VertexShader(std::string source)
+    : source(std::move(source))
+{
+}
+
+FragmentShader::FragmentShader(std::string source)
+    : source(std::move(source))
+{
+}
+
+Shader::Shader(AssetID vertexShaderID, AssetID fragmentShaderID)
+    : vertexShaderID(vertexShaderID),
+      fragmentShaderID(fragmentShaderID)
 {
     static unsigned int nextID = 0;
     id = nextID++;
-
-    vertexSource = readFile(vertexFilePath.c_str());
-    fragmentSource = readFile(fragmentFilePath.c_str());
 }

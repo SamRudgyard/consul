@@ -79,8 +79,9 @@ public:
     /**
      * Uploads the given Shader to the GPU.
      * @param shader The shader to upload to the GPU.
+     * @param assets Assets containing the shader source stages.
      */
-    void uploadShader(Shader& shader) override;
+    void uploadShader(Shader& shader, AssetLibrary& assets) override;
 
     /**
      * Uploads the given Mesh to the GPU.

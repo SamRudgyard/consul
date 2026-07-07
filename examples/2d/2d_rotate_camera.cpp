@@ -6,7 +6,6 @@
 #include "graphics/geometry/geometry_2d.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
-#include "graphics/shader/shader.hpp"
 
 class RotatingCamera2D : public Camera2D {
 public:
@@ -67,7 +66,7 @@ public:
     void onInit(std::shared_ptr<AssetLibrary> assets) override
     {
         camera.setPosition({0.0f, 0.0f});
-        assets->addShader("default", Shader("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl"));
+        assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
 
         createQuad(assets, {-1.25f, 0.0f, 0.0f}, Colour(220, 80, 80));
         createQuad(assets, {0.0f, 0.0f, 0.0f}, Colour(240, 200, 90));

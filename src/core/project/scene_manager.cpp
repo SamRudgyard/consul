@@ -79,7 +79,7 @@ void SceneManager::render(Renderer& renderer)
 
     for (const auto& [shaderID, shader] : shaders) {
         if (shader) {
-            renderer.uploadShader(*shader);
+            renderer.uploadShader(*shader, *assets);
         }
     }
     for (const auto& [modelID, model] : assets->getModels()) {

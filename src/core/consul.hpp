@@ -78,6 +78,8 @@ public:
     MaterialAssetManager& getMaterialAssetManager() { return *materialAssets; }
     TextureAssetManager& getTextureAssetManager() { return *textureAssets; }
     ShaderAssetManager& getShaderAssetManager() { return *shaderAssets; }
+    VertexShaderAssetManager& getVertexShaderAssetManager() { return *vertexShaderAssets; }
+    FragmentShaderAssetManager& getFragmentShaderAssetManager() { return *fragmentShaderAssets; }
     GLTFImporter& getGLTFImporter() { return *gltfImporter; }
 
     /**
@@ -104,6 +106,8 @@ private:
     std::shared_ptr<MaterialAssetManager> materialAssets = nullptr;
     std::shared_ptr<TextureAssetManager> textureAssets = nullptr;
     std::shared_ptr<ShaderAssetManager> shaderAssets = nullptr;
+    std::shared_ptr<VertexShaderAssetManager> vertexShaderAssets = nullptr;
+    std::shared_ptr<FragmentShaderAssetManager> fragmentShaderAssets = nullptr;
     std::shared_ptr<AssetDefaults> assetDefaults = nullptr;
     std::shared_ptr<GLTFImporter> gltfImporter = nullptr;
     std::shared_ptr<AssetLibrary> assets = nullptr;

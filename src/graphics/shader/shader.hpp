@@ -1,16 +1,42 @@
 #pragma once
 
+#include "core/project/asset_types.hpp"
+
 #include <string>
 
-class Shader {
+class VertexShader
+{
 public:
-    Shader(const std::string& vertexFilePath, const std::string& fragmentFilePath);
+    explicit VertexShader(std::string source);
+
+    const std::string& getSource() const { return source; }
+
+private:
+    std::string source;
+};
+
+class FragmentShader
+{
+public:
+    explicit FragmentShader(std::string source);
+
+    const std::string& getSource() const { return source; }
+
+private:
+    std::string source;
+};
+
+class Shader
+{
+public:
+    Shader(AssetID vertexShaderID, AssetID fragmentShaderID);
 
     unsigned int getID() const { return id; }
-    const std::string& getVertexSource() const { return vertexSource; }
-    const std::string& getFragmentSource() const { return fragmentSource; }
+    AssetID getVertexShader() const { return vertexShaderID; }
+    AssetID getFragmentShader() const { return fragmentShaderID; }
+
 private:
     unsigned int id;
-    std::string vertexSource;
-    std::string fragmentSource;
+    AssetID vertexShaderID = INVALID_ASSET_ID;
+    AssetID fragmentShaderID = INVALID_ASSET_ID;
 };

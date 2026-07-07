@@ -4,7 +4,6 @@
 #include "core/window.hpp"
 #include "core/project/scene.hpp"
 #include "graphics/camera/camera_3d.hpp"
-#include "graphics/shader/shader.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/geometry/geometry_3d.hpp"
@@ -59,7 +58,7 @@ public:
     {
         camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
-        assets->addShader("default", Shader("shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl"));
+        assets->importShader("default", "shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl");
         assets->importAsset("shiba", "assets/shiba/scene.gltf");
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
