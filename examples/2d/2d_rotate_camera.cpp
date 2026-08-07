@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "core/consul.hpp"
 #include "core/project/asset_library.hpp"
 #include "core/project/scene.hpp"
@@ -100,8 +102,7 @@ int main()
 
     Consul consul(window);
     consul.setTargetFPS(60);
-    RotateCameraScene scene;
-    consul.loadScene(scene);
+    consul.loadScene(std::make_unique<RotateCameraScene>());
     consul.run();
     return 0;
 }

@@ -9,7 +9,7 @@ class Scene
 {
 public:
     Scene() = default;
-    ~Scene() { shutdown(); };
+    virtual ~Scene() { shutdown(); };
 
     bool isInitialised = false;
 

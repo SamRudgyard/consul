@@ -1,5 +1,6 @@
 #include "core/project/scene_manager.hpp"
 
+#include <utility>
 #include <vector>
 
 #include "core/console/console.hpp"
@@ -13,7 +14,7 @@
 #include "graphics/shader/shader.hpp"
 #include "graphics/texture/texture.hpp"
 
-void SceneManager::loadScene(Scene& scene)
+void SceneManager::loadScene(std::unique_ptr<Scene> scene)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -31,7 +32,12 @@ void SceneManager::loadScene(Scene& scene)
         }
     }
 
-    currentScene = &scene;
+    currentScene = std::move(scene);
+    if (!currentScene) {
+        Console::get().error("[SceneManager::loadScene] Failed to load scene!");
+        return;
+    }
+
     currentScene->init(assets);
 }
 

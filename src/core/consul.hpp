@@ -89,10 +89,10 @@ public:
     SceneManager& getSceneManager() { return *sceneManager; }
 
     /**
-     * Loads a scene.
+     * Loads a scene. Ownership is transferred to the engine.
      * The previous scene (if any) will be shut down.
      */
-    void loadScene(Scene& newScene);
+    void loadScene(std::unique_ptr<Scene> newScene);
 
 private:
     Console& console = Console::get();

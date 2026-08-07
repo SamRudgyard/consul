@@ -1,6 +1,7 @@
 #include "consul.hpp"
 
 #include <memory>
+#include <utility>
 
 #include "platforms/platform_glfw.hpp"
 #include "core/project/asset_defaults.hpp"
@@ -102,7 +103,7 @@ Consul::~Consul()
     terminate();
 }
 
-void Consul::loadScene(Scene& newScene)
+void Consul::loadScene(std::unique_ptr<Scene> newScene)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -111,7 +112,7 @@ void Consul::loadScene(Scene& newScene)
         return;
     }
 
-    sceneManager->loadScene(newScene);
+    sceneManager->loadScene(std::move(newScene));
 }
 
 void Consul::run()

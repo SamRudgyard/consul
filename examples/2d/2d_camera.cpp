@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "core/consul.hpp"
 #include "core/project/asset_library.hpp"
 #include "core/project/scene.hpp"
@@ -63,8 +65,7 @@ int main()
     Window window;
     window.title = "2D Example - Default Camera Movement";
     Consul consul(window);
-    ExampleScene scene;
-    consul.loadScene(scene);
+    consul.loadScene(std::make_unique<ExampleScene>());
     consul.run();
     return 0;
 }

@@ -13,7 +13,7 @@ public:
     SceneManager() = default;
     ~SceneManager() = default;
 
-    void loadScene(Scene& newScene);
+    void loadScene(std::unique_ptr<Scene> newScene);
 
     void assignAssets(std::shared_ptr<AssetLibrary> assets);
 
@@ -22,6 +22,6 @@ public:
     void shutdown();
 
 private:
-    Scene* currentScene = nullptr;
+    std::unique_ptr<Scene> currentScene;
     std::shared_ptr<AssetLibrary> assets;
 };

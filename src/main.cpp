@@ -84,8 +84,7 @@ int main(int argc, char **argv)
     window.isMaximised = true;
 
     Consul consul(window);
-    ExampleScene scene = ExampleScene();
-    consul.loadScene(scene);
+    consul.loadScene(std::make_unique<ExampleScene>());
     consul.run();
 
     return 0;
