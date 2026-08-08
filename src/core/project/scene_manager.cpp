@@ -87,20 +87,23 @@ void SceneManager::render(Renderer& renderer)
         return;
     }
 
-    auto uploadMesh = [this, &renderer](Mesh& mesh) {
-        renderer.uploadMesh(mesh);
+    auto uploadMesh = [this, &renderer](AssetID meshID, Mesh& mesh) {
+        renderer.uploadMesh(meshID, mesh);
 
         std::shared_ptr<Material> material = assets->getMaterial(mesh.getMaterial());
         if (!material) {
             return;
         }
 
-        std::shared_ptr<Texture> albedoTexture = assets->getTexture(material->getAlbedoTextureID());
-        std::shared_ptr<Texture> specularTexture = assets->getTexture(material->getSpecularTextureID());
-        std::shared_ptr<Texture> normalTexture = assets->getTexture(material->getNormalTextureID());
-        if (albedoTexture) renderer.uploadTexture(*albedoTexture);
-        if (specularTexture) renderer.uploadTexture(*specularTexture);
-        if (normalTexture) renderer.uploadTexture(*normalTexture);
+        const AssetID albedoTextureID = material->getAlbedoTextureID();
+        const AssetID specularTextureID = material->getSpecularTextureID();
+        const AssetID normalTextureID = material->getNormalTextureID();
+        std::shared_ptr<Texture> albedoTexture = assets->getTexture(albedoTextureID);
+        std::shared_ptr<Texture> specularTexture = assets->getTexture(specularTextureID);
+        std::shared_ptr<Texture> normalTexture = assets->getTexture(normalTextureID);
+        if (albedoTexture) renderer.uploadTexture(albedoTextureID, *albedoTexture);
+        if (specularTexture) renderer.uploadTexture(specularTextureID, *specularTexture);
+        if (normalTexture) renderer.uploadTexture(normalTextureID, *normalTexture);
     };
 
     for (const auto& [shaderID, shader] : shaders) {
@@ -115,7 +118,7 @@ void SceneManager::render(Renderer& renderer)
             continue;
         }
 
-        renderer.uploadShader(*shader, *vertexShader, *fragmentShader);
+        renderer.uploadShader(shaderID, *vertexShader, *fragmentShader);
     }
 
     for (const auto& [modelID, model] : assets->getModels()) {
@@ -132,17 +135,17 @@ void SceneManager::render(Renderer& renderer)
             }
 
             mesh->setModelMatrix(transforms[iMesh]);
-            uploadMesh(*mesh);
+            uploadMesh(meshIDs[iMesh], *mesh);
         }
     }
     
     for (const auto& [meshID, mesh] : assets->getMeshes()) {
         if (mesh) {
-            uploadMesh(*mesh);
+            uploadMesh(meshID, *mesh);
         }
     }
 
-    renderer.render(*shaders.begin()->second, *camera, *assets);
+    renderer.render(shaders.begin()->first, *camera, *assets);
 }
 
 void SceneManager::shutdown()

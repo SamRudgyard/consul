@@ -144,12 +144,6 @@ public:
      */
     void clear();
 
-    /**
-     * Gets the unique ID of this Mesh.
-     * @return ID of this Mesh.
-     */
-    unsigned int getID() const { return id; }
-
     bool isAnyDirty() const;
 
     bool isDirty(AttributeType attribute) const;
@@ -159,7 +153,6 @@ public:
     void clean(AttributeType attribute);
 
 private:
-    unsigned int id; // TODO: Can this be removed? MeshAssetManager holds the asset ID.
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;

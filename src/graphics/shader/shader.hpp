@@ -31,12 +31,10 @@ class Shader
 public:
     Shader(AssetID vertexShaderID, AssetID fragmentShaderID);
 
-    unsigned int getID() const { return id; }
     AssetID getVertexShader() const { return vertexShaderID; }
     AssetID getFragmentShader() const { return fragmentShaderID; }
 
 private:
-    unsigned int id;
     AssetID vertexShaderID = INVALID_ASSET_ID;
     AssetID fragmentShaderID = INVALID_ASSET_ID;
 };

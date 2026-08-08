@@ -15,9 +15,6 @@ Mesh::Mesh(
     drawMode(drawMode),
     indexCount(indices.size())
 {
-    static unsigned int nextID = 0;
-    id = nextID++;
-
     // New meshes need an initial GPU upload of geometric attributes.
     uploadMask.set();
 }

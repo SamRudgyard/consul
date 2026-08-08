@@ -120,11 +120,10 @@ void OpenGLRenderer::setViewport(int x, int y, int width, int height)
     glViewport(x, y, width, height);
 }
 
-void OpenGLRenderer::uploadShader(Shader& shader, const VertexShader& vertexShader, const FragmentShader& fragmentShader)
+void OpenGLRenderer::uploadShader(AssetID shaderID, const VertexShader& vertexShader, const FragmentShader& fragmentShader)
 {
     CONSUL_PROFILE_METHOD();
 
-    const unsigned int shaderID = shader.getID();
     if (shaders.find(shaderID) != shaders.end()) {
         // Currently no functionality to adjust Shader vertex/fragment code
         // on the fly, so return if found.
@@ -194,23 +193,17 @@ void OpenGLRenderer::uploadShader(Shader& shader, const VertexShader& vertexShad
     // Store the compiled shader directly in the map entry.
     shaders[shaderID].id = programID;
 
-    Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader " + std::to_string(shader.getID()) + " to GPU.");
+    Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader " + shaderID.toString() + " to GPU.");
 }
 
-void OpenGLRenderer::uploadMesh(Mesh& mesh)
+void OpenGLRenderer::uploadMesh(AssetID meshID, Mesh& mesh)
 {
     CONSUL_PROFILE_METHOD();
 
-    // This is required to refresh the MeshBuffer reference to the Mesh.
-    // We do this prior to checking if the Mesh is dirty, as if a new Mesh
-    // was added then the pointer may be stale. TODO: This isn't a solid
-    // solution, so refactor when we have a way to track the meshes
-    // present in the scene.
-    auto [it, inserted] = meshes.try_emplace(mesh.getID());
+    auto [it, inserted] = meshes.try_emplace(meshID);
     MeshBuffer& meshBuffer = it->second;
-    meshBuffer.mesh = &mesh;
 
-    if (!mesh.isAnyDirty()) return;
+    if (!inserted && !mesh.isAnyDirty()) return;
 
     if (inserted) {
         glGenVertexArrays(1, &meshBuffer.vao);
@@ -322,14 +315,13 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
     glCheckError();
 
-    Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + std::to_string(mesh.getID()) + " to GPU.");
+    Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + meshID.toString() + " to GPU.");
 }
 
-void OpenGLRenderer::uploadTexture(Texture& texture)
+void OpenGLRenderer::uploadTexture(AssetID textureID, Texture& texture)
 {
     CONSUL_PROFILE_METHOD();
 
-    const unsigned int textureID = texture.getID();
     const std::string& texturePath = texture.getPath();
 
     if (textures.find(textureID) != textures.end()) {
@@ -381,7 +373,7 @@ void OpenGLRenderer::uploadTexture(Texture& texture)
     }
     glCheckError();
 
-    Console::get().logOnDebug("[OpenGLRenderer::uploadTexture] Successfully uploaded Texture " + std::to_string(texture.getID()) + " to GPU.");
+    Console::get().logOnDebug("[OpenGLRenderer::uploadTexture] Successfully uploaded Texture " + textureID.toString() + " to GPU.");
 
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
@@ -389,11 +381,11 @@ void OpenGLRenderer::uploadTexture(Texture& texture)
     glCheckError();
 }
 
-void OpenGLRenderer::render(const Shader& shader, const Camera& camera, AssetLibrary& assets)
+void OpenGLRenderer::render(AssetID shaderID, const Camera& camera, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
 
-    const auto shaderIt = shaders.find(shader.getID());
+    const auto shaderIt = shaders.find(shaderID);
     if (shaderIt == shaders.end()) {
         Console::get().error("[OpenGLRenderer::render] Attempting to render with a shader that hasn't been uploaded.");
         return;
@@ -408,30 +400,37 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera, AssetLib
     setUniformVec3(programID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
     setUniformVec3(programID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
 
-    for (auto& [meshID, meshBuffer] : meshes) {
-        if (!meshBuffer.mesh) {
+    for (const auto& [meshID, mesh] : assets.getMeshes()) {
+        if (!mesh) {
             continue;
         }
-        const Mesh& mesh = *meshBuffer.mesh;
-        std::shared_ptr<Material> material = assets.getMaterial(mesh.getMaterial());
+
+        const auto meshBufferIt = meshes.find(meshID);
+        if (meshBufferIt == meshes.end()) {
+            Console::get().error("[OpenGLRenderer::render] Attempting to render a mesh that hasn't been uploaded.");
+            continue;
+        }
+
+        const MeshBuffer& meshBuffer = meshBufferIt->second;
+        std::shared_ptr<Material> material = assets.getMaterial(mesh->getMaterial());
         if (!material) {
-            Console::get().logOnDebug("[OpenGLRenderer::render] Mesh " + std::to_string(mesh.getID()) + " has no material, so will be rendered with default material.");
+            Console::get().logOnDebug("[OpenGLRenderer::render] Mesh " + meshID.toString() + " has no material, so will be rendered with default material.");
         }
 
         if (material) {
             unsigned int textureUnit = 0;
-            std::shared_ptr<Texture> albedoTexture = assets.getTexture(material->getAlbedoTextureID());
-            std::shared_ptr<Texture> specularTexture = assets.getTexture(material->getSpecularTextureID());
+            const AssetID albedoTextureID = material->getAlbedoTextureID();
+            const AssetID specularTextureID = material->getSpecularTextureID();
 
-            if (albedoTexture) {
-                bindTexture(programID, textureUnit++, "diffuse0", *albedoTexture);
+            if (assets.getTexture(albedoTextureID)) {
+                bindTexture(programID, textureUnit++, "diffuse0", albedoTextureID);
             }
-            if (specularTexture) {
-                bindTexture(programID, textureUnit++, "specular0", *specularTexture);
+            if (assets.getTexture(specularTextureID)) {
+                bindTexture(programID, textureUnit++, "specular0", specularTextureID);
             }
         }
 
-        const glm::mat4& modelMatrix = mesh.getModelMatrix();
+        const glm::mat4& modelMatrix = mesh->getModelMatrix();
         const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
         if (material) {
@@ -459,12 +458,12 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera, AssetLib
 
         setUniformMat4(programID, "model", modelMatrix);
         setUniformMat3(programID, "normalMatrix", normalMatrix);
-        setUniformInt(programID, "useLighting", mesh.hasAttribute(AttributeType::NORMAL) ? 1 : 0);
+        setUniformInt(programID, "useLighting", mesh->hasAttribute(AttributeType::NORMAL) ? 1 : 0);
 
         glBindVertexArray(meshBuffer.vao);
         glDrawElements(
-            mesh.getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
-            (GLsizei)(mesh.getNumIndices()),
+            mesh->getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
+            (GLsizei)(mesh->getNumIndices()),
             GL_UNSIGNED_INT,
             nullptr
         );
@@ -530,11 +529,11 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec4>& da
     return vbo;
 }
 
-void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture)
+void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, AssetID textureID)
 {
     CONSUL_PROFILE_METHOD();
 
-    auto it = textures.find(texture.getID());
+    auto it = textures.find(textureID);
     if (it == textures.end()) {
         Console::get().error("[OpenGLRenderer::bindTexture] Attempting to bind texture that hasn't been uploaded!");
         return;

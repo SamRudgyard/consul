@@ -24,14 +24,12 @@ public:
     static Texture getDefaultSpecularTexture();
 
     const std::string& getPath() const { return path; }
-    unsigned int getID() const { return id; }
     TextureType getType() const { return type; }
     const char* getTextureTypeAsString() const { return textureTypeToString.at(type); }
 
     const bool operator==( const Texture& other ) const;
 
 private:
-    unsigned int id = 0;
     std::string path;
     TextureType type;
 

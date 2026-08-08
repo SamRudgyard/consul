@@ -27,8 +27,6 @@ struct MeshBuffer
     GLuint texCoordVBO = 0;
     GLuint tangentVBO = 0;
     GLuint ebo = 0;
-
-    const Mesh* mesh = nullptr;
 };
 
 class OpenGLRenderer : public Renderer
@@ -78,40 +76,42 @@ public:
 
     /**
      * Uploads the given Shader to the GPU.
-     * @param shader The shader to upload to the GPU.
+     * @param shaderID Asset ID of the shader to upload to the GPU.
      * @param vertexShader Vertex shader source stage.
      * @param fragmentShader Fragment shader source stage.
      */
-    void uploadShader(Shader& shader, const VertexShader& vertexShader, const FragmentShader& fragmentShader) override;
+    void uploadShader(AssetID shaderID, const VertexShader& vertexShader, const FragmentShader& fragmentShader) override;
 
     /**
      * Uploads the given Mesh to the GPU.
-     * @param mesh The mesh to upload to the GPU.
+     * @param meshID Asset ID of the mesh to upload to the GPU.
+     * @param mesh The mesh data to upload to the GPU.
      */
-    void uploadMesh(Mesh& mesh) override;
+    void uploadMesh(AssetID meshID, Mesh& mesh) override;
 
     /**
      * Uploads the given Texture to the GPU.
-     * @param texture The texture to upload to the GPU.
+     * @param textureID Asset ID of the texture to upload to the GPU.
+     * @param texture The texture data to upload to the GPU.
      */
-    void uploadTexture(Texture& texture) override;
+    void uploadTexture(AssetID textureID, Texture& texture) override;
 
     /**
      * Render all uploaded models/meshes with the provided shader and camera.
-     * @param shader The shader to render with.
+     * @param shaderID Asset ID of the shader to render with.
      * @param camera The camera, from which the models/meshes are viewed. 
      */
-    void render(const Shader& shader, const Camera& camera, AssetLibrary& assets) override;
+    void render(AssetID shaderID, const Camera& camera, AssetLibrary& assets) override;
 
 private:
-    std::unordered_map<unsigned int, ShaderBuffer> shaders;
-    std::unordered_map<unsigned int, MeshBuffer> meshes;
-    std::unordered_map<unsigned int, TextureBuffer> textures;
+    std::unordered_map<AssetID, ShaderBuffer> shaders;
+    std::unordered_map<AssetID, MeshBuffer> meshes;
+    std::unordered_map<AssetID, TextureBuffer> textures;
 
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec4>& data, AttributeType attribute, bool useDynamicDraw);
-    void bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture);
+    void bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, AssetID textureID);
     static void setUniformInt(GLuint programID, const char* uniformName, int value);
     static void setUniformFloat(GLuint programID, const char* uniformName, float value);
     static void setUniformVec2(GLuint programID, const char* uniformName, const glm::vec2& value);

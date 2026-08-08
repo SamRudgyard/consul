@@ -16,6 +16,4 @@ Shader::Shader(AssetID vertexShaderID, AssetID fragmentShaderID)
     : vertexShaderID(vertexShaderID),
       fragmentShaderID(fragmentShaderID)
 {
-    static unsigned int nextID = 0;
-    id = nextID++;
 }
