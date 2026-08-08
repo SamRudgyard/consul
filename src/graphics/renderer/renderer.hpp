@@ -3,6 +3,8 @@
 #include "core/project/asset_types.hpp"
 #include "glm/fwd.hpp"
 
+#include <memory>
+
 enum class GraphicsAPI
 {
     OpenGL,
@@ -36,7 +38,7 @@ public:
 
     virtual void uploadMesh(AssetID meshID, Mesh& mesh) = 0;
 
-    virtual void uploadTexture(AssetID textureID, Texture& texture) = 0;
+    virtual void uploadTexture(const std::shared_ptr<Texture>& texture) = 0;
 
     virtual void clearSceneResources() = 0;
 

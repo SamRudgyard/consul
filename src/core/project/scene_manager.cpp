@@ -111,15 +111,12 @@ void SceneManager::render(Renderer& renderer)
             return;
         }
 
-        const AssetID albedoTextureID = material->getAlbedoTextureID();
-        const AssetID specularTextureID = material->getSpecularTextureID();
-        const AssetID normalTextureID = material->getNormalTextureID();
-        std::shared_ptr<Texture> albedoTexture = assets->getTexture(albedoTextureID);
-        std::shared_ptr<Texture> specularTexture = assets->getTexture(specularTextureID);
-        std::shared_ptr<Texture> normalTexture = assets->getTexture(normalTextureID);
-        if (albedoTexture) renderer.uploadTexture(albedoTextureID, *albedoTexture);
-        if (specularTexture) renderer.uploadTexture(specularTextureID, *specularTexture);
-        if (normalTexture) renderer.uploadTexture(normalTextureID, *normalTexture);
+        std::shared_ptr<Texture> albedoTexture = material->getAlbedoTexture();
+        std::shared_ptr<Texture> specularTexture = material->getSpecularTexture();
+        std::shared_ptr<Texture> normalTexture = material->getNormalTexture();
+        if (albedoTexture) renderer.uploadTexture(albedoTexture);
+        if (specularTexture) renderer.uploadTexture(specularTexture);
+        if (normalTexture) renderer.uploadTexture(normalTexture);
     };
 
     for (const auto& [shaderID, shader] : shaders) {

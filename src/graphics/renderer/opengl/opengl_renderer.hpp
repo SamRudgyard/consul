@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -91,10 +93,9 @@ public:
 
     /**
      * Uploads the given Texture to the GPU.
-     * @param textureID Asset ID of the texture to upload to the GPU.
      * @param texture The texture data to upload to the GPU.
      */
-    void uploadTexture(AssetID textureID, Texture& texture) override;
+    void uploadTexture(const std::shared_ptr<Texture>& texture) override;
 
     /**
      * Render all uploaded models/meshes with the provided shader and camera.
@@ -106,12 +107,12 @@ public:
 private:
     std::unordered_map<AssetID, ShaderBuffer> shaders;
     std::unordered_map<AssetID, MeshBuffer> meshes;
-    std::unordered_map<AssetID, TextureBuffer> textures;
+    std::map<std::weak_ptr<Texture>, TextureBuffer, std::owner_less<>> textures;
 
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec4>& data, AttributeType attribute, bool useDynamicDraw);
-    void bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, AssetID textureID);
+    void bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const std::shared_ptr<Texture>& texture);
     static void setUniformInt(GLuint programID, const char* uniformName, int value);
     static void setUniformFloat(GLuint programID, const char* uniformName, float value);
     static void setUniformVec2(GLuint programID, const char* uniformName, const glm::vec2& value);
@@ -122,4 +123,5 @@ private:
     void releaseMesh(MeshBuffer& mesh);
     void releaseShader(ShaderBuffer& shader);
     void releaseTexture(TextureBuffer& texture);
+    void releaseExpiredTextures();
 };

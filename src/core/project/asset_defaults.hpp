@@ -6,6 +6,7 @@
 
 class Material;
 class Mesh;
+class Texture;
 
 class AssetDefaults
 {
@@ -14,7 +15,7 @@ public:
     ~AssetDefaults() = default;
 
     AssetID getDefaultMaterial();
-    AssetID getDefaultTexture();
+    std::shared_ptr<Texture> getDefaultTexture();
 
     Material applyToMaterial(const Material& material);
     Mesh applyToMesh(const Mesh& mesh);
@@ -25,5 +26,5 @@ private:
     std::shared_ptr<MaterialAssetManager> materialManager;
     std::shared_ptr<TextureAssetManager> textureManager;
     AssetID defaultMaterialID = INVALID_ASSET_ID;
-    AssetID defaultTextureID = INVALID_ASSET_ID;
+    std::weak_ptr<Texture> defaultTexture;
 };

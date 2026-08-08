@@ -318,13 +318,17 @@ void OpenGLRenderer::uploadMesh(AssetID meshID, Mesh& mesh)
     Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + meshID.toString() + " to GPU.");
 }
 
-void OpenGLRenderer::uploadTexture(AssetID textureID, Texture& texture)
+void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
 {
     CONSUL_PROFILE_METHOD();
 
-    const std::string& texturePath = texture.getPath();
+    if (!texture) {
+        return;
+    }
 
-    if (textures.find(textureID) != textures.end()) {
+    const std::string& texturePath = texture->getPath();
+
+    if (textures.find(texture) != textures.end()) {
         return; // Texture already uploaded, so return
     }
 
@@ -346,7 +350,8 @@ void OpenGLRenderer::uploadTexture(AssetID textureID, Texture& texture)
 
     glCheckError();
 
-    TextureBuffer& textureBuffer = textures[textureID];
+    std::weak_ptr<Texture> textureKey = texture;
+    TextureBuffer& textureBuffer = textures[textureKey];
     glGenTextures(1, &textureBuffer.id);
     glBindTexture(GL_TEXTURE_2D, textureBuffer.id);
     glCheckError();
@@ -367,13 +372,13 @@ void OpenGLRenderer::uploadTexture(AssetID textureID, Texture& texture)
         stbi_image_free(data);
         glBindTexture(GL_TEXTURE_2D, 0);
         releaseTexture(textureBuffer);
-        textures.erase(textureID);
+        textures.erase(textureKey);
         Console::get().error("[OpenGLRenderer::uploadTexture] Invalid number of colour channels (expected 1, 3, or 4, but got " + std::to_string(numColourChannels) + ")");
         return;
     }
     glCheckError();
 
-    Console::get().logOnDebug("[OpenGLRenderer::uploadTexture] Successfully uploaded Texture " + textureID.toString() + " to GPU.");
+    Console::get().logOnDebug("[OpenGLRenderer::uploadTexture] Successfully uploaded Texture '" + texturePath + "' to GPU.");
 
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
@@ -384,6 +389,7 @@ void OpenGLRenderer::uploadTexture(AssetID textureID, Texture& texture)
 void OpenGLRenderer::render(AssetID shaderID, const Camera& camera, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
+    releaseExpiredTextures();
 
     const auto shaderIt = shaders.find(shaderID);
     if (shaderIt == shaders.end()) {
@@ -419,14 +425,14 @@ void OpenGLRenderer::render(AssetID shaderID, const Camera& camera, AssetLibrary
 
         if (material) {
             unsigned int textureUnit = 0;
-            const AssetID albedoTextureID = material->getAlbedoTextureID();
-            const AssetID specularTextureID = material->getSpecularTextureID();
+            std::shared_ptr<Texture> albedoTexture = material->getAlbedoTexture();
+            std::shared_ptr<Texture> specularTexture = material->getSpecularTexture();
 
-            if (assets.getTexture(albedoTextureID)) {
-                bindTexture(programID, textureUnit++, "diffuse0", albedoTextureID);
+            if (albedoTexture) {
+                bindTexture(programID, textureUnit++, "diffuse0", albedoTexture);
             }
-            if (assets.getTexture(specularTextureID)) {
-                bindTexture(programID, textureUnit++, "specular0", specularTextureID);
+            if (specularTexture) {
+                bindTexture(programID, textureUnit++, "specular0", specularTexture);
             }
         }
 
@@ -529,11 +535,16 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec4>& da
     return vbo;
 }
 
-void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, AssetID textureID)
+void OpenGLRenderer::bindTexture(
+    GLuint programID,
+    GLuint textureUnit,
+    const char* uniformName,
+    const std::shared_ptr<Texture>& texture
+)
 {
     CONSUL_PROFILE_METHOD();
 
-    auto it = textures.find(textureID);
+    auto it = textures.find(texture);
     if (it == textures.end()) {
         Console::get().error("[OpenGLRenderer::bindTexture] Attempting to bind texture that hasn't been uploaded!");
         return;
@@ -542,6 +553,18 @@ void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const cha
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     glBindTexture(GL_TEXTURE_2D, it->second.id);
     setUniformInt(programID, uniformName, (int)textureUnit);
+}
+
+void OpenGLRenderer::releaseExpiredTextures()
+{
+    for (auto it = textures.begin(); it != textures.end();) {
+        if (it->first.expired()) {
+            releaseTexture(it->second);
+            it = textures.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, int value)

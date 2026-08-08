@@ -7,6 +7,7 @@
 #include <iostream>
 #include <utility>
 
+#include "core/project/asset_types.hpp"
 #include "glm/glm.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"

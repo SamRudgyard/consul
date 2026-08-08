@@ -14,31 +14,34 @@ AssetID AssetDefaults::getDefaultMaterial()
 {
     if (defaultMaterialID == INVALID_ASSET_ID || !materialManager->get(defaultMaterialID)) {
         Material material;
-        material.setAlbedoTextureID(getDefaultTexture());
-        material.setSpecularTextureID(getDefaultTexture());
+        material.setAlbedoTexture(getDefaultTexture());
+        material.setSpecularTexture(getDefaultTexture());
         defaultMaterialID = materialManager->add("Default Material", material);
     }
 
     return defaultMaterialID;
 }
 
-AssetID AssetDefaults::getDefaultTexture()
+std::shared_ptr<Texture> AssetDefaults::getDefaultTexture()
 {
-    if (defaultTextureID == INVALID_ASSET_ID || !textureManager->get(defaultTextureID)) {
-        defaultTextureID = textureManager->add("Default Texture", Texture());
+    std::shared_ptr<Texture> texture = defaultTexture.lock();
+    if (!texture) {
+        AssetID textureID = textureManager->add("Default Texture", Texture());
+        texture = textureManager->get(textureID);
+        defaultTexture = texture;
     }
 
-    return defaultTextureID;
+    return texture;
 }
 
 Material AssetDefaults::applyToMaterial(const Material& material)
 {
     Material materialWithDefaults = material;
-    if (materialWithDefaults.getAlbedoTextureID() == INVALID_ASSET_ID) {
-        materialWithDefaults.setAlbedoTextureID(getDefaultTexture());
+    if (!materialWithDefaults.getAlbedoTexture()) {
+        materialWithDefaults.setAlbedoTexture(getDefaultTexture());
     }
-    if (materialWithDefaults.getSpecularTextureID() == INVALID_ASSET_ID) {
-        materialWithDefaults.setSpecularTextureID(getDefaultTexture());
+    if (!materialWithDefaults.getSpecularTexture()) {
+        materialWithDefaults.setSpecularTexture(getDefaultTexture());
     }
 
     return materialWithDefaults;
@@ -57,5 +60,5 @@ Mesh AssetDefaults::applyToMesh(const Mesh& mesh)
 void AssetDefaults::reset()
 {
     defaultMaterialID = INVALID_ASSET_ID;
-    defaultTextureID = INVALID_ASSET_ID;
+    defaultTexture.reset();
 }

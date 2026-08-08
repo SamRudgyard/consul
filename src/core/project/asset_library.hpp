@@ -25,7 +25,7 @@ public:
     ~AssetLibrary() = default;
 
     AssetID getDefaultMaterial();
-    AssetID getDefaultTexture();
+    std::shared_ptr<Texture> getDefaultTexture();
 
     AssetID addModel(const std::string& name, const Model& model);
     AssetID addMesh(const std::string& name, const Mesh& mesh);

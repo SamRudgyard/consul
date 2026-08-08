@@ -39,7 +39,7 @@ AssetID AssetLibrary::getDefaultMaterial()
     return assetDefaults->getDefaultMaterial();
 }
 
-AssetID AssetLibrary::getDefaultTexture()
+std::shared_ptr<Texture> AssetLibrary::getDefaultTexture()
 {
     return assetDefaults->getDefaultTexture();
 }

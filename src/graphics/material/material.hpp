@@ -1,11 +1,14 @@
 #pragma once
 
-#include "core/project/asset_types.hpp"
 #include "core/ui/property_registry.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/shader/uniform.hpp"
 
+#include <memory>
+#include <utility>
 #include <vector>
+
+class Texture;
 
 class Material
 {
@@ -45,44 +48,44 @@ public:
     Colour getAlbedo() const { return albedo; }
 
     /**
-     * Sets the texture ID for the albedo texture of this material.
-     * @param textureID AssetID of the albedo texture to set.
+     * Sets the albedo texture of this material.
+     * @param texture Albedo texture to set.
      */
-    void setAlbedoTextureID(AssetID textureID) { albedoTextureID = textureID; }
+    void setAlbedoTexture(std::shared_ptr<Texture> texture) { albedoTexture = std::move(texture); }
 
     /**
-     * Gets the texture ID for the albedo texture of this material.
-     * @returns AssetID of the albedo texture.
+     * Gets the albedo texture of this material.
+     * @returns Albedo texture.
      */
-    AssetID getAlbedoTextureID() const { return albedoTextureID; }
+    std::shared_ptr<Texture> getAlbedoTexture() const { return albedoTexture; }
 
     /**
-     * Sets the texture ID for the specular texture of this material.
-     * @param textureID AssetID of the specular texture to set.
+     * Sets the specular texture of this material.
+     * @param texture Specular texture to set.
      */
-    void setSpecularTextureID(AssetID textureID) { specularTextureID = textureID; }
+    void setSpecularTexture(std::shared_ptr<Texture> texture) { specularTexture = std::move(texture); }
 
     /**
-     * Gets the texture ID for the specular texture of this material.
-     * @returns AssetID of the specular texture.
+     * Gets the specular texture of this material.
+     * @returns Specular texture.
      */
-    AssetID getSpecularTextureID() const { return specularTextureID; }
+    std::shared_ptr<Texture> getSpecularTexture() const { return specularTexture; }
 
     /**
-     * Sets the texture ID for the normal texture of this material.
-     * @param textureID AssetID of the normal texture to set.
+     * Sets the normal texture of this material.
+     * @param texture Normal texture to set.
      */
-    void setNormalTextureID(AssetID textureID) { normalTextureID = textureID; }
+    void setNormalTexture(std::shared_ptr<Texture> texture) { normalTexture = std::move(texture); }
 
     /**
-     * Gets the texture ID for the normal texture of this material.
-     * @returns AssetID of the normal texture.
+     * Gets the normal texture of this material.
+     * @returns Normal texture.
      */
-    AssetID getNormalTextureID() const { return normalTextureID; }
+    std::shared_ptr<Texture> getNormalTexture() const { return normalTexture; }
 
 private:
     Colour albedo = Colour(255, 255, 255);
-    AssetID albedoTextureID = INVALID_ASSET_ID;
-    AssetID specularTextureID = INVALID_ASSET_ID;
-    AssetID normalTextureID = INVALID_ASSET_ID;
+    std::shared_ptr<Texture> albedoTexture;
+    std::shared_ptr<Texture> specularTexture;
+    std::shared_ptr<Texture> normalTexture;
 };

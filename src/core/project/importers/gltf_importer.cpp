@@ -334,15 +334,16 @@ AssetID GLTFImporter::loadMaterial(int materialIndex)
 
         AssetID textureID = textureManager->add(uri, Texture(uri, type));
         textureManager->setSourcePath(textureID, uri);
+        std::shared_ptr<Texture> texture = textureManager->get(textureID);
         switch (type) {
             case TextureType::DIFFUSE:
-                material.setAlbedoTextureID(textureID);
+                material.setAlbedoTexture(texture);
                 break;
             case TextureType::SPECULAR:
-                material.setSpecularTextureID(textureID);
+                material.setSpecularTexture(texture);
                 break;
             case TextureType::NORMAL:
-                material.setNormalTextureID(textureID);
+                material.setNormalTexture(texture);
                 break;
         }
     };
