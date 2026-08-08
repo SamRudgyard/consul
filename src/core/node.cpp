@@ -2,6 +2,7 @@
 #include "core/profiling/profile_method.hpp"
 #include "maths/unit_conversions.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "core/project/asset_library.hpp"
 
 Node::Node(const glm::mat4& localTransform)
     : localTransform(localTransform) {}
@@ -37,6 +38,18 @@ void Node::setRotationRad(glm::vec3 rotationRad)
     recalcLocalTransformation();
 }
 
+void Node::incrementRotationDeg(glm::vec3 deltaRotationDeg)
+{
+    glm::vec3 deltaRotationRad = {DEG_TO_RAD*deltaRotationDeg.x, DEG_TO_RAD*deltaRotationDeg.y, DEG_TO_RAD*deltaRotationDeg.z};
+    incrementRotationRad(deltaRotationRad);
+}
+
+void Node::incrementRotationRad(glm::vec3 deltaRotationRad)
+{
+    rotation += deltaRotationRad;
+    recalcLocalTransformation();
+}
+
 const glm::mat4& Node::getLocalTransform() const
 {
     return localTransform;
@@ -47,16 +60,16 @@ const glm::mat4& Node::getWorldTransform() const
     return worldTransform;
 }
 
-void Node::update(float dt, const glm::mat4& parentTransform)
+void Node::update(std::shared_ptr<AssetLibrary> assets, float dt, const glm::mat4& parentTransform)
 {
     CONSUL_PROFILE_METHOD();
 
-    onUpdate(dt);
+    onUpdate(assets, dt);
 
     worldTransform = parentTransform*localTransform;
 
     for (const auto& child : children) {
-        child->update(dt, worldTransform);
+        child->update(assets, dt, worldTransform);
     }
 }
 
@@ -67,8 +80,6 @@ void Node::render(Renderer& renderer)
     if (!isVisible) {
         return;
     }
-
-    onRender(renderer);
 
     for (const auto& child : children) {
         child->render(renderer);

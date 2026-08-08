@@ -1,26 +1,19 @@
 #pragma once
 
 #include "core/ui/property_registry.hpp"
+#include "graphics/colour.hpp"
 #include "graphics/shader/uniform.hpp"
-#include "graphics/texture/texture.hpp"
 
-#include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
+
+class Texture;
 
 class Material
 {
 public:
-    Material() {
-        this->setTexture(Texture::getDefaultDiffuseTexture());
-        this->setTexture(Texture::getDefaultSpecularTexture());
-    };
-
-    static std::shared_ptr<Material> getDefaultMaterial()
-    {
-        static std::shared_ptr<Material> defaultMaterial = std::make_shared<Material>();
-        return defaultMaterial;
-    }
+    Material() = default;
 
     /**
      * Registers the properties of the Material class, allowing them to be edited in the UI.
@@ -55,38 +48,44 @@ public:
     Colour getAlbedo() const { return albedo; }
 
     /**
-     * Gets the textures associated with this material.
-     * @returns Vector of textures.
+     * Sets the albedo texture of this material.
+     * @param texture Albedo texture to set.
      */
-    std::vector<Texture>& getTextures() { return textures; }
+    void setAlbedoTexture(std::shared_ptr<Texture> texture) { albedoTexture = std::move(texture); }
 
     /**
-     * Gets the textures associated with this material.
-     * @returns Vector of textures.
+     * Gets the albedo texture of this material.
+     * @returns Albedo texture.
      */
-    const std::vector<Texture>& getTextures() const { return textures; }
+    std::shared_ptr<Texture> getAlbedoTexture() const { return albedoTexture; }
 
     /**
-     * Sets a texture for this material.
-     * @param texture Texture to set.
+     * Sets the specular texture of this material.
+     * @param texture Specular texture to set.
      */
-    void setTexture(Texture texture)
-    {
-        const TextureType textureType = texture.getType();
-        textures.erase(
-            std::remove_if(
-                textures.begin(),
-                textures.end(),
-                [textureType](const Texture& existingTexture) {
-                    return existingTexture.getType() == textureType;
-                }
-            ),
-            textures.end()
-        );
-        textures.push_back(std::move(texture));
-    }
+    void setSpecularTexture(std::shared_ptr<Texture> texture) { specularTexture = std::move(texture); }
+
+    /**
+     * Gets the specular texture of this material.
+     * @returns Specular texture.
+     */
+    std::shared_ptr<Texture> getSpecularTexture() const { return specularTexture; }
+
+    /**
+     * Sets the normal texture of this material.
+     * @param texture Normal texture to set.
+     */
+    void setNormalTexture(std::shared_ptr<Texture> texture) { normalTexture = std::move(texture); }
+
+    /**
+     * Gets the normal texture of this material.
+     * @returns Normal texture.
+     */
+    std::shared_ptr<Texture> getNormalTexture() const { return normalTexture; }
 
 private:
     Colour albedo = Colour(255, 255, 255);
-    std::vector<Texture> textures;
+    std::shared_ptr<Texture> albedoTexture;
+    std::shared_ptr<Texture> specularTexture;
+    std::shared_ptr<Texture> normalTexture;
 };

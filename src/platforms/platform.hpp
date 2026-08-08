@@ -13,6 +13,7 @@ class Platform
 {
 public:
     Platform() = default;
+    virtual ~Platform() = default;
 
     virtual void initialiseWindow() = 0;
 
@@ -29,8 +30,6 @@ public:
     virtual void setMousePosition(unsigned int x, unsigned int y) = 0;
 
     virtual double getTime() = 0;
-
-    virtual void terminate() = 0;
 
 protected:
     EngineContext* context = EngineContext::get();

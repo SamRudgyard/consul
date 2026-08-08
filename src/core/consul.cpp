@@ -1,8 +1,11 @@
 #include "consul.hpp"
 
 #include <memory>
+#include <utility>
 
 #include "platforms/platform_glfw.hpp"
+#include "core/project/asset_defaults.hpp"
+#include "core/project/importers/gltf_importer.hpp"
 #include "graphics/renderer/opengl/opengl_renderer.hpp"
 #include "imgui.h"
 #include "implot.h"
@@ -18,6 +21,29 @@ void Consul::initialiseEngine()
     console.log("---- CONSUL ----");
 
     console.log("[Consul] Initialising Consul...");
+    modelAssets = std::make_shared<ModelAssetManager>();
+    meshAssets = std::make_shared<MeshAssetManager>();
+    materialAssets = std::make_shared<MaterialAssetManager>();
+    textureAssets = std::make_shared<TextureAssetManager>();
+    shaderAssets = std::make_shared<ShaderAssetManager>();
+    vertexShaderAssets = std::make_shared<VertexShaderAssetManager>();
+    fragmentShaderAssets = std::make_shared<FragmentShaderAssetManager>();
+    assetDefaults = std::make_shared<AssetDefaults>(materialAssets, textureAssets);
+    gltfImporter = std::make_shared<GLTFImporter>(modelAssets, meshAssets, materialAssets, textureAssets, assetDefaults);
+    assets = std::make_shared<AssetLibrary>(
+        modelAssets,
+        meshAssets,
+        materialAssets,
+        textureAssets,
+        shaderAssets,
+        vertexShaderAssets,
+        fragmentShaderAssets,
+        assetDefaults,
+        gltfImporter
+    );
+    sceneManager = std::make_shared<SceneManager>();
+    sceneManager->assignAssets(assets);
+
     initialiseWindow(PlatformType::GLFW);
     console.log("[Consul] Windowing platform initialised.");
 
@@ -48,23 +74,26 @@ void Consul::initialiseWindow(PlatformType platformType)
 {
     switch (platformType) {
         case PlatformType::GLFW:
-            platform = new PlatformGLFW();
+            platform = std::make_unique<PlatformGLFW>();
             break;
         default:
             console.error("[Consul] Unknown windowing platform!");
             break;
     }
 
-    if (platform) {
-        platform->initialiseWindow();
+    if (!platform) {
+        console.error("[Consul] Failed to create windowing platform!");
+        return;
     }
+
+    platform->initialiseWindow();
 }
 
 void Consul::initialiseRenderer(GraphicsAPI gfxApi)
 {
     switch (gfxApi) {
         case GraphicsAPI::OpenGL:
-            renderer = new OpenGLRenderer();
+            renderer = std::make_unique<OpenGLRenderer>();
             break;
         default:
             console.error("[Consul] Unknown graphics API!");
@@ -74,13 +103,40 @@ void Consul::initialiseRenderer(GraphicsAPI gfxApi)
 
 Consul::~Consul()
 {
-    terminate();
+    console.log("[Consul] Shutting down Game Engine...");
+
+    if (sceneManager) {
+        sceneManager->shutdown();
+    }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
+    ImGui::DestroyContext();
+    console.log("[Consul] ImGui terminated.");
+
+    renderer.reset();
+    platform.reset();
+
+    console.log("[Consul] Windowing platform terminated.");
+
+    console.log("[Consul] Shutdown complete.");
 }
 
 void Consul::loadScene(std::unique_ptr<Scene> newScene)
 {
     CONSUL_PROFILE_METHOD();
-    sceneManager.loadScene(std::move(newScene), *renderer);
+
+    if (!sceneManager) {
+        console.error("[Consul::loadScene] Cannot load scene - scene manager is not initialised!");
+        return;
+    }
+
+    if (sceneManager->hasScene()) {
+        sceneManager->unloadScene();
+    }
+    renderer->releaseExpiredResources();
+    sceneManager->loadScene(std::move(newScene));
 }
 
 void Consul::run()
@@ -88,7 +144,7 @@ void Consul::run()
     while (!close) {
         beginTick();
         Time& time = context->time;
-        sceneManager.update(*renderer, time.deltaTime);
+        sceneManager->update(time.deltaTime);
         endTick();
 
         close = context->window.shouldClose && platform->shouldClose();
@@ -137,6 +193,7 @@ void Consul::endTick()
     time.frameCount++;
 
     // Rendering
+    sceneManager->render(*renderer);
 
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -149,27 +206,14 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     platform->swapBuffers();
-}
 
-void Consul::terminate()
-{
-    console.log("[Consul] Shutting down Game Engine...");
+    renderer->releaseExpiredResources();
 
-    sceneManager.shutdown(*renderer);
-
-    ImGui_ImplGlfw_Shutdown();
-
-    if (platform) {
-        platform->terminate();
-    }
-
-    console.log("[Consul] Windowing platform terminated.");
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImPlot::DestroyContext();
-    ImGui::DestroyContext();
-
-    console.log("[Consul] ImGui terminated.");
-
-    console.log("[Consul] Shutdown complete.");
+    modelAssets->removeExpiredAssets();
+    meshAssets->removeExpiredAssets();
+    materialAssets->removeExpiredAssets();
+    textureAssets->removeExpiredAssets();
+    shaderAssets->removeExpiredAssets();
+    vertexShaderAssets->removeExpiredAssets();
+    fragmentShaderAssets->removeExpiredAssets();
 }

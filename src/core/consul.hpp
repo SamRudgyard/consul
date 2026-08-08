@@ -2,14 +2,20 @@
 
 #include "core/console/console.hpp"
 #include "core/engine_context.hpp"
-#include "core/scene.hpp"
-#include "core/scene_manager.hpp"
 #include "core/ui/user_interface.hpp"
+#include "core/project/asset_manager.hpp"
+#include "core/project/asset_library.hpp"
+#include "core/project/scene.hpp"
+#include "core/project/scene_manager.hpp"
 #include "platforms/platform.hpp"
 #include "graphics/renderer/renderer.hpp"
 #include "time.hpp"
 
+#include <memory>
+
 enum class PlatformType;
+class AssetDefaults;
+class GLTFImporter;
 
 class Consul
 {
@@ -37,11 +43,6 @@ public:
     void run();
 
     /**
-     * Gracefully terminate the Consul application.
-     */
-    void terminate();
-
-    /**
      * Sets the target FPS.
      * @param fps Target frames per second.
      */
@@ -61,6 +62,28 @@ public:
     Renderer& getRenderer() { return *renderer; }
 
     /**
+     * Gets the scene-facing asset library.
+     * @returns Reference to the asset library.
+     */
+    AssetLibrary& getAssets() { return *assets; }
+    AssetLibrary& getAssetManager() { return *assets; }
+
+    ModelAssetManager& getModelAssetManager() { return *modelAssets; }
+    MeshAssetManager& getMeshAssetManager() { return *meshAssets; }
+    MaterialAssetManager& getMaterialAssetManager() { return *materialAssets; }
+    TextureAssetManager& getTextureAssetManager() { return *textureAssets; }
+    ShaderAssetManager& getShaderAssetManager() { return *shaderAssets; }
+    VertexShaderAssetManager& getVertexShaderAssetManager() { return *vertexShaderAssets; }
+    FragmentShaderAssetManager& getFragmentShaderAssetManager() { return *fragmentShaderAssets; }
+    GLTFImporter& getGLTFImporter() { return *gltfImporter; }
+
+    /**
+     * Gets the scene manager instance.
+     * @returns Reference to the scene manager.
+     */
+    SceneManager& getSceneManager() { return *sceneManager; }
+
+    /**
      * Loads a scene. Ownership is transferred to the engine.
      * The previous scene (if any) will be shut down.
      */
@@ -70,10 +93,20 @@ private:
     Console& console = Console::get();
     EngineContext* context = EngineContext::get();
     UserInterface ui;
-    Platform* platform = nullptr;
-    Renderer* renderer = nullptr;
+    std::unique_ptr<Platform> platform;
+    std::unique_ptr<Renderer> renderer;
     bool close = false;
-    SceneManager sceneManager;
+    std::shared_ptr<ModelAssetManager> modelAssets = nullptr;
+    std::shared_ptr<MeshAssetManager> meshAssets = nullptr;
+    std::shared_ptr<MaterialAssetManager> materialAssets = nullptr;
+    std::shared_ptr<TextureAssetManager> textureAssets = nullptr;
+    std::shared_ptr<ShaderAssetManager> shaderAssets = nullptr;
+    std::shared_ptr<VertexShaderAssetManager> vertexShaderAssets = nullptr;
+    std::shared_ptr<FragmentShaderAssetManager> fragmentShaderAssets = nullptr;
+    std::shared_ptr<AssetDefaults> assetDefaults = nullptr;
+    std::shared_ptr<GLTFImporter> gltfImporter = nullptr;
+    std::shared_ptr<AssetLibrary> assets = nullptr;
+    std::shared_ptr<SceneManager> sceneManager = nullptr;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);

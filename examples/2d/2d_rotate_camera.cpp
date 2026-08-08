@@ -1,9 +1,14 @@
+#include <memory>
+#include <utility>
+
 #include "core/consul.hpp"
-#include "core/scene.hpp"
+#include "core/project/asset_library.hpp"
+#include "core/project/scene.hpp"
 #include "graphics/camera/camera_2d.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
-#include "graphics/shader/shader.hpp"
+#include "graphics/material/material.hpp"
+#include "graphics/models/model.hpp"
 
 class RotatingCamera2D : public Camera2D {
 public:
@@ -28,71 +33,67 @@ private:
 
 class ColouredQuadNode : public Node {
 public:
-    explicit ColouredQuadNode(const Colour& tint)
-        : tint(tint)
-    {}
-
-    void initialise(Renderer& renderer)
+    void initialise(std::shared_ptr<AssetLibrary> assets, const Colour& tint)
     {
-        mesh = std::make_unique<Mesh>(Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f}));
-        mesh->setTint(tint);
-        renderer.uploadMesh(*mesh);
+        Mesh mesh = Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f});
+
+        Material material;
+        material.setAlbedo(tint);
+        std::shared_ptr<Material> materialAsset = assets->addMaterial("quadMaterial", material);
+
+        mesh.setMaterial(std::move(materialAsset));
+        std::shared_ptr<Mesh> meshAsset = assets->addMesh("quadMesh", mesh);
+
+        Model model;
+        model.addMesh(std::move(meshAsset));
+        modelAsset = assets->addModel("quadModel", model);
     }
 
 protected:
-    void onRender(Renderer& renderer) override
+    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override
     {
-        if (!mesh) {
+        if (!modelAsset) {
             return;
         }
 
-        mesh->setModelMatrix(getWorldTransform());
-        renderer.uploadMesh(*mesh);
+        modelAsset->setTransform(getLocalTransform());
     }
 
 private:
-    Colour tint;
-    std::unique_ptr<Mesh> mesh;
+    std::shared_ptr<Model> modelAsset;
 };
 
 class RotateCameraScene : public Scene {
 public:
-    RotateCameraScene()
-        : shader("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl")
-    {}
-
-    void onInit(Renderer& renderer) override
+    void onInit(std::shared_ptr<AssetLibrary> assets) override
     {
         camera.setPosition({0.0f, 0.0f});
-        renderer.uploadShader(shader);
+        defaultShader = assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
 
-        createQuad(renderer, {-1.25f, 0.0f, 0.0f}, Colour(220, 80, 80));
-        createQuad(renderer, {0.0f, 0.0f, 0.0f}, Colour(240, 200, 90));
-        createQuad(renderer, {1.25f, 0.0f, 0.0f}, Colour(80, 180, 220));
-        createQuad(renderer, {0.0f, 1.15f, 0.0f}, Colour(110, 220, 140));
-        createQuad(renderer, {0.0f, -1.15f, 0.0f}, Colour(170, 120, 230));
+        createQuad(assets, {-1.25f, 0.0f, 0.0f}, Colour(220, 80, 80));
+        createQuad(assets, {0.0f, 0.0f, 0.0f}, Colour(240, 200, 90));
+        createQuad(assets, {1.25f, 0.0f, 0.0f}, Colour(80, 180, 220));
+        createQuad(assets, {0.0f, 1.15f, 0.0f}, Colour(110, 220, 140));
+        createQuad(assets, {0.0f, -1.15f, 0.0f}, Colour(170, 120, 230));
     }
 
-    void onUpdate(double deltaTime) override
+    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override
     {
         camera.handleInputs(deltaTime);
     }
 
-    void onRender(Renderer& renderer) override
-    {
-        renderer.render(shader, camera);
-    }
+    Camera* getActiveCamera() override { return &camera; }
 
 private:
-    void createQuad(Renderer& renderer, const glm::vec3& position, const Colour& tint)
+    void createQuad(std::shared_ptr<AssetLibrary> assets, const glm::vec3& position, const Colour& tint)
     {
-        ColouredQuadNode* quad = getRoot().createChild<ColouredQuadNode>(tint);
+        ColouredQuadNode* quad = getRoot().createChild<ColouredQuadNode>();
         quad->setPosition(position);
-        quad->initialise(renderer);
+        quad->initialise(assets, tint);
     }
 
-    Shader shader;
     RotatingCamera2D camera;
+    std::shared_ptr<Shader> defaultShader;
 };
 
 int main()

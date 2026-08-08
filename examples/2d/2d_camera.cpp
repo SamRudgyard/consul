@@ -1,57 +1,64 @@
+#include <memory>
+#include <utility>
+
 #include "core/consul.hpp"
-#include "core/scene.hpp"
+#include "core/project/asset_library.hpp"
+#include "core/project/scene.hpp"
 #include "graphics/camera/camera_2d.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
-#include "graphics/shader/shader.hpp"
+#include "graphics/material/material.hpp"
+#include "graphics/models/model.hpp"
 
 class CubeNode : public Node {
 public:
-    void initialise(Renderer& renderer) {
-        mesh = std::make_unique<Mesh>(Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f}));
-        mesh->setTint(Colour(20, 200, 200));
-        renderer.uploadMesh(*mesh);
+    void initialise(std::shared_ptr<AssetLibrary> assets) {
+        Mesh mesh = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
+
+        Material material;
+        material.setAlbedo(Colour(20, 200, 200));
+        std::shared_ptr<Material> materialAsset = assets->addMaterial("quadMaterial", material);
+
+        mesh.setMaterial(std::move(materialAsset));
+        std::shared_ptr<Mesh> meshAsset = assets->addMesh("quadMesh", mesh);
+
+        Model model;
+        model.addMesh(std::move(meshAsset));
+        modelAsset = assets->addModel("quadModel", model);
     }
 
 protected:
-    void onRender(Renderer& renderer) override {
-        if (!mesh) {
+    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override {
+        if (!modelAsset) {
             return;
         }
 
-        mesh->setModelMatrix(getWorldTransform());
-        renderer.uploadMesh(*mesh);
+        modelAsset->setTransform(getLocalTransform());
     }
 
 private:
-    std::unique_ptr<Mesh> mesh;
+    std::shared_ptr<Model> modelAsset;
 };
 
 class ExampleScene : public Scene {
 public:
-    ExampleScene()
-        : shader("shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl")
-    {}
-
-    void onInit(Renderer& renderer) override {
+    void onInit(std::shared_ptr<AssetLibrary> assets) override {
         camera.setPosition({0.0f, 0.0f});
-        renderer.uploadShader(shader);
+        defaultShader = assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
 
         CubeNode* cubeNode = getRoot().createChild<CubeNode>();
         cubeNode->setPosition({0.0f, 0.0f, 0.0f});
-        cubeNode->initialise(renderer);
+        cubeNode->initialise(assets);
     }
 
-    void onUpdate(double deltaTime) override {
+    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override {
         camera.handleInputs(deltaTime);
     }
 
-    void onRender(Renderer& renderer) override {
-        renderer.render(shader, camera);
-    }
+    Camera* getActiveCamera() override { return &camera; }
 
 private:
-    Shader shader;
     Camera2D camera;
+    std::shared_ptr<Shader> defaultShader;
 };
 
 int main()

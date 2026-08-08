@@ -100,6 +100,10 @@ std::vector<std::size_t> getAlphabeticalStringOrder(const std::vector<std::strin
     return sortedIndices;
 }
 
+bool contains(const std::vector<std::string>& vec, const std::string& value) {
+    return std::find(vec.begin(), vec.end(), value) != vec.end();
+}
+
 void waitTime(double seconds)
 {
     CONSUL_PROFILE_METHOD();

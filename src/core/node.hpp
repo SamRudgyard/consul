@@ -8,6 +8,7 @@
 
 #include "glm/glm.hpp"
 
+class AssetLibrary;
 class Renderer;
 
 class Node
@@ -44,15 +45,21 @@ public:
     void setRotationDeg(glm::vec3 rotationDeg);
     void setRotationRad(glm::vec3 rotationRad);
 
+    void incrementRotationDeg(glm::vec3 deltaRotationDeg);
+    void incrementRotationRad(glm::vec3 deltaRotationRad);
+
     const glm::mat4& getLocalTransform() const;
     const glm::mat4& getWorldTransform() const;
+    const glm::vec3& getRotation() const { return rotation; }
+    const float getRotationX() const { return rotation.x; }
+    const float getRotationY() const { return rotation.y; }
+    const float getRotationZ() const { return rotation.z; }
 
-    void update(float dt, const glm::mat4& parentTransform);
+    void update(std::shared_ptr<AssetLibrary> assets, float dt, const glm::mat4& parentTransform);
     void render(Renderer& renderer);
 
 protected:
-    virtual void onUpdate(double deltaTime) {}
-    virtual void onRender(Renderer& renderer) {}
+    virtual void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) {}
 
 private:
     glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);

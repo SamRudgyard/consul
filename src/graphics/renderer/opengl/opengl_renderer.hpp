@@ -1,22 +1,14 @@
 #pragma once
 
+#include <map>
 #include <memory>
-#include <string>
-#include <unordered_map>
 #include <vector>
 
-#include "core/console/console.hpp"
-#include "graphics/camera/camera.hpp"
-#include "graphics/material/material.hpp"
-#include "graphics/mesh/mesh.hpp"
-#include "graphics/models/model.hpp"
 #include "graphics/renderer/renderer.hpp"
-#include "graphics/shader/shader.hpp"
-#include "graphics/texture/texture.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include "glm/fwd.hpp"
 #include "glad/glad.h"
-#include "imgui_impl_opengl3.h"
-#include "utils.hpp"
+
+enum class AttributeType;
 
 struct ShaderBuffer
 {
@@ -36,8 +28,6 @@ struct MeshBuffer
     GLuint texCoordVBO = 0;
     GLuint tangentVBO = 0;
     GLuint ebo = 0;
-
-    const Mesh* mesh = nullptr;
 };
 
 class OpenGLRenderer : public Renderer
@@ -70,9 +60,9 @@ public:
     void clearScreenBuffer() override;
 
     /**
-     * Releases all resources previously uploaded to the GPU. 
+     * Releases GPU resources whose source assets have expired.
      */
-    void clearSceneResources() override;
+    void releaseExpiredResources() override;
 
     /**
      * Sets the viewport (rectangle in which we render). Note that
@@ -87,45 +77,38 @@ public:
 
     /**
      * Uploads the given Shader to the GPU.
-     * @param shader The shader to upload to the GPU.
+     * @param shader Shader to upload to the GPU.
      */
-    void uploadShader(Shader& shader) override;
+    void uploadShader(const std::shared_ptr<Shader>& shader) override;
 
     /**
      * Uploads the given Mesh to the GPU.
-     * @param mesh The mesh to upload to the GPU.
+     * @param mesh The mesh data to upload to the GPU.
      */
-    void uploadMesh(Mesh& mesh) override;
-
-    /**
-     * Uploads the given Model to the GPU.
-     * @param model The model to upload to the GPU.
-     */
-    void uploadModel(Model& model) override;
+    void uploadMesh(const std::shared_ptr<Mesh>& mesh) override;
 
     /**
      * Uploads the given Texture to the GPU.
-     * @param texture The texture to upload to the GPU.
+     * @param texture The texture data to upload to the GPU.
      */
-    void uploadTexture(Texture& texture) override;
+    void uploadTexture(const std::shared_ptr<Texture>& texture) override;
 
     /**
      * Render all uploaded models/meshes with the provided shader and camera.
-     * @param shader The shader to render with.
+     * @param shader Shader to render with.
      * @param camera The camera, from which the models/meshes are viewed. 
      */
-    void render(const Shader& shader, const Camera& camera) override;
+    void render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets) override;
 
 private:
-    std::unordered_map<unsigned int, ShaderBuffer> shaders;
-    std::unordered_map<unsigned int, MeshBuffer> meshes;
-    std::unordered_map<unsigned int, TextureBuffer> textures;
-    std::vector<unsigned int> meshDrawOrder;
+    std::map<std::weak_ptr<Shader>, ShaderBuffer, std::owner_less<>> shaders;
+    std::map<std::weak_ptr<Mesh>, MeshBuffer, std::owner_less<>> meshes;
+    std::map<std::weak_ptr<Texture>, TextureBuffer, std::owner_less<>> textures;
 
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw);
     unsigned int enableVertexBuffer(const std::vector<glm::vec4>& data, AttributeType attribute, bool useDynamicDraw);
-    void bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture);
+    void bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const std::shared_ptr<Texture>& texture);
     static void setUniformInt(GLuint programID, const char* uniformName, int value);
     static void setUniformFloat(GLuint programID, const char* uniformName, float value);
     static void setUniformVec2(GLuint programID, const char* uniformName, const glm::vec2& value);
@@ -136,4 +119,7 @@ private:
     void releaseMesh(MeshBuffer& mesh);
     void releaseShader(ShaderBuffer& shader);
     void releaseTexture(TextureBuffer& texture);
+    void releaseExpiredShaders();
+    void releaseExpiredMeshes();
+    void releaseExpiredTextures();
 };

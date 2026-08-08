@@ -2,6 +2,8 @@
 
 #include "glm/fwd.hpp"
 
+#include <memory>
+
 enum class GraphicsAPI
 {
     OpenGL,
@@ -9,8 +11,8 @@ enum class GraphicsAPI
 };
 
 class Camera;
+class AssetLibrary;
 class Mesh;
-class Model;
 class Shader;
 class Texture;
 
@@ -30,15 +32,13 @@ public:
 
     virtual void setViewport(int x, int y, int width, int height) = 0;
 
-    virtual void uploadShader(Shader& shader) = 0;
+    virtual void uploadShader(const std::shared_ptr<Shader>& shader) = 0;
 
-    virtual void uploadMesh(Mesh& mesh) = 0;
+    virtual void uploadMesh(const std::shared_ptr<Mesh>& mesh) = 0;
 
-    virtual void uploadTexture(Texture& texture) = 0;
+    virtual void uploadTexture(const std::shared_ptr<Texture>& texture) = 0;
 
-    virtual void uploadModel(Model& model) = 0;
+    virtual void releaseExpiredResources() = 0;
 
-    virtual void clearSceneResources() = 0;
-
-    virtual void render(const Shader& shader, const Camera& camera) = 0;
+    virtual void render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets) = 0;
 };

@@ -11,6 +11,14 @@
 #include "GLFW/glfw3.h"
 #include "imgui_impl_glfw.h"
 
+PlatformGLFW::~PlatformGLFW()
+{
+    if (handle) {
+        glfwDestroyWindow(handle);
+    }
+    glfwTerminate();
+}
+
 void PlatformGLFW::initialiseWindow()
 {
     Console& console = Console::get();
@@ -185,12 +193,6 @@ double PlatformGLFW::getTime()
     CONSUL_PROFILE_METHOD();
 
     return glfwGetTime();
-}
-
-void PlatformGLFW::terminate()
-{
-    glfwDestroyWindow(handle);
-    glfwTerminate();
 }
 
 void PlatformGLFW::onError(int error, const char* description)

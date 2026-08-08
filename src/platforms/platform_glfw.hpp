@@ -9,6 +9,7 @@ class PlatformGLFW : public Platform
 {
 public:
     PlatformGLFW() : Platform() {}
+    ~PlatformGLFW() override;
 
     void initialiseWindow() override;
 
@@ -25,8 +26,6 @@ public:
     double getTime() override;
 
     void setMousePosition(unsigned int x, unsigned int y) override;
-
-    void terminate() override;
 
     static void onError(int error, const char* description);
     static void onFramebufferResized(GLFWwindow* window, int width, int height);

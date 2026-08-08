@@ -10,10 +10,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(consul_tests
+  test_asset_manager.cpp
   test_constants.cpp
   test_input_system.cpp
   test_keyboard_state.cpp
+  test_material.cpp
+  test_mesh.cpp
+  test_model.cpp
   test_mouse_state.cpp
+  test_scene.cpp
+  test_shader.cpp
   test_unit_conversions.cpp
 )
 

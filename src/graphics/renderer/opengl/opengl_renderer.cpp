@@ -1,25 +1,39 @@
 #include "opengl_renderer.hpp"
 
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "glm/gtc/type_ptr.hpp"
+#include "imgui_impl_opengl3.h"
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #endif
 #include <stb_image.h>
 
+#include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
+#include "core/project/asset_library.hpp"
+#include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
+#include "graphics/material/material.hpp"
+#include "graphics/mesh/mesh.hpp"
+#include "graphics/shader/shader.hpp"
+#include "graphics/texture/texture.hpp"
+#include "utils.hpp"
 
 OpenGLRenderer::~OpenGLRenderer()
 {
-    for (auto& [shaderID, ShaderBuffer] : shaders) {
-        releaseShader(ShaderBuffer);
+    for (auto& shaderEntry : shaders) {
+        releaseShader(shaderEntry.second);
     }
 
-    for (auto& [meshID, meshBuffer] : meshes) {
-        releaseMesh(meshBuffer);
+    for (auto& meshEntry : meshes) {
+        releaseMesh(meshEntry.second);
     }
 
-    for (auto& [textureID, textureBuffer] : textures) {
-        releaseTexture(textureBuffer);
+    for (auto& textureEntry : textures) {
+        releaseTexture(textureEntry.second);
     }
 
     shaders.clear();
@@ -70,25 +84,13 @@ void OpenGLRenderer::clearScreenBuffer()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLRenderer::clearSceneResources()
+void OpenGLRenderer::releaseExpiredResources()
 {
     CONSUL_PROFILE_METHOD();
 
-    for (auto& [meshID, meshBuffer] : meshes) {
-        releaseMesh(meshBuffer);
-    }
-    meshes.clear();
-    meshDrawOrder.clear();
-
-    for (auto& [shaderID, shaderBuffer] : shaders) {
-        releaseShader(shaderBuffer);
-    }
-    shaders.clear();
-
-    for (auto& [textureID, textureBuffer] : textures) {
-        releaseTexture(textureBuffer);
-    }
-    textures.clear();
+    releaseExpiredShaders();
+    releaseExpiredMeshes();
+    releaseExpiredTextures();
 }
 
 void OpenGLRenderer::setViewport(int x, int y, int width, int height)
@@ -107,14 +109,24 @@ void OpenGLRenderer::setViewport(int x, int y, int width, int height)
     glViewport(x, y, width, height);
 }
 
-void OpenGLRenderer::uploadShader(Shader& shader)
+void OpenGLRenderer::uploadShader(const std::shared_ptr<Shader>& shader)
 {
     CONSUL_PROFILE_METHOD();
 
-    const unsigned int shaderID = shader.getID();
-    if (shaders.find(shaderID) != shaders.end()) {
+    if (!shader) {
+        return;
+    }
+
+    if (shaders.find(shader) != shaders.end()) {
         // Currently no functionality to adjust Shader vertex/fragment code
         // on the fly, so return if found.
+        return;
+    }
+
+    std::shared_ptr<VertexShader> vertexShader = shader->getVertexShader();
+    std::shared_ptr<FragmentShader> fragmentShader = shader->getFragmentShader();
+    if (!vertexShader || !fragmentShader) {
+        Console::get().error("[OpenGLRenderer::uploadShader] Shader references a missing vertex or fragment shader asset.");
         return;
     }
 
@@ -126,7 +138,7 @@ void OpenGLRenderer::uploadShader(Shader& shader)
     glCheckError();
 
     // Compile vertex shader
-    const char* vertexCString = shader.getVertexSource().c_str();
+    const char* vertexCString = vertexShader->getSource().c_str();
     glShaderSource(vertexID, 1, &vertexCString, NULL);
     glCompileShader(vertexID);
     glCheckError();
@@ -143,7 +155,7 @@ void OpenGLRenderer::uploadShader(Shader& shader)
     console.logOnDebug("[OpenGLRenderer::uploadShader] Vertex shader successfully compiled.");
 
     // Compile fragment shader
-    const char* fragmentCString = shader.getFragmentSource().c_str();
+    const char* fragmentCString = fragmentShader->getSource().c_str();
     glShaderSource(fragmentID, 1, &fragmentCString, NULL);
     glCompileShader(fragmentID);
     glCheckError();
@@ -179,25 +191,26 @@ void OpenGLRenderer::uploadShader(Shader& shader)
     glCheckError();
 
     // Store the compiled shader directly in the map entry.
-    shaders[shaderID].id = programID;
+    std::weak_ptr<Shader> shaderKey = shader;
+    shaders[shaderKey].id = programID;
 
-    Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader " + std::to_string(shader.getID()) + " to GPU.");
+    Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader to GPU.");
 }
 
-void OpenGLRenderer::uploadMesh(Mesh& mesh)
+void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
 {
     CONSUL_PROFILE_METHOD();
 
-    // This is required to refresh the MeshBuffer reference to the Mesh.
-    // We do this prior to checking if the Mesh is dirty, as if a new Mesh
-    // was added then the pointer may be stale. TODO: This isn't a solid
-    // solution, so refactor when we have a way to track the meshes
-    // present in the scene.
-    auto [it, inserted] = meshes.try_emplace(mesh.getID());
-    MeshBuffer& meshBuffer = it->second;
-    meshBuffer.mesh = &mesh;
+    if (!meshAsset) {
+        return;
+    }
 
-    if (!mesh.isAnyDirty()) return;
+    std::weak_ptr<Mesh> meshKey = meshAsset;
+    auto [it, inserted] = meshes.try_emplace(meshKey);
+    MeshBuffer& meshBuffer = it->second;
+    Mesh& mesh = *meshAsset;
+
+    if (!inserted && !mesh.isAnyDirty()) return;
 
     if (inserted) {
         glGenVertexArrays(1, &meshBuffer.vao);
@@ -309,39 +322,20 @@ void OpenGLRenderer::uploadMesh(Mesh& mesh)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
     glCheckError();
 
-    std::shared_ptr<Material> material = mesh.getMaterial();
-    if (material) {
-        for (Texture& texture : material->getTextures()) {
-            uploadTexture(texture);
-        }
-    }
-
-    Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + std::to_string(mesh.getID()) + " to GPU.");
+    Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh to GPU.");
 }
 
-void OpenGLRenderer::uploadModel(Model& model)
+void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
 {
     CONSUL_PROFILE_METHOD();
 
-    std::vector<Mesh>& modelMeshes = model.getMeshes();
-    std::vector<glm::mat4> transforms = model.getTransformationMatrices();
-    for (unsigned int iMesh = 0; iMesh < modelMeshes.size(); iMesh++) {
-        Mesh& mesh = modelMeshes[iMesh];
-        mesh.setModelMatrix(transforms[iMesh]);
-        uploadMesh(mesh);
+    if (!texture) {
+        return;
     }
 
-    Console::get().logOnDebug("[OpenGLRenderer::uploadModel] Successfully uploaded Model '" + model.getFilePath() + "' to GPU.");
-}
+    const std::string& texturePath = texture->getPath();
 
-void OpenGLRenderer::uploadTexture(Texture& texture)
-{
-    CONSUL_PROFILE_METHOD();
-
-    const unsigned int textureID = texture.getID();
-    const std::string& texturePath = texture.getPath();
-
-    if (textures.find(textureID) != textures.end()) {
+    if (textures.find(texture) != textures.end()) {
         return; // Texture already uploaded, so return
     }
 
@@ -363,7 +357,8 @@ void OpenGLRenderer::uploadTexture(Texture& texture)
 
     glCheckError();
 
-    TextureBuffer& textureBuffer = textures[textureID];
+    std::weak_ptr<Texture> textureKey = texture;
+    TextureBuffer& textureBuffer = textures[textureKey];
     glGenTextures(1, &textureBuffer.id);
     glBindTexture(GL_TEXTURE_2D, textureBuffer.id);
     glCheckError();
@@ -384,13 +379,13 @@ void OpenGLRenderer::uploadTexture(Texture& texture)
         stbi_image_free(data);
         glBindTexture(GL_TEXTURE_2D, 0);
         releaseTexture(textureBuffer);
-        textures.erase(textureID);
+        textures.erase(textureKey);
         Console::get().error("[OpenGLRenderer::uploadTexture] Invalid number of colour channels (expected 1, 3, or 4, but got " + std::to_string(numColourChannels) + ")");
         return;
     }
     glCheckError();
 
-    Console::get().logOnDebug("[OpenGLRenderer::uploadTexture] Successfully uploaded Texture " + std::to_string(texture.getID()) + " to GPU.");
+    Console::get().logOnDebug("[OpenGLRenderer::uploadTexture] Successfully uploaded Texture '" + texturePath + "' to GPU.");
 
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
@@ -398,11 +393,11 @@ void OpenGLRenderer::uploadTexture(Texture& texture)
     glCheckError();
 }
 
-void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
+void OpenGLRenderer::render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
 
-    const auto shaderIt = shaders.find(shader.getID());
+    const auto shaderIt = shaders.find(shader);
     if (shaderIt == shaders.end()) {
         Console::get().error("[OpenGLRenderer::render] Attempting to render with a shader that hasn't been uploaded.");
         return;
@@ -417,40 +412,37 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
     setUniformVec3(programID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
     setUniformVec3(programID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
 
-    for (auto& [meshID, meshBuffer] : meshes) {
-        if (!meshBuffer.mesh) {
+    for (const std::shared_ptr<Mesh>& mesh : assets.getMeshes()) {
+        if (!mesh) {
             continue;
         }
-        const Mesh& mesh = *meshBuffer.mesh;
-        std::shared_ptr<Material> material = mesh.getMaterial();
-        if (!material) {
-            Console::get().logOnDebug("[OpenGLRenderer::render] Mesh " + std::to_string(mesh.getID()) + " has no material, so will be rendered with default material.");
-            material = Material::getDefaultMaterial();
+
+        const auto meshBufferIt = meshes.find(mesh);
+        if (meshBufferIt == meshes.end()) {
+            Console::get().error("[OpenGLRenderer::render] Attempting to render a mesh that hasn't been uploaded.");
+            continue;
         }
 
-        unsigned int iDiffuse = 0;
-        unsigned int iSpecular = 0;
+        const MeshBuffer& meshBuffer = meshBufferIt->second;
+        std::shared_ptr<Material> material = mesh->getMaterial();
+        if (!material) {
+            Console::get().logOnDebug("[OpenGLRenderer::render] Mesh has no material, so will be rendered with default material.");
+        }
 
         if (material) {
-            const std::vector<Texture>& textures = material->getTextures();
-            for (unsigned int iTexture = 0; iTexture < textures.size(); iTexture++) {
-                const Texture& texture = textures[iTexture];
-                if (texture.getType() == TextureType::DIFFUSE) {
-                    const std::string uniformName = "diffuse" + std::to_string(iDiffuse);
-                    glCheckError();
-                    bindTexture(programID, iTexture, uniformName.c_str(), texture);
-                    iDiffuse++;
-                }
-                else if (texture.getType() == TextureType::SPECULAR) {
-                    const std::string uniformName = "specular" + std::to_string(iSpecular);
-                    bindTexture(programID, iTexture, uniformName.c_str(), texture);
-                    glCheckError();
-                    iSpecular++;
-                }
+            unsigned int textureUnit = 0;
+            std::shared_ptr<Texture> albedoTexture = material->getAlbedoTexture();
+            std::shared_ptr<Texture> specularTexture = material->getSpecularTexture();
+
+            if (albedoTexture) {
+                bindTexture(programID, textureUnit++, "diffuse0", albedoTexture);
+            }
+            if (specularTexture) {
+                bindTexture(programID, textureUnit++, "specular0", specularTexture);
             }
         }
 
-        const glm::mat4& modelMatrix = mesh.getModelMatrix();
+        const glm::mat4& modelMatrix = mesh->getModelMatrix();
         const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
         if (material) {
@@ -478,12 +470,12 @@ void OpenGLRenderer::render(const Shader& shader, const Camera& camera)
 
         setUniformMat4(programID, "model", modelMatrix);
         setUniformMat3(programID, "normalMatrix", normalMatrix);
-        setUniformInt(programID, "useLighting", mesh.hasAttribute(AttributeType::NORMAL) ? 1 : 0);
+        setUniformInt(programID, "useLighting", mesh->hasAttribute(AttributeType::NORMAL) ? 1 : 0);
 
         glBindVertexArray(meshBuffer.vao);
         glDrawElements(
-            mesh.getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
-            (GLsizei)(mesh.getNumIndices()),
+            mesh->getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
+            (GLsizei)(mesh->getNumIndices()),
             GL_UNSIGNED_INT,
             nullptr
         );
@@ -549,11 +541,16 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec4>& da
     return vbo;
 }
 
-void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const char* uniformName, const Texture& texture)
+void OpenGLRenderer::bindTexture(
+    GLuint programID,
+    GLuint textureUnit,
+    const char* uniformName,
+    const std::shared_ptr<Texture>& texture
+)
 {
     CONSUL_PROFILE_METHOD();
 
-    auto it = textures.find(texture.getID());
+    auto it = textures.find(texture);
     if (it == textures.end()) {
         Console::get().error("[OpenGLRenderer::bindTexture] Attempting to bind texture that hasn't been uploaded!");
         return;
@@ -562,6 +559,42 @@ void OpenGLRenderer::bindTexture(GLuint programID, GLuint textureUnit, const cha
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     glBindTexture(GL_TEXTURE_2D, it->second.id);
     setUniformInt(programID, uniformName, (int)textureUnit);
+}
+
+void OpenGLRenderer::releaseExpiredTextures()
+{
+    for (auto it = textures.begin(); it != textures.end();) {
+        if (it->first.expired()) {
+            releaseTexture(it->second);
+            it = textures.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void OpenGLRenderer::releaseExpiredMeshes()
+{
+    for (auto it = meshes.begin(); it != meshes.end();) {
+        if (it->first.expired()) {
+            releaseMesh(it->second);
+            it = meshes.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void OpenGLRenderer::releaseExpiredShaders()
+{
+    for (auto it = shaders.begin(); it != shaders.end();) {
+        if (it->first.expired()) {
+            releaseShader(it->second);
+            it = shaders.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, int value)

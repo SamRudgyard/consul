@@ -10,8 +10,9 @@
 #include "glm/glm.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
-#include "graphics/material/material.hpp"
 #include "glad/glad.h"
+
+class Material;
 
 enum class AttributeType
 {
@@ -87,7 +88,7 @@ public:
      * Sets the material for this Mesh.
      * @param material The new material for this Mesh.
      */
-    void setMaterial(std::shared_ptr<Material> material) { this->material = material; }
+    void setMaterial(std::shared_ptr<Material> material) { this->material = std::move(material); }
 
     /**
      * Gets the material for this Mesh.
@@ -144,12 +145,6 @@ public:
      */
     void clear();
 
-    /**
-     * Gets the unique ID of this Mesh.
-     * @return ID of this Mesh.
-     */
-    unsigned int getID() const { return id; }
-
     bool isAnyDirty() const;
 
     bool isDirty(AttributeType attribute) const;
@@ -159,7 +154,6 @@ public:
     void clean(AttributeType attribute);
 
 private:
-    unsigned int id;
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
@@ -169,6 +163,5 @@ private:
     std::shared_ptr<Material> material;
     DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
-    std::vector<unsigned int> vertexBuffers = std::vector<unsigned int>(5, 0);
     MeshUploadMask uploadMask;
 };

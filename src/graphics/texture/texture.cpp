@@ -9,8 +9,6 @@ Texture::Texture()
 Texture::Texture(std::string texturePath, TextureType textureType)
     : path(texturePath), type(textureType)
 {
-    static unsigned int nextID = 0;
-    id = nextID++;
 }
 
 Texture Texture::getDefaultDiffuseTexture()
