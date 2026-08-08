@@ -3,6 +3,7 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 #include "core/ecs/component_manager.hpp"
 #include "core/ecs/entity_manager.hpp"
@@ -17,6 +18,11 @@ namespace
     struct Velocity
     {
         int x = 0;
+    };
+
+    struct Health
+    {
+        int value = 0;
     };
 
     template<std::size_t Index>
@@ -106,4 +112,58 @@ TEST_CASE("entity and component limits are enforced", "[ecs][limits]")
         components.getComponentID<IndexedComponent<MAX_COMPONENTS>>(),
         std::runtime_error
     );
+}
+
+TEST_CASE("views match living entities by component signature", "[ecs][query]")
+{
+    ECSManagers ecs;
+    const Entity positionOnly = ecs.entities.createEntity();
+    const Entity both = ecs.entities.createEntity();
+    const Entity destroyed = ecs.entities.createEntity();
+    const Entity velocityOnly = ecs.entities.createEntity();
+
+    ecs.entities.addComponent<Position>(positionOnly, {1});
+    ecs.entities.addComponent<Position>(both, {2});
+    ecs.entities.addComponent<Velocity>(both, {20});
+    ecs.entities.addComponent<Position>(destroyed, {3});
+    ecs.entities.addComponent<Velocity>(destroyed, {30});
+    ecs.entities.addComponent<Velocity>(velocityOnly, {40});
+    ecs.entities.destroyEntity(destroyed);
+
+    REQUIRE(ecs.entities.view<Position>() == std::vector<Entity>{positionOnly, both});
+    REQUIRE(ecs.entities.view<Velocity>() == std::vector<Entity>{both, velocityOnly});
+    REQUIRE(ecs.entities.view<Position, Velocity>() == std::vector<Entity>{both});
+
+    REQUIRE(ecs.entities.view<Health>().empty());
+
+    ecs.entities.removeComponent<Velocity>(both);
+    REQUIRE(ecs.entities.view<Position, Velocity>().empty());
+}
+
+TEST_CASE("forEach exposes entity IDs and component references", "[ecs][query]")
+{
+    ECSManagers ecs;
+    const Entity first = ecs.entities.createEntity();
+    const Entity second = ecs.entities.createEntity();
+    const Entity ignored = ecs.entities.createEntity();
+
+    ecs.entities.addComponent<Position>(first, {1});
+    ecs.entities.addComponent<Position>(second, {2});
+    ecs.entities.addComponent<Velocity>(ignored, {3});
+
+    std::vector<Entity> visited;
+    ecs.entities.forEach<Position>([&](Entity entity, Position& position) {
+        visited.push_back(entity);
+        position.x *= 10;
+    });
+
+    REQUIRE(visited == std::vector<Entity>{first, second});
+    REQUIRE(ecs.entities.getComponent<Position>(first).x == 10);
+    REQUIRE(ecs.entities.getComponent<Position>(second).x == 20);
+
+    int total = 0;
+    ecs.entities.forEach<Position>([&](Entity entity, Position& position) {
+        total += static_cast<int>(entity) + position.x;
+    });
+    REQUIRE(total == static_cast<int>(first + second) + 30);
 }

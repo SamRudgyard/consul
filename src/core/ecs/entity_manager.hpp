@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <functional>
 #include <memory>
 #include <queue>
 #include <string>
@@ -144,9 +143,62 @@ public:
         return static_cast<const ComponentManager&>(*componentManager).getComponent<T>(entity);
     }
 
+    /**
+     * Collects all entities with a given set of components.
+     *
+     * @tparam Components The components to query for.
+     * @return The entities that have all the given components.
+     */
+    template<class... Components>
+    std::vector<Entity> view() const
+    {
+        std::vector<Entity> result;
+        ComponentMask mask;
+
+        ((mask.set(componentManager->getComponentID<Components>())), ...);
+        for (const auto& entityContainer : entities) {
+            if (!entityContainer.isAlive) {
+                continue;
+            }
+            if ((entityContainer.mask & mask) != mask) {
+                continue;
+            }
+
+            result.push_back(entityContainer.entity);
+        }
+        return result;
+    }
+
+    /**
+     * Invokes a callback for each matching entity. The callback receives the
+     * entity ID followed by mutable references to the requested components.
+     *
+     * @tparam Components The component types to query for.
+     * @tparam Func The type of the callback function.
+     * @param func The callback function to invoke for each matching entity.
+     */
+    template<class... Components, class Func>
+    void forEach(Func&& func)
+    {
+        ComponentMask mask;
+        ((mask.set(componentManager->getComponentID<Components>())), ...);
+
+        for (const auto& entityContainer : entities) {
+            if (!entityContainer.isAlive) {
+                continue;
+            }
+            if ((entityContainer.mask & mask) != mask) {
+                continue;
+            }
+
+            Entity entity = entityContainer.entity;
+            func(entity, componentManager->getComponent<Components>(entity)...);
+        }
+    }
+
 private:
     std::vector<EntityContainer> entities;
-    std::priority_queue<Entity, std::vector<Entity>, std::greater<Entity>> availableEntities;
+    std::queue<Entity> availableEntities;
     std::shared_ptr<ComponentManager> componentManager;
     std::size_t entityCount = 0;
 

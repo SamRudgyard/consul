@@ -24,7 +24,7 @@ Entity EntityManager::createEntity()
         entity = static_cast<Entity>(entities.size());
         entities.push_back({entity, ComponentMask{}, true});
     } else {
-        entity = availableEntities.top();
+        entity = availableEntities.front();
         availableEntities.pop();
         entities[entity] = {entity, ComponentMask{}, true};
     }
