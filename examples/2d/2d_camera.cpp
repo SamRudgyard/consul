@@ -1,4 +1,5 @@
 #include <memory>
+#include <utility>
 
 #include "core/consul.hpp"
 #include "core/project/asset_library.hpp"
@@ -15,35 +16,34 @@ public:
 
         Material material;
         material.setAlbedo(Colour(20, 200, 200));
-        AssetID materialID = assets->addMaterial("quadMaterial", material);
+        std::shared_ptr<Material> materialAsset = assets->addMaterial("quadMaterial", material);
 
-        mesh.setMaterial(materialID);
-        AssetID meshID = assets->addMesh("quadMesh", mesh);
+        mesh.setMaterial(std::move(materialAsset));
+        std::shared_ptr<Mesh> meshAsset = assets->addMesh("quadMesh", mesh);
 
         Model model;
-        model.addMesh(meshID);
-        modelID = assets->addModel("quadModel", model);
+        model.addMesh(std::move(meshAsset));
+        modelAsset = assets->addModel("quadModel", model);
     }
 
 protected:
     void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override {
-        std::shared_ptr<Model> model = assets->getModel(modelID);
-        if (!model) {
+        if (!modelAsset) {
             return;
         }
 
-        model->setTransform(getLocalTransform());
+        modelAsset->setTransform(getLocalTransform());
     }
 
 private:
-    AssetID modelID;
+    std::shared_ptr<Model> modelAsset;
 };
 
 class ExampleScene : public Scene {
 public:
     void onInit(std::shared_ptr<AssetLibrary> assets) override {
         camera.setPosition({0.0f, 0.0f});
-        assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
+        defaultShader = assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
 
         CubeNode* cubeNode = getRoot().createChild<CubeNode>();
         cubeNode->setPosition({0.0f, 0.0f, 0.0f});
@@ -58,6 +58,7 @@ public:
 
 private:
     Camera2D camera;
+    std::shared_ptr<Shader> defaultShader;
 };
 
 int main()
