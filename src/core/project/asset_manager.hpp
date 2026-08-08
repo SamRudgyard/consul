@@ -3,6 +3,7 @@
 #include "core/project/asset_types.hpp"
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -27,7 +28,8 @@ public:
     std::shared_ptr<T> add(const std::string& name, const T& asset)
     {
         std::shared_ptr<T> assetPointer = std::make_shared<T>(asset);
-        assets.push_back({assetPointer, {name, {}}});
+        nonOwningAssets.push_back(assetPointer);
+        assetMetadata.emplace(assetPointer, AssetMetadata{name, {}});
         return assetPointer;
     }
 
@@ -37,31 +39,71 @@ public:
             return std::nullopt;
         }
 
-        auto it = findAsset(asset);
-        if (it == assets.end()) {
+        auto it = assetMetadata.find(std::weak_ptr<T>(asset));
+        if (it == assetMetadata.end()) {
             return std::nullopt;
         }
 
-        return it->metadata;
+        return it->second;
     }
 
     std::vector<std::shared_ptr<T>> getAssets() const
     {
         std::vector<std::shared_ptr<T>> activeAssets;
-        activeAssets.reserve(assets.size());
+        activeAssets.reserve(nonOwningAssets.size() + preservedAssets.size());
 
-        auto it = assets.begin();
-        while (it != assets.end()) {
-            std::shared_ptr<T> asset = it->asset.lock();
+        auto it = nonOwningAssets.begin();
+        while (it != nonOwningAssets.end()) {
+            std::shared_ptr<T> asset = it->lock();
             if (asset) {
                 activeAssets.push_back(std::move(asset));
                 ++it;
             } else {
-                it = assets.erase(it);
+                assetMetadata.erase(*it);
+                it = nonOwningAssets.erase(it);
             }
         }
 
+        activeAssets.insert(activeAssets.end(), preservedAssets.begin(), preservedAssets.end());
+
         return activeAssets;
+    }
+
+    void setPreserved(const std::shared_ptr<T>& asset, bool preserved)
+    {
+        if (!asset) {
+            return;
+        }
+
+        if (preserved) {
+            auto it = std::find_if(nonOwningAssets.begin(), nonOwningAssets.end(), [&asset](const std::weak_ptr<T>& candidate) {
+                return candidate.lock() == asset;
+            });
+            if (it == nonOwningAssets.end()) {
+                return;
+            }
+
+            preservedAssets.push_back(asset);
+            nonOwningAssets.erase(it);
+            return;
+        }
+
+        auto it = std::find(preservedAssets.begin(), preservedAssets.end(), asset);
+        if (it == preservedAssets.end()) {
+            return;
+        }
+
+        nonOwningAssets.push_back(*it);
+        preservedAssets.erase(it);
+    }
+
+    bool isPreserved(const std::shared_ptr<T>& asset) const
+    {
+        if (!asset) {
+            return false;
+        }
+
+        return std::find(preservedAssets.begin(), preservedAssets.end(), asset) != preservedAssets.end();
     }
 
     void setSourcePath(const std::shared_ptr<T>& asset, const std::string& sourcePath)
@@ -70,29 +112,18 @@ public:
             return;
         }
 
-        auto it = findAsset(asset);
-        if (it == assets.end()) {
+        auto it = assetMetadata.find(std::weak_ptr<T>(asset));
+        if (it == assetMetadata.end()) {
             return;
         }
 
-        it->metadata.sourcePath = sourcePath;
+        it->second.sourcePath = sourcePath;
     }
 
 private:
-    struct AssetEntry
-    {
-        std::weak_ptr<T> asset;
-        AssetMetadata metadata;
-    };
-
-    mutable std::vector<AssetEntry> assets;
-
-    typename std::vector<AssetEntry>::iterator findAsset(const std::shared_ptr<T>& asset) const
-    {
-        return std::find_if(assets.begin(), assets.end(), [&asset](const AssetEntry& entry) {
-            return entry.asset.lock() == asset;
-        });
-    }
+    mutable std::vector<std::weak_ptr<T>> nonOwningAssets;
+    std::vector<std::shared_ptr<T>> preservedAssets;
+    mutable std::map<std::weak_ptr<T>, AssetMetadata, std::owner_less<>> assetMetadata;
 };
 
 using MaterialAssetManager = AssetManager<Material>;
