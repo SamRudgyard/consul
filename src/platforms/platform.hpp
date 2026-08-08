@@ -31,8 +31,6 @@ public:
 
     virtual double getTime() = 0;
 
-    virtual void terminate() = 0;
-
 protected:
     EngineContext* context = EngineContext::get();
 };

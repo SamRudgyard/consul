@@ -116,11 +116,7 @@ Consul::~Consul()
     console.log("[Consul] ImGui terminated.");
 
     renderer.reset();
-
-    if (platform) {
-        platform->terminate();
-        platform.reset();
-    }
+    platform.reset();
 
     console.log("[Consul] Windowing platform terminated.");
 
