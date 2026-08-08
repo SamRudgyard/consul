@@ -30,20 +30,20 @@ GLTFImporter::GLTFImporter(
 {
 }
 
-AssetID GLTFImporter::import(const std::string& name, const std::string& filePath)
+std::shared_ptr<Model> GLTFImporter::import(const std::string& name, const std::string& filePath)
 {
     currentFilePath = filePath;
 
     if (!doesFileExist(filePath.c_str())) {
         Console::get().error("[GLTFImporter::import] Invalid file path: '" + currentFilePath + "'");
         resetImportState();
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
 
     if (getFileExtension(filePath.c_str()) != ".gltf") {
         Console::get().error("[GLTFImporter::import] Invalid file extension (expected .gltf): '" + currentFilePath + "'");
         resetImportState();
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
 
     std::string text = readFile(currentFilePath.c_str());
@@ -62,7 +62,7 @@ AssetID GLTFImporter::import(const std::string& name, const std::string& filePat
     if (!jsonContents.contains("scenes") || jsonContents["scenes"].empty()) {
         Console::get().warn("[GLTFImporter::import] No scenes found in glTF file: '" + currentFilePath + "'");
         resetImportState();
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
 
     unsigned int sceneIndex = jsonContents.value("scene", 0);
@@ -75,7 +75,7 @@ AssetID GLTFImporter::import(const std::string& name, const std::string& filePat
     if (!scene.contains("nodes")) {
         Console::get().warn("[GLTFImporter::import] Scene contains no nodes: '" + currentFilePath + "'");
         resetImportState();
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
 
     for (const auto& nodeIndex : scene["nodes"]) {
@@ -83,10 +83,12 @@ AssetID GLTFImporter::import(const std::string& name, const std::string& filePat
     }
 
     AssetID modelID = modelManager->add(name, model);
+    modelManager->setSourcePath(modelID, filePath);
+    std::shared_ptr<Model> modelAsset = modelManager->get(modelID);
 
     resetImportState();
 
-    return modelID;
+    return modelAsset;
 }
 
 void GLTFImporter::resetImportState()

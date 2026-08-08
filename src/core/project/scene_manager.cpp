@@ -134,7 +134,8 @@ void SceneManager::render(Renderer& renderer)
         renderer.uploadShader(shaderID, *vertexShader, *fragmentShader);
     }
 
-    for (const auto& [modelID, model] : assets->getModels()) {
+    for (const auto& modelEntry : assets->getModels()) {
+        const std::shared_ptr<Model>& model = modelEntry.second;
         if (!model) {
             continue;
         }

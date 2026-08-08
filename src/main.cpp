@@ -29,7 +29,7 @@ public:
         Model model;
         model.addMesh(std::move(meshAsset));
         model.addMesh(std::move(outlineMeshAsset));
-        modelID = assets->addModel("cubeModel", model);
+        modelAsset = assets->addModel("cubeModel", model);
     }
 
 protected:
@@ -43,11 +43,12 @@ protected:
         setPosition({r*std::cos(currentAngle), 0.0f, r*std::sin(currentAngle)});
 
         // Update the model's mesh data to reflect the new position/rotation
-        std::shared_ptr<Model> model = assets->getModel(modelID);
-        model->setTransform(getWorldTransform());
+        if (modelAsset) {
+            modelAsset->setTransform(getWorldTransform());
+        }
     }
 private:
-    AssetID modelID;
+    std::shared_ptr<Model> modelAsset;
 };
 
 class ExampleScene : public Scene
@@ -60,7 +61,7 @@ public:
         camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
         assets->importShader("default", "shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl");
-        assets->importAsset("shiba", "assets/shiba/scene.gltf");
+        shibaModel = assets->importAsset("shiba", "assets/shiba/scene.gltf");
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
         rotatingCube->initialise(assets);
@@ -76,6 +77,7 @@ public:
 
 private:
     Camera3D camera;
+    std::shared_ptr<Model> shibaModel;
 };
 
 int main(int argc, char **argv)

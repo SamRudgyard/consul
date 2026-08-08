@@ -34,7 +34,7 @@ public:
      * @param filePath Path to the .gltf model file.
      * @returns Model loaded from the glTF file.
      */
-    AssetID import(const std::string& name, const std::string& filePath);
+    std::shared_ptr<Model> import(const std::string& name, const std::string& filePath);
 
 private:
     std::shared_ptr<ModelAssetManager> modelManager;

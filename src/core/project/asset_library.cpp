@@ -44,9 +44,10 @@ std::shared_ptr<Texture> AssetLibrary::getDefaultTexture()
     return assetDefaults->getDefaultTexture();
 }
 
-AssetID AssetLibrary::addModel(const std::string& name, const Model& model)
+std::shared_ptr<Model> AssetLibrary::addModel(const std::string& name, const Model& model)
 {
-    return modelManager->add(name, model);
+    AssetID modelID = modelManager->add(name, model);
+    return modelManager->get(modelID);
 }
 
 std::shared_ptr<Mesh> AssetLibrary::addMesh(const std::string& name, const Mesh& mesh)
@@ -81,25 +82,20 @@ AssetID AssetLibrary::addFragmentShader(const std::string& name, const FragmentS
     return fragmentShaderManager->add(name, shader);
 }
 
-AssetID AssetLibrary::importAsset(const std::string& name, const std::string& path)
+std::shared_ptr<Model> AssetLibrary::importAsset(const std::string& name, const std::string& path)
 {
     if (!doesFileExist(path.c_str())) {
         Console::get().warn("[AssetLibrary::importAsset] Invalid asset path: '" + path + "'");
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
 
     const std::string extension = getFileExtension(path.c_str());
     if (extension != ".gltf") {
         Console::get().warn("[AssetLibrary::importAsset] Unsupported asset extension: '" + extension + "'");
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
 
-    AssetID id = gltfImporter->import(name, path);
-    if (id != INVALID_ASSET_ID) {
-        modelManager->setSourcePath(id, path);
-    }
-
-    return id;
+    return gltfImporter->import(name, path);
 }
 
 AssetID AssetLibrary::importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath)
@@ -122,11 +118,6 @@ AssetID AssetLibrary::importShader(const std::string& name, const std::string& v
     std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->get(fragmentShaderID);
 
     return addShader(name, Shader(std::move(vertexShader), std::move(fragmentShader)));
-}
-
-std::shared_ptr<Model> AssetLibrary::getModel(AssetID id) const
-{
-    return modelManager->get(id);
 }
 
 std::shared_ptr<Texture> AssetLibrary::getTexture(AssetID id) const
