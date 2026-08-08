@@ -49,9 +49,10 @@ AssetID AssetLibrary::addModel(const std::string& name, const Model& model)
     return modelManager->add(name, model);
 }
 
-AssetID AssetLibrary::addMesh(const std::string& name, const Mesh& mesh)
+std::shared_ptr<Mesh> AssetLibrary::addMesh(const std::string& name, const Mesh& mesh)
 {
-    return meshManager->add(name, assetDefaults->applyToMesh(mesh));
+    AssetID meshID = meshManager->add(name, assetDefaults->applyToMesh(mesh));
+    return meshManager->get(meshID);
 }
 
 AssetID AssetLibrary::addTexture(const std::string& name, const Texture& texture)
@@ -126,11 +127,6 @@ AssetID AssetLibrary::importShader(const std::string& name, const std::string& v
 std::shared_ptr<Model> AssetLibrary::getModel(AssetID id) const
 {
     return modelManager->get(id);
-}
-
-std::shared_ptr<Mesh> AssetLibrary::getMesh(AssetID id) const
-{
-    return meshManager->get(id);
 }
 
 std::shared_ptr<Texture> AssetLibrary::getTexture(AssetID id) const

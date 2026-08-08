@@ -267,12 +267,12 @@ std::string GLTFImporter::getTexturePathFromUri(unsigned int textureIndex) const
     return currentFileDirectory + uri;
 }
 
-AssetID GLTFImporter::loadMesh(unsigned int meshIndex, const glm::mat4& initialTransform)
+std::shared_ptr<Mesh> GLTFImporter::loadMesh(unsigned int meshIndex, const glm::mat4& initialTransform)
 {
     const json& primitives = jsonContents["meshes"][meshIndex]["primitives"];
     if (primitives.empty()) {
         Console::get().error("[GLTFImporter::loadMesh] Mesh " + std::to_string(meshIndex) + " contains no primitives.");
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
 
     const json& attributes = primitives[0]["attributes"];
@@ -292,17 +292,18 @@ AssetID GLTFImporter::loadMesh(unsigned int meshIndex, const glm::mat4& initialT
     Mesh mesh(positions, normals, textureUVs, tangents, indices);
     mesh.setMaterial(std::move(material));
 
-    AssetID meshID = addMesh("Mesh_" + std::to_string(meshIndex), mesh);
+    std::shared_ptr<Mesh> meshAsset = addMesh("Mesh_" + std::to_string(meshIndex), mesh);
     if (currentModel) {
-        currentModel->addMesh(meshID, initialTransform);
+        currentModel->addMesh(meshAsset, initialTransform);
     }
 
-    return meshID;
+    return meshAsset;
 }
 
-AssetID GLTFImporter::addMesh(const std::string& name, const Mesh& mesh)
+std::shared_ptr<Mesh> GLTFImporter::addMesh(const std::string& name, const Mesh& mesh)
 {
-    return meshManager->add(name, assetDefaults->applyToMesh(mesh));
+    AssetID meshID = meshManager->add(name, assetDefaults->applyToMesh(mesh));
+    return meshManager->get(meshID);
 }
 
 std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)

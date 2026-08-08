@@ -23,12 +23,12 @@ public:
         std::shared_ptr<Material> materialAsset = assets->addMaterial("cubeMaterial", material);
 
         mesh.setMaterial(std::move(materialAsset));
-        AssetID meshID = assets->addMesh("cubeMesh", mesh);
-        AssetID outlineMeshID = assets->addMesh("cubeOutlineMesh", outlineMesh);
+        std::shared_ptr<Mesh> meshAsset = assets->addMesh("cubeMesh", mesh);
+        std::shared_ptr<Mesh> outlineMeshAsset = assets->addMesh("cubeOutlineMesh", outlineMesh);
 
         Model model;
-        model.addMesh(meshID);
-        model.addMesh(outlineMeshID);
+        model.addMesh(std::move(meshAsset));
+        model.addMesh(std::move(outlineMeshAsset));
         modelID = assets->addModel("cubeModel", model);
     }
 

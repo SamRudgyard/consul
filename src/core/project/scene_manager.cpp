@@ -103,10 +103,10 @@ void SceneManager::render(Renderer& renderer)
         return;
     }
 
-    auto uploadMesh = [this, &renderer](AssetID meshID, Mesh& mesh) {
-        renderer.uploadMesh(meshID, mesh);
+    auto uploadMesh = [&renderer](const std::shared_ptr<Mesh>& mesh) {
+        renderer.uploadMesh(mesh);
 
-        std::shared_ptr<Material> material = mesh.getMaterial();
+        std::shared_ptr<Material> material = mesh->getMaterial();
         if (!material) {
             return;
         }
@@ -139,22 +139,23 @@ void SceneManager::render(Renderer& renderer)
             continue;
         }
 
-        const std::vector<AssetID>& meshIDs = model->getMeshIDs();
+        const std::vector<std::shared_ptr<Mesh>>& meshes = model->getMeshes();
         std::vector<glm::mat4> transforms = model->getTransformationMatrices();
-        for (unsigned int iMesh = 0; iMesh < meshIDs.size(); iMesh++) {
-            std::shared_ptr<Mesh> mesh = assets->getMesh(meshIDs[iMesh]);
+        for (unsigned int iMesh = 0; iMesh < meshes.size(); iMesh++) {
+            const std::shared_ptr<Mesh>& mesh = meshes[iMesh];
             if (!mesh) {
                 continue;
             }
 
             mesh->setModelMatrix(transforms[iMesh]);
-            uploadMesh(meshIDs[iMesh], *mesh);
+            uploadMesh(mesh);
         }
     }
     
-    for (const auto& [meshID, mesh] : assets->getMeshes()) {
+    for (const auto& meshEntry : assets->getMeshes()) {
+        const std::shared_ptr<Mesh>& mesh = meshEntry.second;
         if (mesh) {
-            uploadMesh(meshID, *mesh);
+            uploadMesh(mesh);
         }
     }
 

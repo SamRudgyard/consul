@@ -36,7 +36,7 @@ public:
 
     virtual void uploadShader(AssetID shaderID, const VertexShader& vertexShader, const FragmentShader& fragmentShader) = 0;
 
-    virtual void uploadMesh(AssetID meshID, Mesh& mesh) = 0;
+    virtual void uploadMesh(const std::shared_ptr<Mesh>& mesh) = 0;
 
     virtual void uploadTexture(const std::shared_ptr<Texture>& texture) = 0;
 

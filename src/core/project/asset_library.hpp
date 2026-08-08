@@ -28,7 +28,7 @@ public:
     std::shared_ptr<Texture> getDefaultTexture();
 
     AssetID addModel(const std::string& name, const Model& model);
-    AssetID addMesh(const std::string& name, const Mesh& mesh);
+    std::shared_ptr<Mesh> addMesh(const std::string& name, const Mesh& mesh);
     AssetID addTexture(const std::string& name, const Texture& texture);
     std::shared_ptr<Material> addMaterial(const std::string& name, const Material& material);
     AssetID addShader(const std::string& name, const Shader& shader);
@@ -39,7 +39,6 @@ public:
     AssetID importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath);
 
     std::shared_ptr<Model> getModel(AssetID id) const;
-    std::shared_ptr<Mesh> getMesh(AssetID id) const;
     std::shared_ptr<Texture> getTexture(AssetID id) const;
     std::shared_ptr<Shader> getShader(AssetID id) const;
     std::shared_ptr<VertexShader> getVertexShader(AssetID id) const;

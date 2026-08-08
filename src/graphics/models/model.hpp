@@ -2,10 +2,11 @@
 
 #include "glm/glm.hpp"
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "core/project/asset_types.hpp"
+class Mesh;
 
 class Model
 {
@@ -13,17 +14,17 @@ public:
 	Model() = default;
 
 	/**
-	 * Gets the mesh IDs loaded from this model.
-	 * @returns Vector of mesh asset IDs.
+	 * Gets the meshes loaded from this model.
+	 * @returns Vector of meshes.
 	 */
-	const std::vector<AssetID>& getMeshIDs() const { return meshIDs; }
+	const std::vector<std::shared_ptr<Mesh>>& getMeshes() const { return meshes; }
 
 	/**
 	 * Add a mesh to the model, with an optional initial transform.
-	 * @param meshID AssetID of the mesh to add.
+	 * @param mesh Mesh to add.
 	 * @param initialTransform Initial transform matrix. Defaults to the identity matrix (i.e. no initial transform).
 	 */
-	void addMesh(AssetID meshID, const glm::mat4& initialTransform = glm::mat4(1.0f));
+	void addMesh(std::shared_ptr<Mesh> mesh, const glm::mat4& initialTransform = glm::mat4(1.0f));
 
 	/**
 	 * Gets the transformation matrices for each mesh in the model, with the
@@ -78,7 +79,7 @@ public:
 
 private:
 	std::string fileFullPath = "";
-	std::vector<AssetID> meshIDs;
+	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<glm::mat4> initialTransformations;
 	std::vector<glm::mat4> combinedTransforms;
 	glm::mat4 modelTransform = glm::mat4(1.0f);

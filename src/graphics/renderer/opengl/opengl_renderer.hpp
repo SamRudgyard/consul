@@ -86,10 +86,9 @@ public:
 
     /**
      * Uploads the given Mesh to the GPU.
-     * @param meshID Asset ID of the mesh to upload to the GPU.
      * @param mesh The mesh data to upload to the GPU.
      */
-    void uploadMesh(AssetID meshID, Mesh& mesh) override;
+    void uploadMesh(const std::shared_ptr<Mesh>& mesh) override;
 
     /**
      * Uploads the given Texture to the GPU.
@@ -106,7 +105,7 @@ public:
 
 private:
     std::unordered_map<AssetID, ShaderBuffer> shaders;
-    std::unordered_map<AssetID, MeshBuffer> meshes;
+    std::map<std::weak_ptr<Mesh>, MeshBuffer, std::owner_less<>> meshes;
     std::map<std::weak_ptr<Texture>, TextureBuffer, std::owner_less<>> textures;
 
     unsigned int enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw);
@@ -123,5 +122,6 @@ private:
     void releaseMesh(MeshBuffer& mesh);
     void releaseShader(ShaderBuffer& shader);
     void releaseTexture(TextureBuffer& texture);
+    void releaseExpiredMeshes();
     void releaseExpiredTextures();
 };

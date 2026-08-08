@@ -1,14 +1,16 @@
 #include "model.hpp"
 
+#include <utility>
+
 #include "glm/gtc/matrix_transform.hpp"
 
-void Model::addMesh(AssetID meshID, const glm::mat4& initialTransform)
+void Model::addMesh(std::shared_ptr<Mesh> mesh, const glm::mat4& initialTransform)
 {
-    if (meshID == INVALID_ASSET_ID) {
+    if (!mesh) {
         return;
     }
 
-    meshIDs.push_back(meshID);
+    meshes.push_back(std::move(mesh));
     initialTransformations.push_back(initialTransform);
     recalcTransformation = true;
 }

@@ -83,11 +83,11 @@ private:
 	 * Load a mesh from glTF mesh data.
 	 * @param meshIndex Index into the glTF meshes array.
 	 * @param initialTransform Initial transform matrix. Defaults to the identity matrix (i.e. no initial transform).
-	 * @returns AssetID of the loaded mesh.
+	 * @returns Loaded mesh.
 	 */
-	AssetID loadMesh(unsigned int meshIndex, const glm::mat4& initialTransform = glm::mat4(1.0f));
+	std::shared_ptr<Mesh> loadMesh(unsigned int meshIndex, const glm::mat4& initialTransform = glm::mat4(1.0f));
 
-    AssetID addMesh(const std::string& name, const Mesh& mesh);
+    std::shared_ptr<Mesh> addMesh(const std::string& name, const Mesh& mesh);
 
 	/**
 	 * Create a material from glTF material data.

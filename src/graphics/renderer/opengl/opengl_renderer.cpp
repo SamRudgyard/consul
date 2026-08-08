@@ -196,12 +196,18 @@ void OpenGLRenderer::uploadShader(AssetID shaderID, const VertexShader& vertexSh
     Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader " + shaderID.toString() + " to GPU.");
 }
 
-void OpenGLRenderer::uploadMesh(AssetID meshID, Mesh& mesh)
+void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
 {
     CONSUL_PROFILE_METHOD();
 
-    auto [it, inserted] = meshes.try_emplace(meshID);
+    if (!meshAsset) {
+        return;
+    }
+
+    std::weak_ptr<Mesh> meshKey = meshAsset;
+    auto [it, inserted] = meshes.try_emplace(meshKey);
     MeshBuffer& meshBuffer = it->second;
+    Mesh& mesh = *meshAsset;
 
     if (!inserted && !mesh.isAnyDirty()) return;
 
@@ -315,7 +321,7 @@ void OpenGLRenderer::uploadMesh(AssetID meshID, Mesh& mesh)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // Finally unbind EBO
     glCheckError();
 
-    Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh " + meshID.toString() + " to GPU.");
+    Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh to GPU.");
 }
 
 void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
@@ -389,6 +395,7 @@ void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
 void OpenGLRenderer::render(AssetID shaderID, const Camera& camera, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
+    releaseExpiredMeshes();
     releaseExpiredTextures();
 
     const auto shaderIt = shaders.find(shaderID);
@@ -406,12 +413,13 @@ void OpenGLRenderer::render(AssetID shaderID, const Camera& camera, AssetLibrary
     setUniformVec3(programID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
     setUniformVec3(programID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
 
-    for (const auto& [meshID, mesh] : assets.getMeshes()) {
+    for (const auto& meshEntry : assets.getMeshes()) {
+        const std::shared_ptr<Mesh>& mesh = meshEntry.second;
         if (!mesh) {
             continue;
         }
 
-        const auto meshBufferIt = meshes.find(meshID);
+        const auto meshBufferIt = meshes.find(mesh);
         if (meshBufferIt == meshes.end()) {
             Console::get().error("[OpenGLRenderer::render] Attempting to render a mesh that hasn't been uploaded.");
             continue;
@@ -420,7 +428,7 @@ void OpenGLRenderer::render(AssetID shaderID, const Camera& camera, AssetLibrary
         const MeshBuffer& meshBuffer = meshBufferIt->second;
         std::shared_ptr<Material> material = mesh->getMaterial();
         if (!material) {
-            Console::get().logOnDebug("[OpenGLRenderer::render] Mesh " + meshID.toString() + " has no material, so will be rendered with default material.");
+            Console::get().logOnDebug("[OpenGLRenderer::render] Mesh has no material, so will be rendered with default material.");
         }
 
         if (material) {
@@ -561,6 +569,18 @@ void OpenGLRenderer::releaseExpiredTextures()
         if (it->first.expired()) {
             releaseTexture(it->second);
             it = textures.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void OpenGLRenderer::releaseExpiredMeshes()
+{
+    for (auto it = meshes.begin(); it != meshes.end();) {
+        if (it->first.expired()) {
+            releaseMesh(it->second);
+            it = meshes.erase(it);
         } else {
             ++it;
         }
