@@ -1,29 +1,31 @@
 #pragma once
 
+#include <cstddef>
+#include <functional>
 #include <memory>
+#include <queue>
+#include <string>
+#include <typeinfo>
 #include <vector>
 
-#include "ecs_types.hpp"
 #include "component_manager.hpp"
+#include "ecs_types.hpp"
 
-struct EntityContainer {
-    Entity entity; // ID of a given entity
-    ComponentMask mask; // Mask of the components of a given entity
+struct EntityContainer
+{
+    Entity entity = 0;
+    ComponentMask mask;
+    bool isAlive = false;
 };
 
 /**
- * The EntityManager class is a singleton that manages entities and their
- * associated components. It provides functions for adding, removing, and
- * retrieving entities and their components.
- * 
- * As it simply holds a bitmask of components for each entity, it is not
- * intended for modifying the components of an entity directly. Instead, use
- * the ComponentManager class to add, remove, and retrieve components
- * directly.
+ * Manages entity lifetimes and component signatures. Component values are
+ * stored by the associated ComponentManager and accessed through this class.
  */
-class EntityManager {
+class EntityManager
+{
 public:
-    EntityManager(std::shared_ptr<ComponentManager> componentManager) : componentManager(componentManager) {}
+    explicit EntityManager(std::shared_ptr<ComponentManager> componentManager);
     ~EntityManager() = default;
 
     /**
@@ -32,9 +34,19 @@ public:
      * This function returns a reference to the vector of entities managed by
      * the EntityManager.
      *
-     * @return A reference to the vector of entities.
+     * @return A const reference to the entity slots.
      */
-    std::vector<EntityContainer>& GetEntities() { return entities; }
+    const std::vector<EntityContainer>& getEntities() const { return entities; }
+
+    /**
+     * Gets the number of currently living entities.
+     */
+    std::size_t getEntityCount() const { return entityCount; }
+
+    /**
+     * Reports whether an entity ID currently refers to a living entity.
+     */
+    bool isAlive(Entity entity) const;
     
     /**
      * Creates a new entity.
@@ -44,7 +56,7 @@ public:
      *
      * @return The ID of the newly created entity.
      */
-    Entity CreateEntity();
+    Entity createEntity();
 
     /**
      * Destroys an entity.
@@ -54,7 +66,7 @@ public:
      *
      * @param entity The ID of the entity to be destroyed.
      */
-    void DestroyEntity(Entity entity);
+    void destroyEntity(Entity entity);
 
     /**
      * Adds a component of type T to the specified entity (with default value).
@@ -62,15 +74,9 @@ public:
      * @param entity The ID of the entity to add the component to.
      */
     template<class T>
-    void AddComponent(Entity entity) {
-        if (!componentManager) {
-            Console::get().error("[EntityManager::AddComponent] Component manager is not assigned!");
-            return;
-        }
-
-        unsigned int componentID = componentManager->GetComponentID<T>();
-        entities[entity].mask.set(componentID);
-        componentManager->AddComponent<T>(entity, T());
+    void addComponent(Entity entity)
+    {
+        addComponent<T>(entity, T{});
     }
 
     /**
@@ -80,15 +86,13 @@ public:
      * @param component The value of the component to add.
      */
     template<class T>
-    void AddComponent(Entity entity, const T& component) {
-        if (!componentManager) {
-            Console::get().error("[EntityManager::AddComponent] Component manager is not assigned!");
-            return;
-        }
+    void addComponent(Entity entity, const T& component)
+    {
+        validateEntity(entity);
 
-        unsigned int componentID = componentManager->GetComponentID<T>();
+        const ComponentType componentID = componentManager->getComponentID<T>();
+        componentManager->addComponent<T>(entity, component);
         entities[entity].mask.set(componentID);
-        componentManager->AddComponent<T>(entity, component);
     }
 
     /**
@@ -97,18 +101,54 @@ public:
      * @tparam T The type of the component to remove.
      * @param entity The ID of the entity from which to remove the component.
      */
-    template<typename T>
-    void RemoveComponent(Entity entity) {
-        if (!componentManager) {
-            Console::get().error("[EntityManager::RemoveComponent] Component manager is not assigned!");
-            return;
+    template<class T>
+    void removeComponent(Entity entity)
+    {
+        validateEntity(entity);
+        if (!componentManager->hasComponent<T>(entity)) {
+            Console::get().error(
+                "[EntityManager::removeComponent] Entity ID '" + std::to_string(entity) +
+                "' does not have component type '" + std::string(typeid(T).name()) + "'."
+            );
         }
 
-        unsigned int componentID = componentManager->GetComponentID<T>();
+        const ComponentType componentID = componentManager->getComponentID<T>();
+        componentManager->removeComponent<T>(entity);
         entities[entity].mask.reset(componentID);
+    }
+
+    /**
+     * Reports whether a living entity has a component of type T.
+     */
+    template<class T>
+    bool hasComponent(Entity entity) const
+    {
+        validateEntity(entity);
+        return componentManager->hasComponent<T>(entity);
+    }
+
+    /**
+     * Gets a component belonging to a living entity.
+     */
+    template<class T>
+    T& getComponent(Entity entity)
+    {
+        validateEntity(entity);
+        return componentManager->getComponent<T>(entity);
+    }
+
+    template<class T>
+    const T& getComponent(Entity entity) const
+    {
+        validateEntity(entity);
+        return static_cast<const ComponentManager&>(*componentManager).getComponent<T>(entity);
     }
 
 private:
     std::vector<EntityContainer> entities;
-    std::shared_ptr<ComponentManager> componentManager = nullptr;
+    std::priority_queue<Entity, std::vector<Entity>, std::greater<Entity>> availableEntities;
+    std::shared_ptr<ComponentManager> componentManager;
+    std::size_t entityCount = 0;
+
+    void validateEntity(Entity entity) const;
 };

@@ -12,6 +12,7 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(consul_tests
   test_asset_manager.cpp
   test_constants.cpp
+  test_entity_manager.cpp
   test_input_system.cpp
   test_keyboard_state.cpp
   test_material.cpp

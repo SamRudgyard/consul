@@ -1,12 +1,10 @@
 #pragma once
 
-#include <cstdint>
 #include <bitset>
+#include <cstdint>
 
-using namespace std;
-
-using Entity = uint32_t;
-const Entity MAX_ENTITIES = 5000;
-using ComponentType = uint32_t;
-const ComponentType MAX_COMPONENTS = 32;
-typedef bitset<MAX_COMPONENTS> ComponentMask;
+using Entity = std::uint32_t;
+inline constexpr Entity MAX_ENTITIES = 5000;
+using ComponentType = std::uint32_t;
+inline constexpr ComponentType MAX_COMPONENTS = 32;
+using ComponentMask = std::bitset<MAX_COMPONENTS>;

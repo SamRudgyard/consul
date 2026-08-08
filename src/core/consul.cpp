@@ -44,7 +44,7 @@ void Consul::initialiseEngine()
     sceneManager = std::make_shared<SceneManager>();
     sceneManager->assignAssets(assets);
     componentManager = std::make_shared<ComponentManager>();
-    entityManager = std::make_shared<EntityManager>();
+    entityManager = std::make_shared<EntityManager>(componentManager);
 
     initialiseWindow(PlatformType::GLFW);
     console.log("[Consul] Windowing platform initialised.");
