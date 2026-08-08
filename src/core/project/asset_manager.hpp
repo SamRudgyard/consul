@@ -52,21 +52,31 @@ public:
         std::vector<std::shared_ptr<T>> activeAssets;
         activeAssets.reserve(nonOwningAssets.size() + preservedAssets.size());
 
-        auto it = nonOwningAssets.begin();
-        while (it != nonOwningAssets.end()) {
-            std::shared_ptr<T> asset = it->lock();
-            if (asset) {
-                activeAssets.push_back(std::move(asset));
-                ++it;
-            } else {
-                assetMetadata.erase(*it);
-                it = nonOwningAssets.erase(it);
+        for (const std::weak_ptr<T>& nonOwningAsset : nonOwningAssets) {
+            std::shared_ptr<T> asset = nonOwningAsset.lock();
+            if (!asset) {
+                continue;
             }
+
+            activeAssets.push_back(std::move(asset));
         }
 
         activeAssets.insert(activeAssets.end(), preservedAssets.begin(), preservedAssets.end());
 
         return activeAssets;
+    }
+
+    void removeExpiredAssets()
+    {
+        auto it = nonOwningAssets.begin();
+        while (it != nonOwningAssets.end()) {
+            if (it->expired()) {
+                assetMetadata.erase(*it);
+                it = nonOwningAssets.erase(it);
+            } else {
+                ++it;
+            }
+        }
     }
 
     void setPreserved(const std::shared_ptr<T>& asset, bool preserved)
@@ -121,9 +131,9 @@ public:
     }
 
 private:
-    mutable std::vector<std::weak_ptr<T>> nonOwningAssets;
+    std::vector<std::weak_ptr<T>> nonOwningAssets;
     std::vector<std::shared_ptr<T>> preservedAssets;
-    mutable std::map<std::weak_ptr<T>, AssetMetadata, std::owner_less<>> assetMetadata;
+    std::map<std::weak_ptr<T>, AssetMetadata, std::owner_less<>> assetMetadata;
 };
 
 using MaterialAssetManager = AssetManager<Material>;

@@ -206,4 +206,14 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     platform->swapBuffers();
+
+    renderer->releaseExpiredResources();
+
+    modelAssets->removeExpiredAssets();
+    meshAssets->removeExpiredAssets();
+    materialAssets->removeExpiredAssets();
+    textureAssets->removeExpiredAssets();
+    shaderAssets->removeExpiredAssets();
+    vertexShaderAssets->removeExpiredAssets();
+    fragmentShaderAssets->removeExpiredAssets();
 }

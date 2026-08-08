@@ -23,6 +23,7 @@ TEST_CASE("an asset manager does not own registered assets")
     asset.reset();
 
     REQUIRE(assetObserver.expired());
+    manager.removeExpiredAssets();
     REQUIRE(manager.getAssets().empty());
 }
 

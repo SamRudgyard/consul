@@ -82,7 +82,6 @@ void SceneManager::update(double deltaTime)
 void SceneManager::render(Renderer& renderer)
 {
     CONSUL_PROFILE_METHOD();
-    renderer.releaseExpiredResources();
 
     if (!currentScene || !currentScene->isInitialised || !assets) {
         return;
