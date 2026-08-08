@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <map>
+#include <utility>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -287,9 +288,9 @@ AssetID GLTFImporter::loadMesh(unsigned int meshIndex, const glm::mat4& initialT
     std::vector<unsigned int> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
 
     const int materialIndex = primitives[0].value("material", -1);
-    AssetID materialID = loadMaterial(materialIndex);
+    std::shared_ptr<Material> material = loadMaterial(materialIndex);
     Mesh mesh(positions, normals, textureUVs, tangents, indices);
-    mesh.setMaterial(materialID);
+    mesh.setMaterial(std::move(material));
 
     AssetID meshID = addMesh("Mesh_" + std::to_string(meshIndex), mesh);
     if (currentModel) {
@@ -304,16 +305,16 @@ AssetID GLTFImporter::addMesh(const std::string& name, const Mesh& mesh)
     return meshManager->add(name, assetDefaults->applyToMesh(mesh));
 }
 
-AssetID GLTFImporter::loadMaterial(int materialIndex)
+std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
 {
     Material material;
 
     if (materialIndex < 0 || !jsonContents.contains("materials")) {
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
     if (materialIndex >= jsonContents["materials"].size()) {
         Console::get().warn("[GLTFImporter::loadMaterial] Invalid material index: '" + std::to_string(materialIndex) + "'");
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
 
     const json& materialJson = jsonContents["materials"][materialIndex];
@@ -358,9 +359,10 @@ AssetID GLTFImporter::loadMaterial(int materialIndex)
     return addMaterial("Material_" + std::to_string(materialIndex), material);
 }
 
-AssetID GLTFImporter::addMaterial(const std::string& name, const Material& material)
+std::shared_ptr<Material> GLTFImporter::addMaterial(const std::string& name, const Material& material)
 {
-    return materialManager->add(name, assetDefaults->applyToMaterial(material));
+    AssetID materialID = materialManager->add(name, assetDefaults->applyToMaterial(material));
+    return materialManager->get(materialID);
 }
 
 std::vector<glm::vec2> GLTFImporter::toVec2(const std::vector<float> floatVec)

@@ -94,9 +94,9 @@ private:
 	 * @param materialIndex Index into the glTF materials array.
 	 * @returns Material with textures referenced by the glTF material.
 	 */
-	AssetID loadMaterial(int materialIndex);
+	std::shared_ptr<Material> loadMaterial(int materialIndex);
 
-    AssetID addMaterial(const std::string& name, const Material& material);
+    std::shared_ptr<Material> addMaterial(const std::string& name, const Material& material);
 
 	/**
 	 * Convert a float array to a vec2 array.

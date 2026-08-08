@@ -106,7 +106,7 @@ void SceneManager::render(Renderer& renderer)
     auto uploadMesh = [this, &renderer](AssetID meshID, Mesh& mesh) {
         renderer.uploadMesh(meshID, mesh);
 
-        std::shared_ptr<Material> material = assets->getMaterial(mesh.getMaterial());
+        std::shared_ptr<Material> material = mesh.getMaterial();
         if (!material) {
             return;
         }

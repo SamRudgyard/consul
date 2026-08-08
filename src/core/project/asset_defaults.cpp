@@ -10,16 +10,19 @@ AssetDefaults::AssetDefaults(std::shared_ptr<MaterialAssetManager> materialManag
 {
 }
 
-AssetID AssetDefaults::getDefaultMaterial()
+std::shared_ptr<Material> AssetDefaults::getDefaultMaterial()
 {
-    if (defaultMaterialID == INVALID_ASSET_ID || !materialManager->get(defaultMaterialID)) {
+    std::shared_ptr<Material> materialAsset = defaultMaterial.lock();
+    if (!materialAsset) {
         Material material;
         material.setAlbedoTexture(getDefaultTexture());
         material.setSpecularTexture(getDefaultTexture());
-        defaultMaterialID = materialManager->add("Default Material", material);
+        AssetID materialID = materialManager->add("Default Material", material);
+        materialAsset = materialManager->get(materialID);
+        defaultMaterial = materialAsset;
     }
 
-    return defaultMaterialID;
+    return materialAsset;
 }
 
 std::shared_ptr<Texture> AssetDefaults::getDefaultTexture()
@@ -50,7 +53,7 @@ Material AssetDefaults::applyToMaterial(const Material& material)
 Mesh AssetDefaults::applyToMesh(const Mesh& mesh)
 {
     Mesh meshWithDefaults = mesh;
-    if (meshWithDefaults.getMaterial() == INVALID_ASSET_ID) {
+    if (!meshWithDefaults.getMaterial()) {
         meshWithDefaults.setMaterial(getDefaultMaterial());
     }
 
@@ -59,6 +62,6 @@ Mesh AssetDefaults::applyToMesh(const Mesh& mesh)
 
 void AssetDefaults::reset()
 {
-    defaultMaterialID = INVALID_ASSET_ID;
+    defaultMaterial.reset();
     defaultTexture.reset();
 }

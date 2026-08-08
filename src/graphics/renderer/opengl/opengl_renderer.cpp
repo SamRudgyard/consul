@@ -418,7 +418,7 @@ void OpenGLRenderer::render(AssetID shaderID, const Camera& camera, AssetLibrary
         }
 
         const MeshBuffer& meshBuffer = meshBufferIt->second;
-        std::shared_ptr<Material> material = assets.getMaterial(mesh->getMaterial());
+        std::shared_ptr<Material> material = mesh->getMaterial();
         if (!material) {
             Console::get().logOnDebug("[OpenGLRenderer::render] Mesh " + meshID.toString() + " has no material, so will be rendered with default material.");
         }

@@ -34,7 +34,7 @@ AssetLibrary::AssetLibrary(
 {
 }
 
-AssetID AssetLibrary::getDefaultMaterial()
+std::shared_ptr<Material> AssetLibrary::getDefaultMaterial()
 {
     return assetDefaults->getDefaultMaterial();
 }
@@ -59,9 +59,10 @@ AssetID AssetLibrary::addTexture(const std::string& name, const Texture& texture
     return textureManager->add(name, texture);
 }
 
-AssetID AssetLibrary::addMaterial(const std::string& name, const Material& material)
+std::shared_ptr<Material> AssetLibrary::addMaterial(const std::string& name, const Material& material)
 {
-    return materialManager->add(name, assetDefaults->applyToMaterial(material));
+    AssetID materialID = materialManager->add(name, assetDefaults->applyToMaterial(material));
+    return materialManager->get(materialID);
 }
 
 AssetID AssetLibrary::addShader(const std::string& name, const Shader& shader)
@@ -135,11 +136,6 @@ std::shared_ptr<Mesh> AssetLibrary::getMesh(AssetID id) const
 std::shared_ptr<Texture> AssetLibrary::getTexture(AssetID id) const
 {
     return textureManager->get(id);
-}
-
-std::shared_ptr<Material> AssetLibrary::getMaterial(AssetID id) const
-{
-    return materialManager->get(id);
 }
 
 std::shared_ptr<Shader> AssetLibrary::getShader(AssetID id) const

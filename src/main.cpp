@@ -1,4 +1,5 @@
 #include <memory>
+#include <utility>
 
 #include "core/consul.hpp"
 #include "core/window.hpp"
@@ -19,9 +20,9 @@ public:
 
         Material material;
         material.setAlbedo(Colour(20, 200, 200));
-        AssetID materialID = assets->addMaterial("cubeMaterial", material);
+        std::shared_ptr<Material> materialAsset = assets->addMaterial("cubeMaterial", material);
 
-        mesh.setMaterial(materialID);
+        mesh.setMaterial(std::move(materialAsset));
         AssetID meshID = assets->addMesh("cubeMesh", mesh);
         AssetID outlineMeshID = assets->addMesh("cubeOutlineMesh", outlineMesh);
 

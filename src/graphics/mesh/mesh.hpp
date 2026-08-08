@@ -7,12 +7,12 @@
 #include <iostream>
 #include <utility>
 
-#include "core/project/asset_types.hpp"
 #include "glm/glm.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
-#include "graphics/material/material.hpp"
 #include "glad/glad.h"
+
+class Material;
 
 enum class AttributeType
 {
@@ -88,13 +88,13 @@ public:
      * Sets the material for this Mesh.
      * @param material The new material for this Mesh.
      */
-    void setMaterial(AssetID materialID) { this->materialID = materialID; }
+    void setMaterial(std::shared_ptr<Material> material) { this->material = std::move(material); }
 
     /**
      * Gets the material for this Mesh.
      * @return The material for this Mesh.
      */
-    AssetID getMaterial() const { return materialID; }
+    std::shared_ptr<Material> getMaterial() const { return material; }
 
     /**
      * Set the draw mode of this Mesh.
@@ -160,7 +160,7 @@ private:
     std::vector<glm::vec2> textureCoords;
     std::vector<glm::vec4> tangents; // TODO: Why vec4 for tangents?
     std::vector<unsigned int> indices;
-    AssetID materialID = INVALID_ASSET_ID;
+    std::shared_ptr<Material> material;
     DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
     MeshUploadMask uploadMask;

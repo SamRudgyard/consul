@@ -24,13 +24,13 @@ public:
     );
     ~AssetLibrary() = default;
 
-    AssetID getDefaultMaterial();
+    std::shared_ptr<Material> getDefaultMaterial();
     std::shared_ptr<Texture> getDefaultTexture();
 
     AssetID addModel(const std::string& name, const Model& model);
     AssetID addMesh(const std::string& name, const Mesh& mesh);
     AssetID addTexture(const std::string& name, const Texture& texture);
-    AssetID addMaterial(const std::string& name, const Material& material);
+    std::shared_ptr<Material> addMaterial(const std::string& name, const Material& material);
     AssetID addShader(const std::string& name, const Shader& shader);
     AssetID addVertexShader(const std::string& name, const VertexShader& shader);
     AssetID addFragmentShader(const std::string& name, const FragmentShader& shader);
@@ -41,7 +41,6 @@ public:
     std::shared_ptr<Model> getModel(AssetID id) const;
     std::shared_ptr<Mesh> getMesh(AssetID id) const;
     std::shared_ptr<Texture> getTexture(AssetID id) const;
-    std::shared_ptr<Material> getMaterial(AssetID id) const;
     std::shared_ptr<Shader> getShader(AssetID id) const;
     std::shared_ptr<VertexShader> getVertexShader(AssetID id) const;
     std::shared_ptr<FragmentShader> getFragmentShader(AssetID id) const;

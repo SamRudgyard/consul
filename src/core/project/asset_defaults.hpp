@@ -14,7 +14,7 @@ public:
     AssetDefaults(std::shared_ptr<MaterialAssetManager> materialManager, std::shared_ptr<TextureAssetManager> textureManager);
     ~AssetDefaults() = default;
 
-    AssetID getDefaultMaterial();
+    std::shared_ptr<Material> getDefaultMaterial();
     std::shared_ptr<Texture> getDefaultTexture();
 
     Material applyToMaterial(const Material& material);
@@ -25,6 +25,6 @@ public:
 private:
     std::shared_ptr<MaterialAssetManager> materialManager;
     std::shared_ptr<TextureAssetManager> textureManager;
-    AssetID defaultMaterialID = INVALID_ASSET_ID;
+    std::weak_ptr<Material> defaultMaterial;
     std::weak_ptr<Texture> defaultTexture;
 };
