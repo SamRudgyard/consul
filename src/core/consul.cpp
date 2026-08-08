@@ -112,6 +112,9 @@ void Consul::loadScene(std::unique_ptr<Scene> newScene)
         return;
     }
 
+    if (sceneManager->hasScene()) {
+        sceneManager->unloadScene();
+    }
     sceneManager->loadScene(std::move(newScene));
 }
 

@@ -14,6 +14,8 @@ public:
     ~SceneManager() = default;
 
     void loadScene(std::unique_ptr<Scene> newScene);
+    void unloadScene();
+    bool hasScene() const { return currentScene != nullptr; }
 
     void assignAssets(std::shared_ptr<AssetLibrary> assets);
 

@@ -25,11 +25,7 @@ void SceneManager::loadScene(std::unique_ptr<Scene> scene)
 
     // Close previous scene's assets
     if (currentScene) {
-        assets->clearAssets();
-
-        if (currentScene->isInitialised) {
-            currentScene->shutdown();
-        }
+        unloadScene();
     }
 
     currentScene = std::move(scene);
@@ -39,6 +35,26 @@ void SceneManager::loadScene(std::unique_ptr<Scene> scene)
     }
 
     currentScene->init(assets);
+}
+
+void SceneManager::unloadScene()
+{
+    CONSUL_PROFILE_METHOD();
+
+    if (!currentScene) {
+        Console::get().error("[SceneManager::unloadScene] No scene is currently loaded!");
+        return;
+    }
+
+    if  (assets) {
+        assets->clearAssets();
+    }
+
+    if (currentScene->isInitialised) {
+        currentScene->shutdown();
+    }
+
+    currentScene.reset();
 }
 
 void SceneManager::assignAssets(std::shared_ptr<AssetLibrary> assets)
