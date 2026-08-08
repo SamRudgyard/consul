@@ -40,5 +40,7 @@ public:
 
     virtual void clearSceneResources() = 0;
 
+    virtual void releaseExpiredResources() = 0;
+
     virtual void render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets) = 0;
 };

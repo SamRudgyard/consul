@@ -57,9 +57,3 @@ Mesh AssetDefaults::applyToMesh(const Mesh& mesh)
 
     return meshWithDefaults;
 }
-
-void AssetDefaults::reset()
-{
-    defaultMaterial.reset();
-    defaultTexture.reset();
-}

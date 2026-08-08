@@ -20,8 +20,6 @@ public:
     Material applyToMaterial(const Material& material);
     Mesh applyToMesh(const Mesh& mesh);
 
-    void reset();
-
 private:
     std::shared_ptr<MaterialAssetManager> materialManager;
     std::shared_ptr<TextureAssetManager> textureManager;

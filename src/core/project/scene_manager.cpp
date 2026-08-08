@@ -46,10 +46,6 @@ void SceneManager::unloadScene()
         return;
     }
 
-    if  (assets) {
-        assets->clearAssets();
-    }
-
     if (currentScene->isInitialised) {
         currentScene->shutdown();
     }
@@ -86,6 +82,7 @@ void SceneManager::update(double deltaTime)
 void SceneManager::render(Renderer& renderer)
 {
     CONSUL_PROFILE_METHOD();
+    renderer.releaseExpiredResources();
 
     if (!currentScene || !currentScene->isInitialised || !assets) {
         return;
@@ -174,16 +171,13 @@ void SceneManager::shutdown()
 {
     CONSUL_PROFILE_METHOD();
 
-    if (assets) {
-        assets->clearAssets();
-    }
-
     if (!currentScene) {
         return;
     }
 
     if (currentScene->isInitialised) {
         currentScene->shutdown();
-        currentScene->isInitialised = false;
     }
+
+    currentScene.reset();
 }

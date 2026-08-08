@@ -24,16 +24,16 @@
 
 OpenGLRenderer::~OpenGLRenderer()
 {
-    for (auto& [shaderID, ShaderBuffer] : shaders) {
-        releaseShader(ShaderBuffer);
+    for (auto& shaderEntry : shaders) {
+        releaseShader(shaderEntry.second);
     }
 
-    for (auto& [meshID, meshBuffer] : meshes) {
-        releaseMesh(meshBuffer);
+    for (auto& meshEntry : meshes) {
+        releaseMesh(meshEntry.second);
     }
 
-    for (auto& [textureID, textureBuffer] : textures) {
-        releaseTexture(textureBuffer);
+    for (auto& textureEntry : textures) {
+        releaseTexture(textureEntry.second);
     }
 
     shaders.clear();
@@ -88,20 +88,29 @@ void OpenGLRenderer::clearSceneResources()
 {
     CONSUL_PROFILE_METHOD();
 
-    for (auto& [meshID, meshBuffer] : meshes) {
-        releaseMesh(meshBuffer);
+    for (auto& meshEntry : meshes) {
+        releaseMesh(meshEntry.second);
     }
     meshes.clear();
 
-    for (auto& [shaderID, shaderBuffer] : shaders) {
-        releaseShader(shaderBuffer);
+    for (auto& shaderEntry : shaders) {
+        releaseShader(shaderEntry.second);
     }
     shaders.clear();
 
-    for (auto& [textureID, textureBuffer] : textures) {
-        releaseTexture(textureBuffer);
+    for (auto& textureEntry : textures) {
+        releaseTexture(textureEntry.second);
     }
     textures.clear();
+}
+
+void OpenGLRenderer::releaseExpiredResources()
+{
+    CONSUL_PROFILE_METHOD();
+
+    releaseExpiredShaders();
+    releaseExpiredMeshes();
+    releaseExpiredTextures();
 }
 
 void OpenGLRenderer::setViewport(int x, int y, int width, int height)
@@ -407,9 +416,6 @@ void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
 void OpenGLRenderer::render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
-    releaseExpiredShaders();
-    releaseExpiredMeshes();
-    releaseExpiredTextures();
 
     const auto shaderIt = shaders.find(shader);
     if (shaderIt == shaders.end()) {

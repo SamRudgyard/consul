@@ -149,15 +149,3 @@ std::vector<std::shared_ptr<FragmentShader>> AssetLibrary::getFragmentShaders() 
 {
     return fragmentShaderManager->getAssets();
 }
-
-void AssetLibrary::clearAssets()
-{
-    modelManager->clearAssets();
-    meshManager->clearAssets();
-    textureManager->clearAssets();
-    materialManager->clearAssets();
-    shaderManager->clearAssets();
-    vertexShaderManager->clearAssets();
-    fragmentShaderManager->clearAssets();
-    assetDefaults->reset();
-}

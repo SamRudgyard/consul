@@ -78,11 +78,6 @@ public:
         it->metadata.sourcePath = sourcePath;
     }
 
-    void clearAssets()
-    {
-        assets.clear();
-    }
-
 private:
     struct AssetEntry
     {

@@ -65,6 +65,11 @@ public:
     void clearSceneResources() override;
 
     /**
+     * Releases GPU resources whose source assets have expired.
+     */
+    void releaseExpiredResources() override;
+
+    /**
      * Sets the viewport (rectangle in which we render). Note that
      * the given vector `(x, y)` specifies the lower left corner of
      * the viewport rectangle.

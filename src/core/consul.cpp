@@ -115,6 +115,7 @@ void Consul::loadScene(std::unique_ptr<Scene> newScene)
     if (sceneManager->hasScene()) {
         sceneManager->unloadScene();
     }
+    renderer->releaseExpiredResources();
     sceneManager->loadScene(std::move(newScene));
 }
 
@@ -193,6 +194,9 @@ void Consul::terminate()
 
     if (sceneManager) {
         sceneManager->shutdown();
+    }
+    if (renderer) {
+        renderer->clearSceneResources();
     }
 
     ImGui_ImplGlfw_Shutdown();

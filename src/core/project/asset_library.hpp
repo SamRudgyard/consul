@@ -47,8 +47,6 @@ public:
     std::vector<std::shared_ptr<VertexShader>> getVertexShaders() const;
     std::vector<std::shared_ptr<FragmentShader>> getFragmentShaders() const;
 
-    void clearAssets();
-
 private:
     std::shared_ptr<ModelAssetManager> modelManager;
     std::shared_ptr<MeshAssetManager> meshManager;
