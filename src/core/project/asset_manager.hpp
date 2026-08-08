@@ -2,9 +2,12 @@
 
 #include "core/project/asset_types.hpp"
 
+#include <algorithm>
 #include <memory>
+#include <optional>
 #include <string>
-#include <unordered_map>
+#include <utility>
+#include <vector>
 
 class Material;
 class Mesh;
@@ -21,54 +24,79 @@ public:
     AssetManager() = default;
     ~AssetManager() = default;
 
-    AssetID add(const std::string& name, const T& asset)
+    std::shared_ptr<T> add(const std::string& name, const T& asset)
     {
-        AssetID id;
-        assets[id] = std::make_shared<T>(asset);
-        addMetadata(id, name);
-        return id;
+        std::shared_ptr<T> assetPointer = std::make_shared<T>(asset);
+        assets.push_back({assetPointer, {name, {}}});
+        return assetPointer;
     }
 
-    std::shared_ptr<T> get(AssetID id) const
+    std::optional<AssetMetadata> getMetadata(const std::shared_ptr<T>& asset) const
     {
-        auto it = assets.find(id);
-        return it == assets.end() ? nullptr : it->second;
+        if (!asset) {
+            return std::nullopt;
+        }
+
+        auto it = findAsset(asset);
+        if (it == assets.end()) {
+            return std::nullopt;
+        }
+
+        return it->metadata;
     }
 
-    const AssetMetadata* getMetadata(AssetID id) const
+    std::vector<std::shared_ptr<T>> getAssets() const
     {
-        auto it = metadata.find(id);
-        return it == metadata.end() ? nullptr : &it->second;
+        std::vector<std::shared_ptr<T>> activeAssets;
+        activeAssets.reserve(assets.size());
+
+        auto it = assets.begin();
+        while (it != assets.end()) {
+            std::shared_ptr<T> asset = it->asset.lock();
+            if (asset) {
+                activeAssets.push_back(std::move(asset));
+                ++it;
+            } else {
+                it = assets.erase(it);
+            }
+        }
+
+        return activeAssets;
     }
 
-    const std::unordered_map<AssetID, std::shared_ptr<T>>& getAssets() const { return assets; }
-
-    void setSourcePath(AssetID id, const std::string& sourcePath)
+    void setSourcePath(const std::shared_ptr<T>& asset, const std::string& sourcePath)
     {
-        auto it = metadata.find(id);
-        if (it == metadata.end()) {
+        if (!asset) {
             return;
         }
 
-        it->second.sourcePath = sourcePath;
+        auto it = findAsset(asset);
+        if (it == assets.end()) {
+            return;
+        }
+
+        it->metadata.sourcePath = sourcePath;
     }
 
     void clearAssets()
     {
-        metadata.clear();
         assets.clear();
     }
 
 private:
-    std::unordered_map<AssetID, AssetMetadata> metadata;
-    std::unordered_map<AssetID, std::shared_ptr<T>> assets;
-
-    void addMetadata(AssetID id, const std::string& name)
+    struct AssetEntry
     {
-        metadata[id] = AssetMetadata{
-            name,
-            {}
-        };
+        std::weak_ptr<T> asset;
+        AssetMetadata metadata;
+    };
+
+    mutable std::vector<AssetEntry> assets;
+
+    typename std::vector<AssetEntry>::iterator findAsset(const std::shared_ptr<T>& asset) const
+    {
+        return std::find_if(assets.begin(), assets.end(), [&asset](const AssetEntry& entry) {
+            return entry.asset.lock() == asset;
+        });
     }
 };
 

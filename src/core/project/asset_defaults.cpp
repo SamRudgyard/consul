@@ -17,8 +17,7 @@ std::shared_ptr<Material> AssetDefaults::getDefaultMaterial()
         Material material;
         material.setAlbedoTexture(getDefaultTexture());
         material.setSpecularTexture(getDefaultTexture());
-        AssetID materialID = materialManager->add("Default Material", material);
-        materialAsset = materialManager->get(materialID);
+        materialAsset = materialManager->add("Default Material", material);
         defaultMaterial = materialAsset;
     }
 
@@ -29,8 +28,7 @@ std::shared_ptr<Texture> AssetDefaults::getDefaultTexture()
 {
     std::shared_ptr<Texture> texture = defaultTexture.lock();
     if (!texture) {
-        AssetID textureID = textureManager->add("Default Texture", Texture());
-        texture = textureManager->get(textureID);
+        texture = textureManager->add("Default Texture", Texture());
         defaultTexture = texture;
     }
 

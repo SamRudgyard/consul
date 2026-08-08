@@ -97,7 +97,7 @@ void SceneManager::render(Renderer& renderer)
         return;
     }
 
-    const auto& shaders = assets->getShaders();
+    const std::vector<std::shared_ptr<Shader>> shaders = assets->getShaders();
     if (shaders.empty()) {
         Console::get().error("[SceneManager::render] Cannot render assets without a shader!");
         return;
@@ -120,8 +120,7 @@ void SceneManager::render(Renderer& renderer)
     };
 
     std::shared_ptr<Shader> renderShader;
-    for (const auto& shaderEntry : shaders) {
-        const std::shared_ptr<Shader>& shader = shaderEntry.second;
+    for (const std::shared_ptr<Shader>& shader : shaders) {
         if (!shader) {
             continue;
         }
@@ -144,8 +143,7 @@ void SceneManager::render(Renderer& renderer)
         return;
     }
 
-    for (const auto& modelEntry : assets->getModels()) {
-        const std::shared_ptr<Model>& model = modelEntry.second;
+    for (const std::shared_ptr<Model>& model : assets->getModels()) {
         if (!model) {
             continue;
         }
@@ -163,8 +161,7 @@ void SceneManager::render(Renderer& renderer)
         }
     }
     
-    for (const auto& meshEntry : assets->getMeshes()) {
-        const std::shared_ptr<Mesh>& mesh = meshEntry.second;
+    for (const std::shared_ptr<Mesh>& mesh : assets->getMeshes()) {
         if (mesh) {
             uploadMesh(mesh);
         }

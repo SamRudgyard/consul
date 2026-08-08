@@ -426,8 +426,7 @@ void OpenGLRenderer::render(const std::shared_ptr<Shader>& shader, const Camera&
     setUniformVec3(programID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
     setUniformVec3(programID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
 
-    for (const auto& meshEntry : assets.getMeshes()) {
-        const std::shared_ptr<Mesh>& mesh = meshEntry.second;
+    for (const std::shared_ptr<Mesh>& mesh : assets.getMeshes()) {
         if (!mesh) {
             continue;
         }

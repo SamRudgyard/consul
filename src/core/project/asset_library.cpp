@@ -46,43 +46,37 @@ std::shared_ptr<Texture> AssetLibrary::getDefaultTexture()
 
 std::shared_ptr<Model> AssetLibrary::addModel(const std::string& name, const Model& model)
 {
-    AssetID modelID = modelManager->add(name, model);
-    return modelManager->get(modelID);
+    return modelManager->add(name, model);
 }
 
 std::shared_ptr<Mesh> AssetLibrary::addMesh(const std::string& name, const Mesh& mesh)
 {
-    AssetID meshID = meshManager->add(name, assetDefaults->applyToMesh(mesh));
-    return meshManager->get(meshID);
+    return meshManager->add(name, assetDefaults->applyToMesh(mesh));
 }
 
-AssetID AssetLibrary::addTexture(const std::string& name, const Texture& texture)
+std::shared_ptr<Texture> AssetLibrary::addTexture(const std::string& name, const Texture& texture)
 {
     return textureManager->add(name, texture);
 }
 
 std::shared_ptr<Material> AssetLibrary::addMaterial(const std::string& name, const Material& material)
 {
-    AssetID materialID = materialManager->add(name, assetDefaults->applyToMaterial(material));
-    return materialManager->get(materialID);
+    return materialManager->add(name, assetDefaults->applyToMaterial(material));
 }
 
 std::shared_ptr<Shader> AssetLibrary::addShader(const std::string& name, const Shader& shader)
 {
-    AssetID shaderID = shaderManager->add(name, shader);
-    return shaderManager->get(shaderID);
+    return shaderManager->add(name, shader);
 }
 
 std::shared_ptr<VertexShader> AssetLibrary::addVertexShader(const std::string& name, const VertexShader& shader)
 {
-    AssetID shaderID = vertexShaderManager->add(name, shader);
-    return vertexShaderManager->get(shaderID);
+    return vertexShaderManager->add(name, shader);
 }
 
 std::shared_ptr<FragmentShader> AssetLibrary::addFragmentShader(const std::string& name, const FragmentShader& shader)
 {
-    AssetID shaderID = fragmentShaderManager->add(name, shader);
-    return fragmentShaderManager->get(shaderID);
+    return fragmentShaderManager->add(name, shader);
 }
 
 std::shared_ptr<Model> AssetLibrary::importAsset(const std::string& name, const std::string& path)
@@ -112,76 +106,46 @@ std::shared_ptr<Shader> AssetLibrary::importShader(const std::string& name, cons
         return nullptr;
     }
 
-    AssetID vertexShaderID = vertexShaderManager->add(name + "_VertexShader", VertexShader(readFile(vertexPath.c_str())));
-    vertexShaderManager->setSourcePath(vertexShaderID, vertexPath);
-    std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->get(vertexShaderID);
+    std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add(name + "_VertexShader", VertexShader(readFile(vertexPath.c_str())));
+    vertexShaderManager->setSourcePath(vertexShader, vertexPath);
 
-    AssetID fragmentShaderID = fragmentShaderManager->add(name + "_FragmentShader", FragmentShader(readFile(fragmentPath.c_str())));
-    fragmentShaderManager->setSourcePath(fragmentShaderID, fragmentPath);
-    std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->get(fragmentShaderID);
+    std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->add(name + "_FragmentShader", FragmentShader(readFile(fragmentPath.c_str())));
+    fragmentShaderManager->setSourcePath(fragmentShader, fragmentPath);
 
     return addShader(name, Shader(std::move(vertexShader), std::move(fragmentShader)));
 }
 
-std::shared_ptr<Texture> AssetLibrary::getTexture(AssetID id) const
-{
-    return textureManager->get(id);
-}
-
-const AssetMetadata* AssetLibrary::getMetadata(AssetID id) const
-{
-    if (const AssetMetadata* metadata = modelManager->getMetadata(id)) {
-        return metadata;
-    }
-    if (const AssetMetadata* metadata = meshManager->getMetadata(id)) {
-        return metadata;
-    }
-    if (const AssetMetadata* metadata = textureManager->getMetadata(id)) {
-        return metadata;
-    }
-    if (const AssetMetadata* metadata = materialManager->getMetadata(id)) {
-        return metadata;
-    }
-    if (const AssetMetadata* metadata = shaderManager->getMetadata(id)) {
-        return metadata;
-    }
-    if (const AssetMetadata* metadata = vertexShaderManager->getMetadata(id)) {
-        return metadata;
-    }
-    return fragmentShaderManager->getMetadata(id);
-}
-
-const std::unordered_map<AssetID, std::shared_ptr<Model>>& AssetLibrary::getModels() const
+std::vector<std::shared_ptr<Model>> AssetLibrary::getModels() const
 {
     return modelManager->getAssets();
 }
 
-const std::unordered_map<AssetID, std::shared_ptr<Mesh>>& AssetLibrary::getMeshes() const
+std::vector<std::shared_ptr<Mesh>> AssetLibrary::getMeshes() const
 {
     return meshManager->getAssets();
 }
 
-const std::unordered_map<AssetID, std::shared_ptr<Material>>& AssetLibrary::getMaterials() const
+std::vector<std::shared_ptr<Material>> AssetLibrary::getMaterials() const
 {
     return materialManager->getAssets();
 }
 
-const std::unordered_map<AssetID, std::shared_ptr<Texture>>& AssetLibrary::getTextures() const
+std::vector<std::shared_ptr<Texture>> AssetLibrary::getTextures() const
 {
     return textureManager->getAssets();
 }
 
-const std::unordered_map<AssetID, std::shared_ptr<Shader>>& AssetLibrary::getShaders() const
+std::vector<std::shared_ptr<Shader>> AssetLibrary::getShaders() const
 {
     return shaderManager->getAssets();
 }
 
-const std::unordered_map<AssetID, std::shared_ptr<VertexShader>>& AssetLibrary::getVertexShaders() const
+std::vector<std::shared_ptr<VertexShader>> AssetLibrary::getVertexShaders() const
 {
     return vertexShaderManager->getAssets();
 }
 
-const std::unordered_map<AssetID, std::shared_ptr<FragmentShader>>& AssetLibrary::getFragmentShaders() const
+std::vector<std::shared_ptr<FragmentShader>> AssetLibrary::getFragmentShaders() const
 {
     return fragmentShaderManager->getAssets();
 }

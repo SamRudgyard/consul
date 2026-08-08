@@ -82,9 +82,8 @@ std::shared_ptr<Model> GLTFImporter::import(const std::string& name, const std::
         traverseNode(nodeIndex);
     }
 
-    AssetID modelID = modelManager->add(name, model);
-    modelManager->setSourcePath(modelID, filePath);
-    std::shared_ptr<Model> modelAsset = modelManager->get(modelID);
+    std::shared_ptr<Model> modelAsset = modelManager->add(name, model);
+    modelManager->setSourcePath(modelAsset, filePath);
 
     resetImportState();
 
@@ -304,8 +303,7 @@ std::shared_ptr<Mesh> GLTFImporter::loadMesh(unsigned int meshIndex, const glm::
 
 std::shared_ptr<Mesh> GLTFImporter::addMesh(const std::string& name, const Mesh& mesh)
 {
-    AssetID meshID = meshManager->add(name, assetDefaults->applyToMesh(mesh));
-    return meshManager->get(meshID);
+    return meshManager->add(name, assetDefaults->applyToMesh(mesh));
 }
 
 std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
@@ -336,9 +334,8 @@ std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
             return;
         }
 
-        AssetID textureID = textureManager->add(uri, Texture(uri, type));
-        textureManager->setSourcePath(textureID, uri);
-        std::shared_ptr<Texture> texture = textureManager->get(textureID);
+        std::shared_ptr<Texture> texture = textureManager->add(uri, Texture(uri, type));
+        textureManager->setSourcePath(texture, uri);
         switch (type) {
             case TextureType::DIFFUSE:
                 material.setAlbedoTexture(texture);
@@ -364,8 +361,7 @@ std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
 
 std::shared_ptr<Material> GLTFImporter::addMaterial(const std::string& name, const Material& material)
 {
-    AssetID materialID = materialManager->add(name, assetDefaults->applyToMaterial(material));
-    return materialManager->get(materialID);
+    return materialManager->add(name, assetDefaults->applyToMaterial(material));
 }
 
 std::vector<glm::vec2> GLTFImporter::toVec2(const std::vector<float> floatVec)
