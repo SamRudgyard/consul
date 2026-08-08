@@ -10,6 +10,8 @@
 #include "graphics/texture/texture.hpp"
 #include "utils.hpp"
 
+#include <utility>
+
 AssetLibrary::AssetLibrary(
     std::shared_ptr<ModelAssetManager> modelManager,
     std::shared_ptr<MeshAssetManager> meshManager,
@@ -111,11 +113,13 @@ AssetID AssetLibrary::importShader(const std::string& name, const std::string& v
 
     AssetID vertexShaderID = addVertexShader(name + "_VertexShader", VertexShader(readFile(vertexPath.c_str())));
     vertexShaderManager->setSourcePath(vertexShaderID, vertexPath);
+    std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->get(vertexShaderID);
 
     AssetID fragmentShaderID = addFragmentShader(name + "_FragmentShader", FragmentShader(readFile(fragmentPath.c_str())));
     fragmentShaderManager->setSourcePath(fragmentShaderID, fragmentPath);
+    std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->get(fragmentShaderID);
 
-    return addShader(name, Shader(vertexShaderID, fragmentShaderID));
+    return addShader(name, Shader(std::move(vertexShader), std::move(fragmentShader)));
 }
 
 std::shared_ptr<Model> AssetLibrary::getModel(AssetID id) const

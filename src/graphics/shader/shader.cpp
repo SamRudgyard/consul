@@ -12,8 +12,10 @@ FragmentShader::FragmentShader(std::string source)
 {
 }
 
-Shader::Shader(AssetID vertexShaderID, AssetID fragmentShaderID)
-    : vertexShaderID(vertexShaderID),
-      fragmentShaderID(fragmentShaderID)
+Shader::Shader(
+    std::shared_ptr<VertexShader> vertexShader,
+    std::shared_ptr<FragmentShader> fragmentShader
+) : vertexShader(std::move(vertexShader)),
+    fragmentShader(std::move(fragmentShader))
 {
 }

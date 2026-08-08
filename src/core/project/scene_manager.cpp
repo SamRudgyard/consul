@@ -127,8 +127,8 @@ void SceneManager::render(Renderer& renderer)
             continue;
         }
 
-        std::shared_ptr<VertexShader> vertexShader = assets->getVertexShader(shader->getVertexShader());
-        std::shared_ptr<FragmentShader> fragmentShader = assets->getFragmentShader(shader->getFragmentShader());
+        std::shared_ptr<VertexShader> vertexShader = shader->getVertexShader();
+        std::shared_ptr<FragmentShader> fragmentShader = shader->getFragmentShader();
         if (!vertexShader || !fragmentShader) {
             Console::get().error("[SceneManager::render] Shader references a missing vertex or fragment shader asset.");
             continue;

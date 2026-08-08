@@ -15,6 +15,7 @@ add_executable(consul_tests
   test_keyboard_state.cpp
   test_mouse_state.cpp
   test_scene.cpp
+  test_shader.cpp
   test_unit_conversions.cpp
 )
 

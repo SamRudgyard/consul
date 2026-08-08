@@ -1,7 +1,6 @@
 #pragma once
 
-#include "core/project/asset_types.hpp"
-
+#include <memory>
 #include <string>
 
 class VertexShader
@@ -29,12 +28,15 @@ private:
 class Shader
 {
 public:
-    Shader(AssetID vertexShaderID, AssetID fragmentShaderID);
+    Shader(
+        std::shared_ptr<VertexShader> vertexShader,
+        std::shared_ptr<FragmentShader> fragmentShader
+    );
 
-    AssetID getVertexShader() const { return vertexShaderID; }
-    AssetID getFragmentShader() const { return fragmentShaderID; }
+    std::shared_ptr<VertexShader> getVertexShader() const { return vertexShader; }
+    std::shared_ptr<FragmentShader> getFragmentShader() const { return fragmentShader; }
 
 private:
-    AssetID vertexShaderID = INVALID_ASSET_ID;
-    AssetID fragmentShaderID = INVALID_ASSET_ID;
+    std::shared_ptr<VertexShader> vertexShader;
+    std::shared_ptr<FragmentShader> fragmentShader;
 };
