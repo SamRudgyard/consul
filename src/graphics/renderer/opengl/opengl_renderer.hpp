@@ -60,11 +60,6 @@ public:
     void clearScreenBuffer() override;
 
     /**
-     * Releases all resources previously uploaded to the GPU. 
-     */
-    void clearSceneResources() override;
-
-    /**
      * Releases GPU resources whose source assets have expired.
      */
     void releaseExpiredResources() override;

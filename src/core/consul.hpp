@@ -43,11 +43,6 @@ public:
     void run();
 
     /**
-     * Gracefully terminate the Consul application.
-     */
-    void terminate();
-
-    /**
      * Sets the target FPS.
      * @param fps Target frames per second.
      */
@@ -98,8 +93,8 @@ private:
     Console& console = Console::get();
     EngineContext* context = EngineContext::get();
     UserInterface ui;
-    Platform* platform = nullptr;
-    Renderer* renderer = nullptr;
+    std::unique_ptr<Platform> platform;
+    std::unique_ptr<Renderer> renderer;
     bool close = false;
     std::shared_ptr<ModelAssetManager> modelAssets = nullptr;
     std::shared_ptr<MeshAssetManager> meshAssets = nullptr;

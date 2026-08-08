@@ -84,26 +84,6 @@ void OpenGLRenderer::clearScreenBuffer()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLRenderer::clearSceneResources()
-{
-    CONSUL_PROFILE_METHOD();
-
-    for (auto& meshEntry : meshes) {
-        releaseMesh(meshEntry.second);
-    }
-    meshes.clear();
-
-    for (auto& shaderEntry : shaders) {
-        releaseShader(shaderEntry.second);
-    }
-    shaders.clear();
-
-    for (auto& textureEntry : textures) {
-        releaseTexture(textureEntry.second);
-    }
-    textures.clear();
-}
-
 void OpenGLRenderer::releaseExpiredResources()
 {
     CONSUL_PROFILE_METHOD();

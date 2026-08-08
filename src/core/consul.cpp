@@ -74,23 +74,26 @@ void Consul::initialiseWindow(PlatformType platformType)
 {
     switch (platformType) {
         case PlatformType::GLFW:
-            platform = new PlatformGLFW();
+            platform = std::make_unique<PlatformGLFW>();
             break;
         default:
             console.error("[Consul] Unknown windowing platform!");
             break;
     }
 
-    if (platform) {
-        platform->initialiseWindow();
+    if (!platform) {
+        console.error("[Consul] Failed to create windowing platform!");
+        return;
     }
+
+    platform->initialiseWindow();
 }
 
 void Consul::initialiseRenderer(GraphicsAPI gfxApi)
 {
     switch (gfxApi) {
         case GraphicsAPI::OpenGL:
-            renderer = new OpenGLRenderer();
+            renderer = std::make_unique<OpenGLRenderer>();
             break;
         default:
             console.error("[Consul] Unknown graphics API!");
@@ -100,7 +103,28 @@ void Consul::initialiseRenderer(GraphicsAPI gfxApi)
 
 Consul::~Consul()
 {
-    terminate();
+    console.log("[Consul] Shutting down Game Engine...");
+
+    if (sceneManager) {
+        sceneManager->shutdown();
+    }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
+    ImGui::DestroyContext();
+    console.log("[Consul] ImGui terminated.");
+
+    renderer.reset();
+
+    if (platform) {
+        platform->terminate();
+        platform.reset();
+    }
+
+    console.log("[Consul] Windowing platform terminated.");
+
+    console.log("[Consul] Shutdown complete.");
 }
 
 void Consul::loadScene(std::unique_ptr<Scene> newScene)
@@ -186,32 +210,4 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     platform->swapBuffers();
-}
-
-void Consul::terminate()
-{
-    console.log("[Consul] Shutting down Game Engine...");
-
-    if (sceneManager) {
-        sceneManager->shutdown();
-    }
-    if (renderer) {
-        renderer->clearSceneResources();
-    }
-
-    ImGui_ImplGlfw_Shutdown();
-
-    if (platform) {
-        platform->terminate();
-    }
-
-    console.log("[Consul] Windowing platform terminated.");
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImPlot::DestroyContext();
-    ImGui::DestroyContext();
-
-    console.log("[Consul] ImGui terminated.");
-
-    console.log("[Consul] Shutdown complete.");
 }
