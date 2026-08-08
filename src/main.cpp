@@ -60,7 +60,7 @@ public:
     {
         camera.setProjectionType(ProjectionType::PERSPECTIVE);
         camera.setPosition({0.0f, 0.0f, 2.0f});
-        assets->importShader("default", "shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl");
+        defaultShader = assets->importShader("default", "shaders/default_vertex_3d.glsl", "shaders/default_fragment_3d.glsl");
         shibaModel = assets->importAsset("shiba", "assets/shiba/scene.gltf");
 
         CubeNode* rotatingCube = getRoot().createChild<CubeNode>();
@@ -77,6 +77,7 @@ public:
 
 private:
     Camera3D camera;
+    std::shared_ptr<Shader> defaultShader;
     std::shared_ptr<Model> shibaModel;
 };
 

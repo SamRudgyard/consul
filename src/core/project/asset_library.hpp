@@ -31,17 +31,14 @@ public:
     std::shared_ptr<Mesh> addMesh(const std::string& name, const Mesh& mesh);
     AssetID addTexture(const std::string& name, const Texture& texture);
     std::shared_ptr<Material> addMaterial(const std::string& name, const Material& material);
-    AssetID addShader(const std::string& name, const Shader& shader);
-    AssetID addVertexShader(const std::string& name, const VertexShader& shader);
-    AssetID addFragmentShader(const std::string& name, const FragmentShader& shader);
+    std::shared_ptr<Shader> addShader(const std::string& name, const Shader& shader);
+    std::shared_ptr<VertexShader> addVertexShader(const std::string& name, const VertexShader& shader);
+    std::shared_ptr<FragmentShader> addFragmentShader(const std::string& name, const FragmentShader& shader);
 
     std::shared_ptr<Model> importAsset(const std::string& name, const std::string& path);
-    AssetID importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath);
+    std::shared_ptr<Shader> importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath);
 
     std::shared_ptr<Texture> getTexture(AssetID id) const;
-    std::shared_ptr<Shader> getShader(AssetID id) const;
-    std::shared_ptr<VertexShader> getVertexShader(AssetID id) const;
-    std::shared_ptr<FragmentShader> getFragmentShader(AssetID id) const;
 
     const AssetMetadata* getMetadata(AssetID id) const;
     const std::unordered_map<AssetID, std::shared_ptr<Model>>& getModels() const;

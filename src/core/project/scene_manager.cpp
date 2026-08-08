@@ -119,7 +119,9 @@ void SceneManager::render(Renderer& renderer)
         if (normalTexture) renderer.uploadTexture(normalTexture);
     };
 
-    for (const auto& [shaderID, shader] : shaders) {
+    std::shared_ptr<Shader> renderShader;
+    for (const auto& shaderEntry : shaders) {
+        const std::shared_ptr<Shader>& shader = shaderEntry.second;
         if (!shader) {
             continue;
         }
@@ -131,7 +133,15 @@ void SceneManager::render(Renderer& renderer)
             continue;
         }
 
-        renderer.uploadShader(shaderID, *vertexShader, *fragmentShader);
+        renderer.uploadShader(shader);
+        if (!renderShader) {
+            renderShader = shader;
+        }
+    }
+
+    if (!renderShader) {
+        Console::get().error("[SceneManager::render] Cannot render assets without a valid shader!");
+        return;
     }
 
     for (const auto& modelEntry : assets->getModels()) {
@@ -160,7 +170,7 @@ void SceneManager::render(Renderer& renderer)
         }
     }
 
-    renderer.render(shaders.begin()->first, *camera, *assets);
+    renderer.render(renderShader, *camera, *assets);
 }
 
 void SceneManager::shutdown()

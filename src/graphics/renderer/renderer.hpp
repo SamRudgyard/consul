@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/project/asset_types.hpp"
 #include "glm/fwd.hpp"
 
 #include <memory>
@@ -13,10 +12,9 @@ enum class GraphicsAPI
 
 class Camera;
 class AssetLibrary;
-class FragmentShader;
 class Mesh;
+class Shader;
 class Texture;
-class VertexShader;
 
 class Renderer
 {
@@ -34,7 +32,7 @@ public:
 
     virtual void setViewport(int x, int y, int width, int height) = 0;
 
-    virtual void uploadShader(AssetID shaderID, const VertexShader& vertexShader, const FragmentShader& fragmentShader) = 0;
+    virtual void uploadShader(const std::shared_ptr<Shader>& shader) = 0;
 
     virtual void uploadMesh(const std::shared_ptr<Mesh>& mesh) = 0;
 
@@ -42,5 +40,5 @@ public:
 
     virtual void clearSceneResources() = 0;
 
-    virtual void render(AssetID shaderID, const Camera& camera, AssetLibrary& assets) = 0;
+    virtual void render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets) = 0;
 };

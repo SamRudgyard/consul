@@ -2,7 +2,6 @@
 
 #include <map>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "graphics/renderer/renderer.hpp"
@@ -78,11 +77,9 @@ public:
 
     /**
      * Uploads the given Shader to the GPU.
-     * @param shaderID Asset ID of the shader to upload to the GPU.
-     * @param vertexShader Vertex shader source stage.
-     * @param fragmentShader Fragment shader source stage.
+     * @param shader Shader to upload to the GPU.
      */
-    void uploadShader(AssetID shaderID, const VertexShader& vertexShader, const FragmentShader& fragmentShader) override;
+    void uploadShader(const std::shared_ptr<Shader>& shader) override;
 
     /**
      * Uploads the given Mesh to the GPU.
@@ -98,13 +95,13 @@ public:
 
     /**
      * Render all uploaded models/meshes with the provided shader and camera.
-     * @param shaderID Asset ID of the shader to render with.
+     * @param shader Shader to render with.
      * @param camera The camera, from which the models/meshes are viewed. 
      */
-    void render(AssetID shaderID, const Camera& camera, AssetLibrary& assets) override;
+    void render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets) override;
 
 private:
-    std::unordered_map<AssetID, ShaderBuffer> shaders;
+    std::map<std::weak_ptr<Shader>, ShaderBuffer, std::owner_less<>> shaders;
     std::map<std::weak_ptr<Mesh>, MeshBuffer, std::owner_less<>> meshes;
     std::map<std::weak_ptr<Texture>, TextureBuffer, std::owner_less<>> textures;
 
@@ -122,6 +119,7 @@ private:
     void releaseMesh(MeshBuffer& mesh);
     void releaseShader(ShaderBuffer& shader);
     void releaseTexture(TextureBuffer& texture);
+    void releaseExpiredShaders();
     void releaseExpiredMeshes();
     void releaseExpiredTextures();
 };

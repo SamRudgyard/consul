@@ -120,13 +120,24 @@ void OpenGLRenderer::setViewport(int x, int y, int width, int height)
     glViewport(x, y, width, height);
 }
 
-void OpenGLRenderer::uploadShader(AssetID shaderID, const VertexShader& vertexShader, const FragmentShader& fragmentShader)
+void OpenGLRenderer::uploadShader(const std::shared_ptr<Shader>& shader)
 {
     CONSUL_PROFILE_METHOD();
 
-    if (shaders.find(shaderID) != shaders.end()) {
+    if (!shader) {
+        return;
+    }
+
+    if (shaders.find(shader) != shaders.end()) {
         // Currently no functionality to adjust Shader vertex/fragment code
         // on the fly, so return if found.
+        return;
+    }
+
+    std::shared_ptr<VertexShader> vertexShader = shader->getVertexShader();
+    std::shared_ptr<FragmentShader> fragmentShader = shader->getFragmentShader();
+    if (!vertexShader || !fragmentShader) {
+        Console::get().error("[OpenGLRenderer::uploadShader] Shader references a missing vertex or fragment shader asset.");
         return;
     }
 
@@ -138,7 +149,7 @@ void OpenGLRenderer::uploadShader(AssetID shaderID, const VertexShader& vertexSh
     glCheckError();
 
     // Compile vertex shader
-    const char* vertexCString = vertexShader.getSource().c_str();
+    const char* vertexCString = vertexShader->getSource().c_str();
     glShaderSource(vertexID, 1, &vertexCString, NULL);
     glCompileShader(vertexID);
     glCheckError();
@@ -155,7 +166,7 @@ void OpenGLRenderer::uploadShader(AssetID shaderID, const VertexShader& vertexSh
     console.logOnDebug("[OpenGLRenderer::uploadShader] Vertex shader successfully compiled.");
 
     // Compile fragment shader
-    const char* fragmentCString = fragmentShader.getSource().c_str();
+    const char* fragmentCString = fragmentShader->getSource().c_str();
     glShaderSource(fragmentID, 1, &fragmentCString, NULL);
     glCompileShader(fragmentID);
     glCheckError();
@@ -191,9 +202,10 @@ void OpenGLRenderer::uploadShader(AssetID shaderID, const VertexShader& vertexSh
     glCheckError();
 
     // Store the compiled shader directly in the map entry.
-    shaders[shaderID].id = programID;
+    std::weak_ptr<Shader> shaderKey = shader;
+    shaders[shaderKey].id = programID;
 
-    Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader " + shaderID.toString() + " to GPU.");
+    Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader to GPU.");
 }
 
 void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
@@ -392,13 +404,14 @@ void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
     glCheckError();
 }
 
-void OpenGLRenderer::render(AssetID shaderID, const Camera& camera, AssetLibrary& assets)
+void OpenGLRenderer::render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets)
 {
     CONSUL_PROFILE_METHOD();
+    releaseExpiredShaders();
     releaseExpiredMeshes();
     releaseExpiredTextures();
 
-    const auto shaderIt = shaders.find(shaderID);
+    const auto shaderIt = shaders.find(shader);
     if (shaderIt == shaders.end()) {
         Console::get().error("[OpenGLRenderer::render] Attempting to render with a shader that hasn't been uploaded.");
         return;
@@ -581,6 +594,18 @@ void OpenGLRenderer::releaseExpiredMeshes()
         if (it->first.expired()) {
             releaseMesh(it->second);
             it = meshes.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void OpenGLRenderer::releaseExpiredShaders()
+{
+    for (auto it = shaders.begin(); it != shaders.end();) {
+        if (it->first.expired()) {
+            releaseShader(it->second);
+            it = shaders.erase(it);
         } else {
             ++it;
         }

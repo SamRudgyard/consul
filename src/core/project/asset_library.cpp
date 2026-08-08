@@ -67,19 +67,22 @@ std::shared_ptr<Material> AssetLibrary::addMaterial(const std::string& name, con
     return materialManager->get(materialID);
 }
 
-AssetID AssetLibrary::addShader(const std::string& name, const Shader& shader)
+std::shared_ptr<Shader> AssetLibrary::addShader(const std::string& name, const Shader& shader)
 {
-    return shaderManager->add(name, shader);
+    AssetID shaderID = shaderManager->add(name, shader);
+    return shaderManager->get(shaderID);
 }
 
-AssetID AssetLibrary::addVertexShader(const std::string& name, const VertexShader& shader)
+std::shared_ptr<VertexShader> AssetLibrary::addVertexShader(const std::string& name, const VertexShader& shader)
 {
-    return vertexShaderManager->add(name, shader);
+    AssetID shaderID = vertexShaderManager->add(name, shader);
+    return vertexShaderManager->get(shaderID);
 }
 
-AssetID AssetLibrary::addFragmentShader(const std::string& name, const FragmentShader& shader)
+std::shared_ptr<FragmentShader> AssetLibrary::addFragmentShader(const std::string& name, const FragmentShader& shader)
 {
-    return fragmentShaderManager->add(name, shader);
+    AssetID shaderID = fragmentShaderManager->add(name, shader);
+    return fragmentShaderManager->get(shaderID);
 }
 
 std::shared_ptr<Model> AssetLibrary::importAsset(const std::string& name, const std::string& path)
@@ -98,22 +101,22 @@ std::shared_ptr<Model> AssetLibrary::importAsset(const std::string& name, const 
     return gltfImporter->import(name, path);
 }
 
-AssetID AssetLibrary::importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath)
+std::shared_ptr<Shader> AssetLibrary::importShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath)
 {
     if (!doesFileExist(vertexPath.c_str())) {
         Console::get().warn("[AssetLibrary::importShader] Invalid vertex shader path: '" + vertexPath + "'");
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
     if (!doesFileExist(fragmentPath.c_str())) {
         Console::get().warn("[AssetLibrary::importShader] Invalid fragment shader path: '" + fragmentPath + "'");
-        return INVALID_ASSET_ID;
+        return nullptr;
     }
 
-    AssetID vertexShaderID = addVertexShader(name + "_VertexShader", VertexShader(readFile(vertexPath.c_str())));
+    AssetID vertexShaderID = vertexShaderManager->add(name + "_VertexShader", VertexShader(readFile(vertexPath.c_str())));
     vertexShaderManager->setSourcePath(vertexShaderID, vertexPath);
     std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->get(vertexShaderID);
 
-    AssetID fragmentShaderID = addFragmentShader(name + "_FragmentShader", FragmentShader(readFile(fragmentPath.c_str())));
+    AssetID fragmentShaderID = fragmentShaderManager->add(name + "_FragmentShader", FragmentShader(readFile(fragmentPath.c_str())));
     fragmentShaderManager->setSourcePath(fragmentShaderID, fragmentPath);
     std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->get(fragmentShaderID);
 
@@ -123,21 +126,6 @@ AssetID AssetLibrary::importShader(const std::string& name, const std::string& v
 std::shared_ptr<Texture> AssetLibrary::getTexture(AssetID id) const
 {
     return textureManager->get(id);
-}
-
-std::shared_ptr<Shader> AssetLibrary::getShader(AssetID id) const
-{
-    return shaderManager->get(id);
-}
-
-std::shared_ptr<VertexShader> AssetLibrary::getVertexShader(AssetID id) const
-{
-    return vertexShaderManager->get(id);
-}
-
-std::shared_ptr<FragmentShader> AssetLibrary::getFragmentShader(AssetID id) const
-{
-    return fragmentShaderManager->get(id);
 }
 
 const AssetMetadata* AssetLibrary::getMetadata(AssetID id) const
