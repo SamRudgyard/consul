@@ -18,8 +18,6 @@ template <typename T>
 class AssetManager
 {
 public:
-    using AssetMap = std::unordered_map<AssetID, std::shared_ptr<T>>;
-
     AssetManager() = default;
     ~AssetManager() = default;
 
@@ -43,7 +41,7 @@ public:
         return it == metadata.end() ? nullptr : &it->second;
     }
 
-    const AssetMap& getAssets() const { return assets; }
+    const std::unordered_map<AssetID, std::shared_ptr<T>>& getAssets() const { return assets; }
 
     void setSourcePath(AssetID id, const std::string& sourcePath)
     {
@@ -63,7 +61,7 @@ public:
 
 private:
     std::unordered_map<AssetID, AssetMetadata> metadata;
-    AssetMap assets;
+    std::unordered_map<AssetID, std::shared_ptr<T>> assets;
 
     void addMetadata(AssetID id, const std::string& name)
     {

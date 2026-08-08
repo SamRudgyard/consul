@@ -47,13 +47,13 @@ public:
     std::shared_ptr<FragmentShader> getFragmentShader(AssetID id) const;
 
     const AssetMetadata* getMetadata(AssetID id) const;
-    const ModelAssetManager::AssetMap& getModels() const;
-    const MeshAssetManager::AssetMap& getMeshes() const;
-    const MaterialAssetManager::AssetMap& getMaterials() const;
-    const TextureAssetManager::AssetMap& getTextures() const;
-    const ShaderAssetManager::AssetMap& getShaders() const;
-    const VertexShaderAssetManager::AssetMap& getVertexShaders() const;
-    const FragmentShaderAssetManager::AssetMap& getFragmentShaders() const;
+    const std::unordered_map<AssetID, std::shared_ptr<Model>>& getModels() const;
+    const std::unordered_map<AssetID, std::shared_ptr<Mesh>>& getMeshes() const;
+    const std::unordered_map<AssetID, std::shared_ptr<Material>>& getMaterials() const;
+    const std::unordered_map<AssetID, std::shared_ptr<Texture>>& getTextures() const;
+    const std::unordered_map<AssetID, std::shared_ptr<Shader>>& getShaders() const;
+    const std::unordered_map<AssetID, std::shared_ptr<VertexShader>>& getVertexShaders() const;
+    const std::unordered_map<AssetID, std::shared_ptr<FragmentShader>>& getFragmentShaders() const;
 
     void clearAssets();
 

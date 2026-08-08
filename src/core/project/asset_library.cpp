@@ -176,37 +176,37 @@ const AssetMetadata* AssetLibrary::getMetadata(AssetID id) const
     return fragmentShaderManager->getMetadata(id);
 }
 
-const ModelAssetManager::AssetMap& AssetLibrary::getModels() const
+const std::unordered_map<AssetID, std::shared_ptr<Model>>& AssetLibrary::getModels() const
 {
     return modelManager->getAssets();
 }
 
-const MeshAssetManager::AssetMap& AssetLibrary::getMeshes() const
+const std::unordered_map<AssetID, std::shared_ptr<Mesh>>& AssetLibrary::getMeshes() const
 {
     return meshManager->getAssets();
 }
 
-const MaterialAssetManager::AssetMap& AssetLibrary::getMaterials() const
+const std::unordered_map<AssetID, std::shared_ptr<Material>>& AssetLibrary::getMaterials() const
 {
     return materialManager->getAssets();
 }
 
-const TextureAssetManager::AssetMap& AssetLibrary::getTextures() const
+const std::unordered_map<AssetID, std::shared_ptr<Texture>>& AssetLibrary::getTextures() const
 {
     return textureManager->getAssets();
 }
 
-const ShaderAssetManager::AssetMap& AssetLibrary::getShaders() const
+const std::unordered_map<AssetID, std::shared_ptr<Shader>>& AssetLibrary::getShaders() const
 {
     return shaderManager->getAssets();
 }
 
-const VertexShaderAssetManager::AssetMap& AssetLibrary::getVertexShaders() const
+const std::unordered_map<AssetID, std::shared_ptr<VertexShader>>& AssetLibrary::getVertexShaders() const
 {
     return vertexShaderManager->getAssets();
 }
 
-const FragmentShaderAssetManager::AssetMap& AssetLibrary::getFragmentShaders() const
+const std::unordered_map<AssetID, std::shared_ptr<FragmentShader>>& AssetLibrary::getFragmentShaders() const
 {
     return fragmentShaderManager->getAssets();
 }
