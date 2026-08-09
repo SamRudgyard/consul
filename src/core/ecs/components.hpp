@@ -1,25 +1,32 @@
 #pragma once
 
-struct Component
+#include <memory>
+
+#include <glm/glm.hpp>
+
+class Model;
+
+struct Transform
 {
-    virtual ~Component() = default;
+    glm::vec3 position = {0.0f, 0.0f, 0.0f};
+    glm::vec3 rotation = {0.0f, 0.0f, 0.0f};
+    glm::vec3 scale = {1.0f, 1.0f, 1.0f};
 };
 
-struct Position : public Component
+struct Velocity
 {
     float x = 0.0f;
     float y = 0.0f;
     float z = 0.0f;
 };
 
-struct Velocity : public Component
+struct ModelRenderer
 {
-    float x = 0.0f;
-    float y = 0.0f;
-    float z = 0.0f;
+    std::shared_ptr<Model> model;
+    bool visible = true;
 };
 
-struct Camera : public Component
+struct Camera
 {
     enum class ProjectionType
     {
