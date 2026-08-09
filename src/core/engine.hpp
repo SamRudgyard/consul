@@ -5,7 +5,7 @@
 #include "core/time.hpp"
 #include "input/input_system.hpp"
 
-class EngineContext
+class Engine
 {
 public:
     Window window;
@@ -13,13 +13,13 @@ public:
     Profiler profiler;
     InputSystem inputSystem;
 
-    static EngineContext* get()
+    static Engine* get()
     {
-        static EngineContext instance;
+        static Engine instance;
         return &instance;
     }
 
 private:
-    EngineContext() {}
-    ~EngineContext() {}
+    Engine() {}
+    ~Engine() {}
 };

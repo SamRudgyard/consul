@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "core/engine_context.hpp"
+#include "core/engine.hpp"
 #include "ui_window.hpp"
 
 enum class TimeSpan
@@ -21,8 +21,8 @@ public:
 
 private:
     bool isOpen = true;
-    Time* time = &EngineContext::get()->time;
-    Profiler* profiler = &EngineContext::get()->profiler;
+    Time* time = &Engine::get()->time;
+    Profiler* profiler = &Engine::get()->profiler;
 
     // FPS graph
     static constexpr unsigned int MAX_SECONDS_RECORDED = 60;

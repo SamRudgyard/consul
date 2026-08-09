@@ -1,13 +1,7 @@
 #pragma once
 
-#include "core/engine_context.hpp"
+#include "core/engine.hpp"
 #include "glm/glm.hpp"
-
-enum class ProjectionType
-{
-    PERSPECTIVE,
-    ORTHOGRAPHIC
-};
 
 class Camera {
 public:
@@ -25,6 +19,6 @@ public:
     virtual glm::mat4 getCameraMatrix() const = 0;
 
 protected:
-    EngineContext* context = EngineContext::get();
+    Engine* context = Engine::get();
     ProjectionType projectionType = ProjectionType::PERSPECTIVE;
 };

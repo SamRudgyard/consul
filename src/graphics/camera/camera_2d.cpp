@@ -31,7 +31,7 @@ glm::mat4 Camera2D::getCameraMatrix() const
 }
 
 void Camera2D::handleInputs(double deltaTime) {
-    InputSystem& input = EngineContext::get()->inputSystem;
+    InputSystem& input = Engine::get()->inputSystem;
 
     if (input.isKeyDown(KeyboardKey::KEY_W)) {
         position.y += 5.0f*deltaTime;

@@ -14,7 +14,7 @@ class RotatingCamera2D : public Camera2D {
 public:
     void handleInputs(double deltaTime) override
     {
-        InputSystem& input = EngineContext::get()->inputSystem;
+        InputSystem& input = Engine::get()->inputSystem;
 
         if (input.isKeyDown(KeyboardKey::KEY_A)) {
             rotationDeg += rotationSpeedDeg * deltaTime;

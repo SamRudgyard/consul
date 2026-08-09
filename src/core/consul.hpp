@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/console/console.hpp"
-#include "core/engine_context.hpp"
+#include "core/engine.hpp"
 #include "core/ecs/entity_manager.hpp"
 #include "core/ecs/component_manager.hpp"
 #include "core/ui/user_interface.hpp"
@@ -78,6 +78,8 @@ public:
     VertexShaderAssetManager& getVertexShaderAssetManager() { return *vertexShaderAssets; }
     FragmentShaderAssetManager& getFragmentShaderAssetManager() { return *fragmentShaderAssets; }
     GLTFImporter& getGLTFImporter() { return *gltfImporter; }
+    EntityManager& getEntityManager() { return *entityManager; }
+    ComponentManager& getComponentManager() { return *componentManager; }
 
     /**
      * Gets the scene manager instance.
@@ -93,7 +95,7 @@ public:
 
 private:
     Console& console = Console::get();
-    EngineContext* context = EngineContext::get();
+    Engine* context = Engine::get();
     UserInterface ui;
     std::unique_ptr<Platform> platform;
     std::unique_ptr<Renderer> renderer;

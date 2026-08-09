@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/engine_context.hpp"
+#include "core/engine.hpp"
 #include "graphics/renderer/renderer.hpp"
 
 enum class PlatformType
@@ -32,5 +32,5 @@ public:
     virtual double getTime() = 0;
 
 protected:
-    EngineContext* context = EngineContext::get();
+    Engine* context = Engine::get();
 };
