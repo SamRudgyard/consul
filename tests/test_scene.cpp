@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include <memory>
 
@@ -78,7 +79,15 @@ namespace
     public:
         Camera* getActiveCamera() override { return &camera; }
 
-        const ModelPrimitive& getPrimitive() const { return model->getPrimitives().front(); }
+        const ModelPrimitive& getPrimitive() const
+        {
+            return getECS().getComponent<ModelRenderer>(renderEntity).model->getPrimitives().front();
+        }
+
+        void setVisible(bool visible)
+        {
+            getECS().getComponent<ModelRenderer>(renderEntity).visible = visible;
+        }
 
     protected:
         void onInit(std::shared_ptr<AssetLibrary> assets) override
@@ -92,19 +101,34 @@ namespace
 
             Mesh meshData;
             std::shared_ptr<Mesh> mesh = assets->addMesh("Test Mesh", meshData);
-            glm::mat4 modelMatrix(1.0f);
-            modelMatrix[3][0] = 3.0f;
-            modelMatrix[3][1] = 4.0f;
+            glm::mat4 localTransform(1.0f);
+            localTransform[3][0] = 1.0f;
+            localTransform[3][1] = 2.0f;
 
             Model modelData;
-            modelData.addPrimitive(std::move(mesh), std::move(materialAsset), modelMatrix);
-            model = assets->addModel("Test Model", modelData);
+            modelData.addPrimitive(std::move(mesh), std::move(materialAsset), localTransform);
+            std::shared_ptr<Model> model = assets->addModel("Test Model", modelData);
+            unreferencedModel = assets->addModel("Unreferenced Test Model", modelData);
+
+            Transform transform;
+            transform.position = {3.0f, 4.0f, 0.0f};
+            transform.rotation.z = glm::radians(90.0f);
+            transform.scale = {2.0f, 3.0f, 1.0f};
+
+            renderEntity = getECS().createEntity();
+            getECS().addComponent<Transform>(renderEntity, transform);
+            getECS().addComponent<ModelRenderer>(renderEntity, ModelRenderer{model, true});
+
+            const Entity hiddenEntity = getECS().createEntity();
+            getECS().addComponent<Transform>(hiddenEntity);
+            getECS().addComponent<ModelRenderer>(hiddenEntity, ModelRenderer{std::move(model), false});
         }
 
     private:
         TestCamera camera;
         std::shared_ptr<Shader> shader;
-        std::shared_ptr<Model> model;
+        std::shared_ptr<Model> unreferencedModel;
+        Entity renderEntity = 0;
     };
 
     class CapturingRenderer : public Renderer
@@ -197,6 +221,7 @@ TEST_CASE("scene rendering submits active model primitives to the renderer")
     auto scene = std::make_unique<RenderableScene>();
     RenderableScene* scenePointer = scene.get();
     scenes.loadScene(std::move(scene));
+    REQUIRE(assets->getModels().size() == 2);
 
     CapturingRenderer renderer;
     scenes.render(renderer);
@@ -204,6 +229,11 @@ TEST_CASE("scene rendering submits active model primitives to the renderer")
     REQUIRE(renderer.submittedItems.size() == 1);
     REQUIRE(renderer.submittedItems.front().mesh == scenePointer->getPrimitive().mesh);
     REQUIRE(renderer.submittedItems.front().material == scenePointer->getPrimitive().material);
-    REQUIRE(renderer.submittedItems.front().modelMatrix[3][0] == 3.0f);
-    REQUIRE(renderer.submittedItems.front().modelMatrix[3][1] == 4.0f);
+    REQUIRE(renderer.submittedItems.front().modelMatrix[3][0] == Catch::Approx(-3.0f));
+    REQUIRE(renderer.submittedItems.front().modelMatrix[3][1] == Catch::Approx(6.0f));
+
+    scenePointer->setVisible(false);
+    scenes.render(renderer);
+
+    REQUIRE(renderer.submittedItems.empty());
 }

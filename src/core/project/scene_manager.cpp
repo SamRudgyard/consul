@@ -3,7 +3,10 @@
 #include <utility>
 #include <vector>
 
+#include "glm/gtc/matrix_transform.hpp"
+
 #include "core/console/console.hpp"
+#include "core/ecs/components.hpp"
 #include "core/profiling/profile_method.hpp"
 #include "core/project/asset_library.hpp"
 #include "graphics/camera/camera.hpp"
@@ -13,6 +16,18 @@
 #include "graphics/renderer/renderer.hpp"
 #include "graphics/shader/shader.hpp"
 #include "graphics/texture/texture.hpp"
+
+namespace
+{
+    glm::mat4 composeTransformMatrix(const Transform& transform)
+    {
+        glm::mat4 matrix = glm::translate(glm::mat4(1.0f), transform.position);
+        matrix = glm::rotate(matrix, transform.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        matrix = glm::rotate(matrix, transform.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        matrix = glm::rotate(matrix, transform.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        return glm::scale(matrix, transform.scale);
+    }
+}
 
 void SceneManager::loadScene(std::unique_ptr<Scene> scene)
 {
@@ -141,21 +156,28 @@ void SceneManager::render(Renderer& renderer)
     }
 
     std::vector<RenderItem> renderItems;
-
-    for (const std::shared_ptr<Model>& model : assets->getModels()) {
-        if (!model) {
-            continue;
-        }
-
-        for (const ModelPrimitive& primitive : model->getPrimitives()) {
-            if (!primitive.mesh) {
-                continue;
+    const ECS& ecs = currentScene->getECS();
+    ecs.forEach<Transform, ModelRenderer>(
+        [&](Entity, const Transform& transform, const ModelRenderer& modelRenderer) {
+            if (!modelRenderer.visible || !modelRenderer.model) {
+                return;
             }
 
-            uploadPrimitive(primitive);
-            renderItems.push_back({primitive.mesh, primitive.material, primitive.localTransform});
+            const glm::mat4 modelTransform = composeTransformMatrix(transform);
+            for (const ModelPrimitive& primitive : modelRenderer.model->getPrimitives()) {
+                if (!primitive.mesh) {
+                    continue;
+                }
+
+                uploadPrimitive(primitive);
+                renderItems.push_back({
+                    primitive.mesh,
+                    primitive.material,
+                    modelTransform * primitive.localTransform
+                });
+            }
         }
-    }
+    );
 
     renderer.render(renderShader, *camera, renderItems);
 }
