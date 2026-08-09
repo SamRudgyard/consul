@@ -94,11 +94,16 @@ public:
     void uploadTexture(const std::shared_ptr<Texture>& texture) override;
 
     /**
-     * Render all uploaded models/meshes with the provided shader and camera.
+     * Render the submitted items with the provided shader and camera.
      * @param shader Shader to render with.
-     * @param camera The camera, from which the models/meshes are viewed. 
+     * @param camera The camera, from which the items are viewed.
+     * @param renderItems Items to render.
      */
-    void render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets) override;
+    void render(
+        const std::shared_ptr<Shader>& shader,
+        const Camera& camera,
+        const std::vector<RenderItem>& renderItems
+    ) override;
 
 private:
     std::map<std::weak_ptr<Shader>, ShaderBuffer, std::owner_less<>> shaders;

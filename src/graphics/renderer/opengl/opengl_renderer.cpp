@@ -13,7 +13,6 @@
 
 #include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
-#include "core/project/asset_library.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/material/material.hpp"
@@ -393,7 +392,11 @@ void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
     glCheckError();
 }
 
-void OpenGLRenderer::render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets)
+void OpenGLRenderer::render(
+    const std::shared_ptr<Shader>& shader,
+    const Camera& camera,
+    const std::vector<RenderItem>& renderItems
+)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -412,7 +415,8 @@ void OpenGLRenderer::render(const std::shared_ptr<Shader>& shader, const Camera&
     setUniformVec3(programID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
     setUniformVec3(programID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
 
-    for (const std::shared_ptr<Mesh>& mesh : assets.getMeshes()) {
+    for (const RenderItem& renderItem : renderItems) {
+        const std::shared_ptr<Mesh>& mesh = renderItem.mesh;
         if (!mesh) {
             continue;
         }
@@ -424,7 +428,7 @@ void OpenGLRenderer::render(const std::shared_ptr<Shader>& shader, const Camera&
         }
 
         const MeshBuffer& meshBuffer = meshBufferIt->second;
-        std::shared_ptr<Material> material = mesh->getMaterial();
+        const std::shared_ptr<Material>& material = renderItem.material;
         if (!material) {
             Console::get().logOnDebug("[OpenGLRenderer::render] Mesh has no material, so will be rendered with default material.");
         }
@@ -442,7 +446,7 @@ void OpenGLRenderer::render(const std::shared_ptr<Shader>& shader, const Camera&
             }
         }
 
-        const glm::mat4& modelMatrix = mesh->getModelMatrix();
+        const glm::mat4& modelMatrix = renderItem.modelMatrix;
         const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
         if (material) {

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "glm/fwd.hpp"
+#include "glm/glm.hpp"
 
 #include <memory>
+#include <vector>
 
 enum class GraphicsAPI
 {
@@ -11,10 +12,17 @@ enum class GraphicsAPI
 };
 
 class Camera;
-class AssetLibrary;
+class Material;
 class Mesh;
 class Shader;
 class Texture;
+
+struct RenderItem
+{
+    std::shared_ptr<Mesh> mesh;
+    std::shared_ptr<Material> material;
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+};
 
 class Renderer
 {
@@ -40,5 +48,9 @@ public:
 
     virtual void releaseExpiredResources() = 0;
 
-    virtual void render(const std::shared_ptr<Shader>& shader, const Camera& camera, AssetLibrary& assets) = 0;
+    virtual void render(
+        const std::shared_ptr<Shader>& shader,
+        const Camera& camera,
+        const std::vector<RenderItem>& renderItems
+    ) = 0;
 };

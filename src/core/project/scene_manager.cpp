@@ -157,13 +157,18 @@ void SceneManager::render(Renderer& renderer)
         }
     }
     
-    for (const std::shared_ptr<Mesh>& mesh : assets->getMeshes()) {
+    std::vector<RenderItem> renderItems;
+    const std::vector<std::shared_ptr<Mesh>> meshes = assets->getMeshes();
+    renderItems.reserve(meshes.size());
+
+    for (const std::shared_ptr<Mesh>& mesh : meshes) {
         if (mesh) {
             uploadMesh(mesh);
+            renderItems.push_back({mesh, mesh->getMaterial(), mesh->getModelMatrix()});
         }
     }
 
-    renderer.render(renderShader, *camera, *assets);
+    renderer.render(renderShader, *camera, renderItems);
 }
 
 void SceneManager::shutdown()
