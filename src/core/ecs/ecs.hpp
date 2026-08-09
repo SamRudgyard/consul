@@ -6,9 +6,6 @@
 #include <functional>
 #include <limits>
 #include <memory>
-#include <optional>
-#include <queue>
-#include <stdexcept>
 #include <string>
 #include <typeindex>
 #include <typeinfo>
