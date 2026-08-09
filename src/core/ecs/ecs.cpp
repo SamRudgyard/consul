@@ -33,7 +33,11 @@ void ECS::destroyEntity(Entity entity)
     validateEntity(entity);
 
     for (auto& [type, componentSet] : components) {
-        componentSet->removeComponent(entity);
+        const ComponentType componentID = typeToID.at(type);
+
+        if (entities[entity].mask.test(componentID)) {
+            componentSet->removeComponent(entity);
+        }
     }
 
     entities[entity].mask.reset();
