@@ -19,21 +19,40 @@ public:
 };
 
 template<class T>
-class ComponentArray : public IComponentArray
+class ComponentSparseSet : public IComponentArray
 {
 public:
     /**
-     * Sets the component of a given entity to a specified value.
+     * Adds the given component to the specified entity.
      *
      * @param entity The entity for which to set the component.
      * @param component The value of the component to set.
      */
-    void setComponent(Entity entity, const T& component)
+    void addComponent(Entity entity, const T& component)
     {
-        if (entity >= components.size()) {
-            components.resize(entity + 1);
+        if (hasComponent(entity)) {
+            Console::get().error(
+                "[ComponentSparseSet::addComponent] Entity ID '" + std::to_string(entity) +
+                "' already has this component."
+            );
+            return;
         }
-        components[entity] = component;
+
+        if (entity >= entitiesToDenseIndices.size()) {
+            entitiesToDenseIndices.resize(entity + 1, std::numeric_limits<std::uint32_t>::max());
+        }
+
+        if (denseComponents.size() >= MAX_ENTITIES) {
+            Console::get().error(
+                "[ComponentSparseSet::addComponent] Cannot add more than " +
+                std::to_string(MAX_ENTITIES) + " components of this type."
+            );
+        }
+
+        const std::uint32_t denseIndex = static_cast<std::uint32_t>(denseComponents.size());
+        denseComponents.push_back(component);
+        denseEntities.push_back(entity);
+        entitiesToDenseIndices[entity] = denseIndex;
     }
 
     /**
@@ -44,19 +63,42 @@ public:
     {
         if (!hasComponent(entity)) {
             Console::get().error(
-                "[ComponentArray::removeComponent] Entity ID '" + std::to_string(entity) +
+                "[ComponentSparseSet::removeComponent] Entity ID '" + std::to_string(entity) +
                 "' does not have this component."
             );
         }
-        components[entity].reset();
+
+        const std::uint32_t indexToRemove = entitiesToDenseIndices[entity];
+        const std::uint32_t lastIndex = static_cast<std::uint32_t>(denseComponents.size() - 1);
+
+        if (indexToRemove != lastIndex) {
+            // Move the last component to the removed component's place
+            // NOTE: This ensures our dense vectors remain tightly packed,
+            // but removing a component changes the order of iteration.
+            // This shouldn't be a problem, but it's something to be aware of.
+            denseComponents[indexToRemove] = denseComponents[lastIndex];
+            denseEntities[indexToRemove] = denseEntities[lastIndex];
+            entitiesToDenseIndices[denseEntities[indexToRemove]] = indexToRemove;
+        }
+
+        denseComponents.pop_back();
+        denseEntities.pop_back();
+        entitiesToDenseIndices[entity] = std::numeric_limits<std::uint32_t>::max();
     }
 
     /**
      * Reports whether an entity has a component in this array.
+     * 
+     * @param entity The entity to check for a component.
+     * @return True if the entity has a component, false otherwise.
      */
     bool hasComponent(Entity entity) const
     {
-        return entity < components.size() && components[entity].has_value();
+        if (entity >= entitiesToDenseIndices.size()) {
+            return false;
+        }
+        const std::uint32_t denseIndex = entitiesToDenseIndices[entity];
+        return denseIndex < denseComponents.size() && denseEntities[denseIndex] == entity;
     }
 
     /**
@@ -69,33 +111,28 @@ public:
     {
         if (!hasComponent(entity)) {
             Console::get().error(
-                "[ComponentArray::getComponent] Entity ID '" + std::to_string(entity) +
+                "[ComponentSparseSet::getComponent] Entity ID '" + std::to_string(entity) +
                 "' does not have this component."
             );
         }
-        return *components[entity];
+        return denseComponents[entitiesToDenseIndices[entity]];
     }
 
     const T& getComponent(Entity entity) const
     {
         if (!hasComponent(entity)) {
             Console::get().error(
-                "[ComponentArray::getComponent] Entity ID '" + std::to_string(entity) +
+                "[ComponentSparseSet::getComponent] Entity ID '" + std::to_string(entity) +
                 "' does not have this component."
             );
         }
-        return *components[entity];
-    }
-
-    void removeEntity(Entity entity) override
-    {
-        if (entity < components.size()) {
-            components[entity].reset();
-        }
+        return denseComponents[entitiesToDenseIndices[entity]];
     }
 
 private:
-    std::vector<std::optional<T>> components;
+    std::vector<std::uint32_t> entitiesToDenseIndices; // entity ID -> index in dense arrays
+    std::vector<T> denseComponents; // index in dense array -> component value
+    std::vector<Entity> denseEntities; // index in dense array -> entity ID
 };
 
 class ComponentManager
@@ -108,10 +145,10 @@ private:
      * Gets the component array of a specified type.
      *
      * @tparam T The type of the component.
-     * @return A pointer to the ComponentArray of type T.
+     * @return A pointer to the ComponentSparseSet of type T.
      */
     template<class T>
-    ComponentArray<T>* getComponentArray()
+    ComponentSparseSet<T>* getComponentArray()
     {
         const std::type_index typeIdx = typeid(T);
         const auto component = components.find(typeIdx);
@@ -121,11 +158,11 @@ private:
                 std::string(typeIdx.name()) + "' is not registered."
             );
         }
-        return static_cast<ComponentArray<T>*>(component->second.get());
+        return static_cast<ComponentSparseSet<T>*>(component->second.get());
     }
 
     template<class T>
-    const ComponentArray<T>* getComponentArray() const
+    const ComponentSparseSet<T>* getComponentArray() const
     {
         const std::type_index typeIdx = typeid(T);
         const auto component = components.find(typeIdx);
@@ -135,7 +172,7 @@ private:
                 std::string(typeIdx.name()) + "' is not registered."
             );
         }
-        return static_cast<const ComponentArray<T>*>(component->second.get());
+        return static_cast<const ComponentSparseSet<T>*>(component->second.get());
     }
 
 public:
@@ -153,6 +190,7 @@ public:
         const std::type_index typeIdx = typeid(T);
         const auto componentID = typeToID.find(typeIdx);
         if (componentID != typeToID.end()) {
+            // Already registered, return the existing ID
             return componentID->second;
         }
 
@@ -170,7 +208,7 @@ public:
 
         const ComponentType newID = static_cast<ComponentType>(typeToID.size());
         typeToID.emplace(typeIdx, newID);
-        components.emplace(typeIdx, std::make_unique<ComponentArray<T>>());
+        components.emplace(typeIdx, std::make_unique<ComponentSparseSet<T>>());
         return newID;
     }
 
@@ -207,7 +245,7 @@ public:
         if (component == components.end()) {
             return false;
         }
-        return static_cast<const ComponentArray<T>*>(component->second.get())->hasComponent(entity);
+        return static_cast<const ComponentSparseSet<T>*>(component->second.get())->hasComponent(entity);
     }
 
     /**
