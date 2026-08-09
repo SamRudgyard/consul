@@ -2,8 +2,7 @@
 
 #include "core/console/console.hpp"
 #include "core/engine.hpp"
-#include "core/ecs/entity_manager.hpp"
-#include "core/ecs/component_manager.hpp"
+#include "core/ecs/ecs.hpp"
 #include "core/ui/user_interface.hpp"
 #include "core/project/asset_manager.hpp"
 #include "core/project/asset_library.hpp"
@@ -78,8 +77,7 @@ public:
     VertexShaderAssetManager& getVertexShaderAssetManager() { return *vertexShaderAssets; }
     FragmentShaderAssetManager& getFragmentShaderAssetManager() { return *fragmentShaderAssets; }
     GLTFImporter& getGLTFImporter() { return *gltfImporter; }
-    EntityManager& getEntityManager() { return *entityManager; }
-    ComponentManager& getComponentManager() { return *componentManager; }
+    ECS& getECS() { return ecs; }
 
     /**
      * Gets the scene manager instance.
@@ -111,8 +109,7 @@ private:
     std::shared_ptr<GLTFImporter> gltfImporter = nullptr;
     std::shared_ptr<AssetLibrary> assets = nullptr;
     std::shared_ptr<SceneManager> sceneManager = nullptr;
-    std::shared_ptr<EntityManager> entityManager = nullptr;
-    std::shared_ptr<ComponentManager> componentManager = nullptr;
+    ECS ecs;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);

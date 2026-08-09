@@ -38,12 +38,12 @@ public:
     virtual ~IComponentSparseSet() = default;
 
     /**
-     * Removes an entity from this sparse set if present.
+     * Removes a component from this sparse set if present.
      * Used when destroying an entity without knowing its component types.
      * 
-     * @param entity The entity to remove.
+     * @param entity The entity whose component should be removed.
      */
-    virtual void removeEntity(Entity entity) = 0;
+    virtual void removeComponent(Entity entity) = 0;
 
     /**
      * Number of components stored in the dense set.
@@ -540,7 +540,7 @@ public:
             return false;
         }
 
-        return true;
+        return static_cast<const ComponentSparseSet<T>*>(component->second.get())->hasComponent(entity);
     }
 
     /**
@@ -779,8 +779,7 @@ private:
         const IComponentSparseSet* smallestSet = nullptr;
         bool allRegistered = true;
 
-        auto addComponentToQuery = [this, &requiredMask, &smallestSet, &allRegistered]<class T>() {
-            const std::type_index typeIndex = typeid(T);
+        auto addComponentToQuery = [this, &requiredMask, &smallestSet, &allRegistered](const std::type_index& typeIndex) {
             const auto id = typeToID.find(typeIndex);
             const auto component = components.find(typeIndex);                
 
@@ -798,7 +797,7 @@ private:
             }
         };
 
-        (addComponentToQuery.template operator()<Components>(), ...);
+        (addComponentToQuery(std::type_index(typeid(Components))), ...);
 
         if (!allRegistered) {
             return nullptr;

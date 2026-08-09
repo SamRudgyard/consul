@@ -3,6 +3,12 @@
 #include "core/engine.hpp"
 #include "glm/glm.hpp"
 
+enum class ProjectionType
+{
+    PERSPECTIVE,
+    ORTHOGRAPHIC
+};
+
 class Camera {
 public:
     ProjectionType getProjectionType() const { return projectionType; }

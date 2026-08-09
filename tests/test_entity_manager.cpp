@@ -1,12 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include <memory>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
-#include "core/ecs/component_manager.hpp"
-#include "core/ecs/entity_manager.hpp"
+#include "core/ecs/ecs.hpp"
 
 namespace
 {
@@ -31,138 +29,132 @@ namespace
     };
 
     template<std::size_t... Indices>
-    void registerComponents(ComponentManager& components, std::index_sequence<Indices...>)
+    void registerComponents(ECS& ecs, std::index_sequence<Indices...>)
     {
-        (components.getComponentID<IndexedComponent<Indices>>(), ...);
+        (ecs.getComponentID<IndexedComponent<Indices>>(), ...);
     }
-
-    struct ECSManagers
-    {
-        std::shared_ptr<ComponentManager> components = std::make_shared<ComponentManager>();
-        EntityManager entities{components};
-    };
 }
 
 TEST_CASE("entities retain stable IDs and reuse destroyed IDs", "[ecs][entity]")
 {
-    ECSManagers ecs;
-    const Entity first = ecs.entities.createEntity();
-    const Entity second = ecs.entities.createEntity();
-    const Entity third = ecs.entities.createEntity();
+    ECS ecs;
+    const Entity first = ecs.createEntity();
+    const Entity second = ecs.createEntity();
+    const Entity third = ecs.createEntity();
 
-    ecs.entities.addComponent<Position>(third, {42});
-    ecs.entities.destroyEntity(second);
+    ecs.addComponent<Position>(third, {42});
+    ecs.destroyEntity(second);
 
-    REQUIRE(ecs.entities.isAlive(first));
-    REQUIRE_FALSE(ecs.entities.isAlive(second));
-    REQUIRE(ecs.entities.isAlive(third));
-    REQUIRE(ecs.entities.getComponent<Position>(third).x == 42);
+    REQUIRE(ecs.isAlive(first));
+    REQUIRE_FALSE(ecs.isAlive(second));
+    REQUIRE(ecs.isAlive(third));
+    REQUIRE(ecs.getComponent<Position>(third).x == 42);
 
-    const Entity reused = ecs.entities.createEntity();
+    const Entity reused = ecs.createEntity();
     REQUIRE(reused == second);
-    REQUIRE(ecs.entities.isAlive(reused));
-    REQUIRE_FALSE(ecs.entities.hasComponent<Position>(reused));
-    REQUIRE(ecs.entities.getEntityCount() == 3);
+    REQUIRE(ecs.isAlive(reused));
+    REQUIRE_FALSE(ecs.hasComponent<Position>(reused));
+    REQUIRE(ecs.getEntityCount() == 3);
 }
 
-TEST_CASE("components can be added, replaced, queried, and removed", "[ecs][component]")
+TEST_CASE("components can be added, queried, and removed", "[ecs][component]")
 {
-    ECSManagers ecs;
-    const Entity entity = ecs.entities.createEntity();
+    ECS ecs;
+    const Entity entity = ecs.createEntity();
 
-    ecs.entities.addComponent<Position>(entity, {10});
-    REQUIRE(ecs.entities.hasComponent<Position>(entity));
-    REQUIRE(ecs.entities.getComponent<Position>(entity).x == 10);
+    ecs.addComponent<Position>(entity, {10});
+    REQUIRE(ecs.hasComponent<Position>(entity));
+    REQUIRE(ecs.getComponent<Position>(entity).x == 10);
 
-    ecs.entities.addComponent<Position>(entity, {20});
-    REQUIRE(ecs.entities.getComponent<Position>(entity).x == 20);
+    REQUIRE_THROWS_AS(ecs.addComponent<Position>(entity, {20}), std::runtime_error);
+    REQUIRE(ecs.getComponent<Position>(entity).x == 10);
 
-    ecs.entities.removeComponent<Position>(entity);
-    REQUIRE_FALSE(ecs.entities.hasComponent<Position>(entity));
-    REQUIRE_THROWS_AS(ecs.entities.getComponent<Position>(entity), std::runtime_error);
-    REQUIRE_THROWS_AS(ecs.entities.removeComponent<Position>(entity), std::runtime_error);
+    ecs.removeComponent<Position>(entity);
+    REQUIRE_FALSE(ecs.hasComponent<Position>(entity));
+    REQUIRE_THROWS_AS(ecs.getComponent<Position>(entity), std::runtime_error);
+    REQUIRE_THROWS_AS(ecs.removeComponent<Position>(entity), std::runtime_error);
 }
 
 TEST_CASE("destroying an entity removes all of its components", "[ecs][entity][component]")
 {
-    ECSManagers ecs;
-    const Entity entity = ecs.entities.createEntity();
-    ecs.entities.addComponent<Position>(entity, {5});
-    ecs.entities.addComponent<Velocity>(entity, {7});
+    ECS ecs;
+    const Entity entity = ecs.createEntity();
+    ecs.addComponent<Position>(entity, {5});
+    ecs.addComponent<Velocity>(entity, {7});
 
-    ecs.entities.destroyEntity(entity);
+    ecs.destroyEntity(entity);
 
-    REQUIRE_FALSE(ecs.components->hasComponent<Position>(entity));
-    REQUIRE_FALSE(ecs.components->hasComponent<Velocity>(entity));
-    REQUIRE_THROWS_AS(ecs.entities.destroyEntity(entity), std::runtime_error);
-    REQUIRE_THROWS_AS(ecs.entities.addComponent<Position>(entity), std::runtime_error);
+    REQUIRE(ecs.query<Position>().empty());
+    REQUIRE(ecs.query<Velocity>().empty());
+    REQUIRE_THROWS_AS(ecs.destroyEntity(entity), std::runtime_error);
+    REQUIRE_THROWS_AS(ecs.addComponent<Position>(entity), std::runtime_error);
 }
 
 TEST_CASE("entity and component limits are enforced", "[ecs][limits]")
 {
-    ECSManagers ecs;
+    ECS ecs;
     for (Entity entity = 0; entity < MAX_ENTITIES; entity++) {
-        REQUIRE(ecs.entities.createEntity() == entity);
+        REQUIRE(ecs.createEntity() == entity);
     }
-    REQUIRE_THROWS_AS(ecs.entities.createEntity(), std::runtime_error);
+    REQUIRE_THROWS_AS(ecs.createEntity(), std::runtime_error);
 
-    ComponentManager components;
-    registerComponents(components, std::make_index_sequence<MAX_COMPONENTS>{});
+    ECS componentECS;
+    registerComponents(componentECS, std::make_index_sequence<MAX_COMPONENTS>{});
     REQUIRE_THROWS_AS(
-        components.getComponentID<IndexedComponent<MAX_COMPONENTS>>(),
+        componentECS.getComponentID<IndexedComponent<MAX_COMPONENTS>>(),
         std::runtime_error
     );
 }
 
-TEST_CASE("views match living entities by component signature", "[ecs][query]")
+TEST_CASE("queries match living entities by component signature", "[ecs][query]")
 {
-    ECSManagers ecs;
-    const Entity positionOnly = ecs.entities.createEntity();
-    const Entity both = ecs.entities.createEntity();
-    const Entity destroyed = ecs.entities.createEntity();
-    const Entity velocityOnly = ecs.entities.createEntity();
+    ECS ecs;
+    const Entity positionOnly = ecs.createEntity();
+    const Entity both = ecs.createEntity();
+    const Entity destroyed = ecs.createEntity();
+    const Entity velocityOnly = ecs.createEntity();
 
-    ecs.entities.addComponent<Position>(positionOnly, {1});
-    ecs.entities.addComponent<Position>(both, {2});
-    ecs.entities.addComponent<Velocity>(both, {20});
-    ecs.entities.addComponent<Position>(destroyed, {3});
-    ecs.entities.addComponent<Velocity>(destroyed, {30});
-    ecs.entities.addComponent<Velocity>(velocityOnly, {40});
-    ecs.entities.destroyEntity(destroyed);
+    ecs.addComponent<Position>(positionOnly, {1});
+    ecs.addComponent<Position>(both, {2});
+    ecs.addComponent<Velocity>(both, {20});
+    ecs.addComponent<Position>(destroyed, {3});
+    ecs.addComponent<Velocity>(destroyed, {30});
+    ecs.addComponent<Velocity>(velocityOnly, {40});
+    ecs.destroyEntity(destroyed);
 
-    REQUIRE(ecs.entities.view<Position>() == std::vector<Entity>{positionOnly, both});
-    REQUIRE(ecs.entities.view<Velocity>() == std::vector<Entity>{both, velocityOnly});
-    REQUIRE(ecs.entities.view<Position, Velocity>() == std::vector<Entity>{both});
+    REQUIRE(ecs.query<Position>() == std::vector<Entity>{positionOnly, both});
+    REQUIRE(ecs.query<Velocity>() == std::vector<Entity>{both, velocityOnly});
+    REQUIRE(ecs.query<Position, Velocity>() == std::vector<Entity>{both});
 
-    REQUIRE(ecs.entities.view<Health>().empty());
+    REQUIRE(ecs.query<Health>().empty());
 
-    ecs.entities.removeComponent<Velocity>(both);
-    REQUIRE(ecs.entities.view<Position, Velocity>().empty());
+    ecs.removeComponent<Velocity>(both);
+    REQUIRE(ecs.query<Position, Velocity>().empty());
 }
 
 TEST_CASE("forEach exposes entity IDs and component references", "[ecs][query]")
 {
-    ECSManagers ecs;
-    const Entity first = ecs.entities.createEntity();
-    const Entity second = ecs.entities.createEntity();
-    const Entity ignored = ecs.entities.createEntity();
+    ECS ecs;
+    const Entity first = ecs.createEntity();
+    const Entity second = ecs.createEntity();
+    const Entity ignored = ecs.createEntity();
 
-    ecs.entities.addComponent<Position>(first, {1});
-    ecs.entities.addComponent<Position>(second, {2});
-    ecs.entities.addComponent<Velocity>(ignored, {3});
+    ecs.addComponent<Position>(first, {1});
+    ecs.addComponent<Position>(second, {2});
+    ecs.addComponent<Velocity>(ignored, {3});
 
     std::vector<Entity> visited;
-    ecs.entities.forEach<Position>([&](Entity entity, Position& position) {
+    ecs.forEach<Position>([&](Entity entity, Position& position) {
         visited.push_back(entity);
         position.x *= 10;
     });
 
     REQUIRE(visited == std::vector<Entity>{first, second});
-    REQUIRE(ecs.entities.getComponent<Position>(first).x == 10);
-    REQUIRE(ecs.entities.getComponent<Position>(second).x == 20);
+    REQUIRE(ecs.getComponent<Position>(first).x == 10);
+    REQUIRE(ecs.getComponent<Position>(second).x == 20);
 
     int total = 0;
-    ecs.entities.forEach<Position>([&](Entity entity, Position& position) {
+    ecs.forEach<Position>([&](Entity entity, Position& position) {
         total += static_cast<int>(entity) + position.x;
     });
     REQUIRE(total == static_cast<int>(first + second) + 30);

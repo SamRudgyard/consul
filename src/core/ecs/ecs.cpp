@@ -33,7 +33,7 @@ void ECS::destroyEntity(Entity entity)
     validateEntity(entity);
 
     for (auto& [type, componentSet] : components) {
-        componentSet->removeEntity(entity);
+        componentSet->removeComponent(entity);
     }
 
     entities[entity].mask.reset();
