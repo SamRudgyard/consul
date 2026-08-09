@@ -2,6 +2,7 @@
 #include <utility>
 
 #include "core/consul.hpp"
+#include "core/ecs/components.hpp"
 #include "core/project/asset_library.hpp"
 #include "core/project/scene.hpp"
 #include "graphics/camera/camera_2d.hpp"
@@ -31,27 +32,6 @@ private:
     float rotationSpeedDeg = 90.0f;
 };
 
-class ColouredQuadNode : public Node {
-public:
-    void initialise(std::shared_ptr<AssetLibrary> assets, const Colour& tint)
-    {
-        Mesh mesh = Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f});
-
-        Material material;
-        material.setAlbedo(tint);
-        std::shared_ptr<Material> materialAsset = assets->addMaterial("quadMaterial", material);
-
-        std::shared_ptr<Mesh> meshAsset = assets->addMesh("quadMesh", mesh);
-
-        Model model;
-        model.addPrimitive(std::move(meshAsset), std::move(materialAsset));
-        modelAsset = assets->addModel("quadModel", model);
-    }
-
-private:
-    std::shared_ptr<Model> modelAsset;
-};
-
 class RotateCameraScene : public Scene {
 public:
     void onInit(std::shared_ptr<AssetLibrary> assets) override
@@ -76,9 +56,24 @@ public:
 private:
     void createQuad(std::shared_ptr<AssetLibrary> assets, const glm::vec3& position, const Colour& tint)
     {
-        ColouredQuadNode* quad = getRoot().createChild<ColouredQuadNode>();
-        quad->setPosition(position);
-        quad->initialise(assets, tint);
+        Mesh mesh = Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f});
+
+        Material material;
+        material.setAlbedo(tint);
+        std::shared_ptr<Material> materialAsset = assets->addMaterial("quadMaterial", material);
+
+        std::shared_ptr<Mesh> meshAsset = assets->addMesh("quadMesh", mesh);
+
+        Model model;
+        model.addPrimitive(std::move(meshAsset), std::move(materialAsset));
+        std::shared_ptr<Model> modelAsset = assets->addModel("quadModel", model);
+
+        Transform transform;
+        transform.position = position;
+
+        const Entity entity = getECS().createEntity();
+        getECS().addComponent<Transform>(entity, transform);
+        getECS().addComponent<ModelRenderer>(entity, ModelRenderer{std::move(modelAsset), true});
     }
 
     RotatingCamera2D camera;

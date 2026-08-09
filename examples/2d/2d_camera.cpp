@@ -2,6 +2,7 @@
 #include <utility>
 
 #include "core/consul.hpp"
+#include "core/ecs/components.hpp"
 #include "core/project/asset_library.hpp"
 #include "core/project/scene.hpp"
 #include "graphics/camera/camera_2d.hpp"
@@ -9,9 +10,12 @@
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
 
-class CubeNode : public Node {
+class ExampleScene : public Scene {
 public:
-    void initialise(std::shared_ptr<AssetLibrary> assets) {
+    void onInit(std::shared_ptr<AssetLibrary> assets) override {
+        camera.setPosition({0.0f, 0.0f});
+        defaultShader = assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
+
         Mesh mesh = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
 
         Material material;
@@ -22,22 +26,11 @@ public:
 
         Model model;
         model.addPrimitive(std::move(meshAsset), std::move(materialAsset));
-        modelAsset = assets->addModel("quadModel", model);
-    }
+        std::shared_ptr<Model> modelAsset = assets->addModel("quadModel", model);
 
-private:
-    std::shared_ptr<Model> modelAsset;
-};
-
-class ExampleScene : public Scene {
-public:
-    void onInit(std::shared_ptr<AssetLibrary> assets) override {
-        camera.setPosition({0.0f, 0.0f});
-        defaultShader = assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
-
-        CubeNode* cubeNode = getRoot().createChild<CubeNode>();
-        cubeNode->setPosition({0.0f, 0.0f, 0.0f});
-        cubeNode->initialise(assets);
+        const Entity entity = getECS().createEntity();
+        getECS().addComponent<Transform>(entity);
+        getECS().addComponent<ModelRenderer>(entity, ModelRenderer{std::move(modelAsset), true});
     }
 
     void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override {
