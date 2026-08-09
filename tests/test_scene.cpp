@@ -5,6 +5,7 @@
 #include "core/project/asset_defaults.hpp"
 #include "core/project/asset_library.hpp"
 #include "core/project/asset_manager.hpp"
+#include "core/ecs/components.hpp"
 #include "core/project/importers/gltf_importer.hpp"
 #include "core/project/scene.hpp"
 #include "core/project/scene_manager.hpp"
@@ -53,13 +54,15 @@ namespace
     protected:
         void onInit(std::shared_ptr<AssetLibrary> assets) override
         {
-            model = assets->addModel("Scene Model", Model{});
+            std::shared_ptr<Model> model = assets->addModel("Scene Model", Model{});
             modelObserver = model;
+
+            const Entity entity = getECS().createEntity();
+            getECS().addComponent<ModelRenderer>(entity, ModelRenderer{std::move(model), true});
         }
 
     private:
         std::weak_ptr<Model>& modelObserver;
-        std::shared_ptr<Model> model;
     };
 
     class TestCamera : public Camera
@@ -133,6 +136,21 @@ namespace
 TEST_CASE("destroying an uninitialised scene is safe")
 {
     Scene scene;
+}
+
+TEST_CASE("scenes own independent ECS worlds")
+{
+    Scene firstScene;
+    Scene secondScene;
+
+    const Entity entity = firstScene.getECS().createEntity();
+
+    REQUIRE(firstScene.getECS().isAlive(entity));
+    REQUIRE(firstScene.getECS().getEntityCount() == 1);
+    REQUIRE(secondScene.getECS().getEntityCount() == 0);
+
+    const Scene& constScene = firstScene;
+    REQUIRE(constScene.getECS().isAlive(entity));
 }
 
 TEST_CASE("unloading a scene preserves assets retained by another owner")

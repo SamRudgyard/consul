@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/ecs/ecs.hpp"
 #include "core/node.hpp"
 
 class AssetLibrary;
@@ -19,6 +20,8 @@ public:
 
     Node& getRoot() { return root; }
     const Node& getRoot() const { return root; }
+    ECS& getECS() { return ecs; }
+    const ECS& getECS() const { return ecs; }
     virtual Camera* getActiveCamera() { return nullptr; }
 
 protected:
@@ -30,4 +33,5 @@ protected:
 
 private:
     Node root;
+    ECS ecs;
 };

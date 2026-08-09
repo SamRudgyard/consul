@@ -26,7 +26,7 @@ struct ModelRenderer
     bool visible = true;
 };
 
-struct Camera
+struct CameraComponent
 {
     enum class ProjectionType
     {
