@@ -290,12 +290,15 @@ std::shared_ptr<Mesh> GLTFImporter::loadMesh(unsigned int meshIndex, const glm::
 
     const int materialIndex = primitives[0].value("material", -1);
     std::shared_ptr<Material> material = loadMaterial(materialIndex);
+    if (!material) {
+        material = assetDefaults->getDefaultMaterial();
+    }
+
     Mesh mesh(positions, normals, textureUVs, tangents, indices);
-    mesh.setMaterial(std::move(material));
 
     std::shared_ptr<Mesh> meshAsset = addMesh("Mesh_" + std::to_string(meshIndex), mesh);
     if (currentModel) {
-        currentModel->addMesh(meshAsset, initialTransform);
+        currentModel->addPrimitive(meshAsset, std::move(material), initialTransform);
     }
 
     return meshAsset;
@@ -303,7 +306,7 @@ std::shared_ptr<Mesh> GLTFImporter::loadMesh(unsigned int meshIndex, const glm::
 
 std::shared_ptr<Mesh> GLTFImporter::addMesh(const std::string& name, const Mesh& mesh)
 {
-    return meshManager->add(name, assetDefaults->applyToMesh(mesh));
+    return meshManager->add(name, mesh);
 }
 
 std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)

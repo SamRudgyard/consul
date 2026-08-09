@@ -5,7 +5,6 @@
 #include <memory>
 
 class Material;
-class Mesh;
 class Texture;
 
 class AssetDefaults
@@ -18,7 +17,6 @@ public:
     std::shared_ptr<Texture> getDefaultTexture();
 
     Material applyToMaterial(const Material& material);
-    Mesh applyToMesh(const Mesh& mesh);
 
 private:
     std::shared_ptr<MaterialAssetManager> materialManager;

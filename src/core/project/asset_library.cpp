@@ -51,7 +51,7 @@ std::shared_ptr<Model> AssetLibrary::addModel(const std::string& name, const Mod
 
 std::shared_ptr<Mesh> AssetLibrary::addMesh(const std::string& name, const Mesh& mesh)
 {
-    return meshManager->add(name, assetDefaults->applyToMesh(mesh));
+    return meshManager->add(name, mesh);
 }
 
 std::shared_ptr<Texture> AssetLibrary::addTexture(const std::string& name, const Texture& texture)

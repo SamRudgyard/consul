@@ -1,7 +1,6 @@
 #include "core/project/asset_defaults.hpp"
 
 #include "graphics/material/material.hpp"
-#include "graphics/mesh/mesh.hpp"
 #include "graphics/texture/texture.hpp"
 
 AssetDefaults::AssetDefaults(std::shared_ptr<MaterialAssetManager> materialManager, std::shared_ptr<TextureAssetManager> textureManager)
@@ -46,14 +45,4 @@ Material AssetDefaults::applyToMaterial(const Material& material)
     }
 
     return materialWithDefaults;
-}
-
-Mesh AssetDefaults::applyToMesh(const Mesh& mesh)
-{
-    Mesh meshWithDefaults = mesh;
-    if (!meshWithDefaults.getMaterial()) {
-        meshWithDefaults.setMaterial(getDefaultMaterial());
-    }
-
-    return meshWithDefaults;
 }

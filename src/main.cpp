@@ -22,31 +22,15 @@ public:
         material.setAlbedo(Colour(20, 200, 200));
         std::shared_ptr<Material> materialAsset = assets->addMaterial("cubeMaterial", material);
 
-        mesh.setMaterial(std::move(materialAsset));
         std::shared_ptr<Mesh> meshAsset = assets->addMesh("cubeMesh", mesh);
         std::shared_ptr<Mesh> outlineMeshAsset = assets->addMesh("cubeOutlineMesh", outlineMesh);
 
         Model model;
-        model.addMesh(std::move(meshAsset));
-        model.addMesh(std::move(outlineMeshAsset));
+        model.addPrimitive(std::move(meshAsset), std::move(materialAsset));
+        model.addPrimitive(std::move(outlineMeshAsset), assets->getDefaultMaterial());
         modelAsset = assets->addModel("cubeModel", model);
     }
 
-protected:
-    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override
-    {
-        static float r = 1.5f;
-        static float anglePerSecond = glm::radians(45.0f);
-
-        incrementRotationRad({0.0f, anglePerSecond*((float)deltaTime), 0.0f});
-        float currentAngle = getRotationY();
-        setPosition({r*std::cos(currentAngle), 0.0f, r*std::sin(currentAngle)});
-
-        // Update the model's mesh data to reflect the new position/rotation
-        if (modelAsset) {
-            modelAsset->setTransform(getWorldTransform());
-        }
-    }
 private:
     std::shared_ptr<Model> modelAsset;
 };

@@ -1,18 +1,10 @@
 #pragma once
 
 #include <bitset>
-#include <memory>
-#include <string>
-#include <vector>
-#include <iostream>
 #include <utility>
+#include <vector>
 
 #include "glm/glm.hpp"
-#include "graphics/camera/camera.hpp"
-#include "graphics/colour.hpp"
-#include "glad/glad.h"
-
-class Material;
 
 enum class AttributeType
 {
@@ -85,18 +77,6 @@ public:
     std::vector<unsigned int> getIndices() const;
 
     /**
-     * Sets the material for this Mesh.
-     * @param material The new material for this Mesh.
-     */
-    void setMaterial(std::shared_ptr<Material> material) { this->material = std::move(material); }
-
-    /**
-     * Gets the material for this Mesh.
-     * @return The material for this Mesh.
-     */
-    std::shared_ptr<Material> getMaterial() const { return material; }
-
-    /**
      * Set the draw mode of this Mesh.
      * @param mode The draw mode.
      */
@@ -107,22 +87,6 @@ public:
      * @return The draw mode.
      */
     DrawMode getDrawMode() const { return drawMode; }
-
-    /**
-     * Set the model matrix for this Mesh.
-     * The model matrix converts from vertex attributes from local
-     * model space to world space.
-     * @param matrix The new model matrix.
-     */
-    void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }
-
-    /**
-     * Gets the current model matrix for this Mesh.
-     * The model matrix converts from vertex attributes from local
-     * model space to world space.
-     * @return The current model matrix.
-     */
-    const glm::mat4& getModelMatrix() const { return modelMatrix; }
 
     /**
      * Gets the number of indices associated with this Mesh.
@@ -154,13 +118,11 @@ public:
     void clean(AttributeType attribute);
 
 private:
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> textureCoords;
     std::vector<glm::vec4> tangents; // TODO: Why vec4 for tangents?
     std::vector<unsigned int> indices;
-    std::shared_ptr<Material> material;
     DrawMode drawMode = DrawMode::TRIANGLES;
     unsigned int indexCount = 0;
     MeshUploadMask uploadMask;

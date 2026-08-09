@@ -41,22 +41,11 @@ public:
         material.setAlbedo(tint);
         std::shared_ptr<Material> materialAsset = assets->addMaterial("quadMaterial", material);
 
-        mesh.setMaterial(std::move(materialAsset));
         std::shared_ptr<Mesh> meshAsset = assets->addMesh("quadMesh", mesh);
 
         Model model;
-        model.addMesh(std::move(meshAsset));
+        model.addPrimitive(std::move(meshAsset), std::move(materialAsset));
         modelAsset = assets->addModel("quadModel", model);
-    }
-
-protected:
-    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override
-    {
-        if (!modelAsset) {
-            return;
-        }
-
-        modelAsset->setTransform(getLocalTransform());
     }
 
 private:

@@ -75,7 +75,7 @@ namespace
     public:
         Camera* getActiveCamera() override { return &camera; }
 
-        std::shared_ptr<Mesh> getMesh() const { return mesh; }
+        const ModelPrimitive& getPrimitive() const { return model->getPrimitives().front(); }
 
     protected:
         void onInit(std::shared_ptr<AssetLibrary> assets) override
@@ -88,18 +88,20 @@ namespace
             std::shared_ptr<Material> materialAsset = assets->addMaterial("Test Material", material);
 
             Mesh meshData;
-            meshData.setMaterial(std::move(materialAsset));
+            std::shared_ptr<Mesh> mesh = assets->addMesh("Test Mesh", meshData);
             glm::mat4 modelMatrix(1.0f);
             modelMatrix[3][0] = 3.0f;
             modelMatrix[3][1] = 4.0f;
-            meshData.setModelMatrix(modelMatrix);
-            mesh = assets->addMesh("Test Mesh", meshData);
+
+            Model modelData;
+            modelData.addPrimitive(std::move(mesh), std::move(materialAsset), modelMatrix);
+            model = assets->addModel("Test Model", modelData);
         }
 
     private:
         TestCamera camera;
         std::shared_ptr<Shader> shader;
-        std::shared_ptr<Mesh> mesh;
+        std::shared_ptr<Model> model;
     };
 
     class CapturingRenderer : public Renderer
@@ -168,7 +170,7 @@ TEST_CASE("shutting down a scene releases its unshared assets")
     REQUIRE(assets->getModels().empty());
 }
 
-TEST_CASE("scene rendering submits active mesh state to the renderer")
+TEST_CASE("scene rendering submits active model primitives to the renderer")
 {
     std::shared_ptr<AssetLibrary> assets = makeAssetLibrary();
     SceneManager scenes;
@@ -182,8 +184,8 @@ TEST_CASE("scene rendering submits active mesh state to the renderer")
     scenes.render(renderer);
 
     REQUIRE(renderer.submittedItems.size() == 1);
-    REQUIRE(renderer.submittedItems.front().mesh == scenePointer->getMesh());
-    REQUIRE(renderer.submittedItems.front().material == scenePointer->getMesh()->getMaterial());
+    REQUIRE(renderer.submittedItems.front().mesh == scenePointer->getPrimitive().mesh);
+    REQUIRE(renderer.submittedItems.front().material == scenePointer->getPrimitive().material);
     REQUIRE(renderer.submittedItems.front().modelMatrix[3][0] == 3.0f);
     REQUIRE(renderer.submittedItems.front().modelMatrix[3][1] == 4.0f);
 }

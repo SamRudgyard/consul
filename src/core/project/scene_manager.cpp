@@ -99,10 +99,11 @@ void SceneManager::render(Renderer& renderer)
         return;
     }
 
-    auto uploadMesh = [&renderer](const std::shared_ptr<Mesh>& mesh) {
+    auto uploadPrimitive = [&renderer](const ModelPrimitive& primitive) {
+        const std::shared_ptr<Mesh>& mesh = primitive.mesh;
         renderer.uploadMesh(mesh);
 
-        std::shared_ptr<Material> material = mesh->getMaterial();
+        const std::shared_ptr<Material>& material = primitive.material;
         if (!material) {
             return;
         }
@@ -139,32 +140,20 @@ void SceneManager::render(Renderer& renderer)
         return;
     }
 
+    std::vector<RenderItem> renderItems;
+
     for (const std::shared_ptr<Model>& model : assets->getModels()) {
         if (!model) {
             continue;
         }
 
-        const std::vector<std::shared_ptr<Mesh>>& meshes = model->getMeshes();
-        std::vector<glm::mat4> transforms = model->getTransformationMatrices();
-        for (unsigned int iMesh = 0; iMesh < meshes.size(); iMesh++) {
-            const std::shared_ptr<Mesh>& mesh = meshes[iMesh];
-            if (!mesh) {
+        for (const ModelPrimitive& primitive : model->getPrimitives()) {
+            if (!primitive.mesh) {
                 continue;
             }
 
-            mesh->setModelMatrix(transforms[iMesh]);
-            uploadMesh(mesh);
-        }
-    }
-    
-    std::vector<RenderItem> renderItems;
-    const std::vector<std::shared_ptr<Mesh>> meshes = assets->getMeshes();
-    renderItems.reserve(meshes.size());
-
-    for (const std::shared_ptr<Mesh>& mesh : meshes) {
-        if (mesh) {
-            uploadMesh(mesh);
-            renderItems.push_back({mesh, mesh->getMaterial(), mesh->getModelMatrix()});
+            uploadPrimitive(primitive);
+            renderItems.push_back({primitive.mesh, primitive.material, primitive.localTransform});
         }
     }
 
