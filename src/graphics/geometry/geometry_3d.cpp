@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cmath>
+#include <stdexcept>
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
     #define GLM_ENABLE_EXPERIMENTAL
