@@ -13,12 +13,7 @@ public:
     static constexpr float MAX_SECONDS_RECORDED = 60.0f;
     static constexpr std::size_t INVALID_METHOD_INDEX = (std::size_t)(-1);
 
-    static Profiler& get()
-    {
-        static Profiler instance;
-        return instance;
-    }
-
+    Profiler() = default;
     Profiler(const Profiler&) = delete;
     Profiler& operator=(const Profiler&) = delete;
 
@@ -34,7 +29,6 @@ public:
     const std::vector<float>* getMethodHistoryMs(const std::string& methodName) const;
 
 private:
-    Profiler() = default;
     std::size_t ensureMethodIndex(const char* methodName);
 
     std::unordered_map<std::string, std::size_t> methodIndices;
