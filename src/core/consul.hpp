@@ -27,7 +27,7 @@ public:
      * Initialise a Consul application with the given window configuration.
      * @param window Window configuration settings.
      */
-    Consul(Window& window) { engine->window = window; initialiseEngine(); };
+    Consul(Window& window) { engine.window = window; initialiseEngine(); };
 
     ~Consul();
 
@@ -49,7 +49,7 @@ public:
             return;
         }
 
-        engine->time.targetFrameTime = 1.0 / (double)fps;
+        engine.time.targetFrameTime = 1.0 / (double)fps;
     }
 
     /**
@@ -66,10 +66,10 @@ public:
 
 private:
     Console& console = Console::get();
+    Engine& engine = Engine::get();
     UserInterface ui;
     std::unique_ptr<Platform> platform;
     std::unique_ptr<Renderer> renderer;
-    std::unique_ptr<Engine> engine = std::make_unique<Engine>();
     bool close = false;
 
     void initialiseWindow(PlatformType platformType);

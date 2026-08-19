@@ -13,8 +13,8 @@ public:
 
     bool isInitialised = false;
 
-    void init(Engine& engine);
-    void update(Engine& engine, double deltaTime);
+    void init();
+    void update();
     void shutdown();
 
     ECS& getECS() { return ecs; }
@@ -22,8 +22,8 @@ public:
     virtual Camera* getActiveCamera() { return nullptr; }
 
 protected:
-    virtual void onInit(Engine& engine) {} // User hook for scene-specific initialization logic
-    virtual void onUpdate(Engine& engine, double deltaTime) {} // User hook for scene-specific update logic
+    virtual void onInit() {} // User hook for scene-specific initialization logic
+    virtual void onUpdate() {} // User hook for scene-specific update logic
     virtual void onShutdown() {} // User hook for scene-specific shutdown logic
 
 private:

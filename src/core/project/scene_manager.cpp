@@ -29,7 +29,7 @@ namespace
     }
 }
 
-void SceneManager::loadScene(std::unique_ptr<Scene> scene, Engine& engine)
+void SceneManager::loadScene(std::unique_ptr<Scene> scene)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -44,7 +44,7 @@ void SceneManager::loadScene(std::unique_ptr<Scene> scene, Engine& engine)
         return;
     }
 
-    currentScene->init(engine);
+    currentScene->init();
 }
 
 void SceneManager::unloadScene()
@@ -63,7 +63,7 @@ void SceneManager::unloadScene()
     currentScene.reset();
 }
 
-void SceneManager::update(Engine& engine, double deltaTime)
+void SceneManager::update()
 {
     CONSUL_PROFILE_METHOD();
 
@@ -76,10 +76,10 @@ void SceneManager::update(Engine& engine, double deltaTime)
         return;
     }
 
-    currentScene->update(engine, deltaTime);
+    currentScene->update();
 }
 
-void SceneManager::render(Engine& engine, Renderer& renderer)
+void SceneManager::render(Renderer& renderer)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -93,7 +93,7 @@ void SceneManager::render(Engine& engine, Renderer& renderer)
         return;
     }
 
-    const std::vector<std::shared_ptr<Shader>> shaders = engine.getShaderAssetManager()->getAssets();
+    const std::vector<std::shared_ptr<Shader>> shaders = Engine::get().getShaderAssetManager()->getAssets();
     if (shaders.empty()) {
         Console::get().error("[SceneManager::render] Cannot render assets without a shader!");
         return;

@@ -73,7 +73,7 @@ void Camera3D::updateProjectionMatrix()
     glm::mat4 projection = glm::mat4(1.0f);
 
     // Use FoV angle from larger dimension, see https://stackoverflow.com/questions/26997631/limiting-fov-both-horizontally-and-vertically
-    Window& window = Engine::get()->window;
+    Window& window = Engine::get().window;
     float tanFov = tan(0.5f*FOVdeg*DEG_TO_RAD);
     const float safeHeight = std::max(window.framebufferSize.y, 1.0f);
     float aspRat = window.framebufferSize.x / safeHeight;
@@ -109,7 +109,7 @@ void Camera3D::updateViewMatrix()
 }
 
 void Camera3D::handleInputs(double deltaTime) {
-    InputSystem& input = Engine::get()->inputSystem;
+    InputSystem& input = Engine::get().inputSystem;
 
     if (input.isKeyDown(KeyboardKey::KEY_W)) {
         position += speed*orientation*(float)deltaTime;

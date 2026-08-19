@@ -60,11 +60,7 @@ std::string getProfilerLegendMethodLabel(const std::string& fullMethodName)
 
 void PerformanceWindow::update()
 {
-    if (time == nullptr) {
-        return;
-    }
-
-    const float deltaTime = (float)(time->deltaTime);
+    const float deltaTime = (float)(time.deltaTime);
     const float currentFps = deltaTime > 0.0f ? 1.0f / deltaTime : 0.0f;
 
     fpsHistory.push_back(currentFps);
@@ -98,11 +94,11 @@ void PerformanceWindow::update()
     if (ImGui::BeginTabBar("##performance_tabs")) {
         if (ImGui::BeginTabItem("Overview")) {
             if (ImGui::CollapsingHeader("Time", ImGuiTreeNodeFlags_DefaultOpen)) {
-                ImGui::Text("Run Time:    %.3f s", time->currentTime);
-                ImGui::Text("Update Time: %.3f ms", time->updateTime*SECONDS_TO_MILLISECONDS);
-                ImGui::Text("Render Time: %.3f ms", time->renderTime*SECONDS_TO_MILLISECONDS);
-                ImGui::Text("Frame Time:  %.3f ms", time->deltaTime*SECONDS_TO_MILLISECONDS);
-                ImGui::Text("FPS:         %.0f", time->deltaTime > 0.0 ? 1.0 / time->deltaTime : 0.0);
+                ImGui::Text("Run Time:    %.3f s", time.currentTime);
+                ImGui::Text("Update Time: %.3f ms", time.updateTime*SECONDS_TO_MILLISECONDS);
+                ImGui::Text("Render Time: %.3f ms", time.renderTime*SECONDS_TO_MILLISECONDS);
+                ImGui::Text("Frame Time:  %.3f ms", time.deltaTime*SECONDS_TO_MILLISECONDS);
+                ImGui::Text("FPS:         %.0f", time.deltaTime > 0.0 ? 1.0 / time.deltaTime : 0.0);
             }
 
             if (ImGui::CollapsingHeader("FPS Plot", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -136,15 +132,7 @@ void PerformanceWindow::update()
         }
 
         if (ImGui::BeginTabItem("Profiler")) {
-            if (profiler == nullptr) {
-                ImGui::TextUnformatted("Profiler unavailable.");
-                ImGui::EndTabItem();
-                ImGui::EndTabBar();
-                ImGui::End();
-                return;
-            }
-
-            const std::vector<std::string>& methods = profiler->getRegisteredMethods();
+            const std::vector<std::string>& methods = profiler.getRegisteredMethods();
             if (methods.empty()) {
                 ImGui::TextUnformatted("No methods profiled yet.");
                 ImGui::TextUnformatted("Use CONSUL_PROFILE_METHOD() or CONSUL_PROFILE_SCOPE(\"name\") in methods you want to track.");
@@ -213,7 +201,7 @@ void PerformanceWindow::update()
 
             drawTimeRangeCombo("Time Range##profiler_range", selectedProfilerRange);
 
-            const std::vector<float>& frameDurations = profiler->getFrameDurations();
+            const std::vector<float>& frameDurations = profiler.getFrameDurations();
 
             if (nSelectedMethods == 0) {
                 ImGui::TextUnformatted("No methods selected.");
@@ -237,7 +225,7 @@ void PerformanceWindow::update()
                     continue;
                 }
 
-                const std::vector<float>* methodHistoryMs = profiler->getMethodHistoryMs(methods[i]);
+                const std::vector<float>* methodHistoryMs = profiler.getMethodHistoryMs(methods[i]);
                 if (methodHistoryMs == nullptr || methodHistoryMs->empty()) {
                     continue;
                 }
@@ -280,7 +268,7 @@ void PerformanceWindow::update()
                     continue;
                 }
 
-                const std::vector<float>* methodHistoryMs = profiler->getMethodHistoryMs(methods[methodIndex]);
+                const std::vector<float>* methodHistoryMs = profiler.getMethodHistoryMs(methods[methodIndex]);
                 if (methodHistoryMs == nullptr || methodHistoryMs->size() < sampleCount) {
                     continue;
                 }
@@ -338,7 +326,7 @@ void PerformanceWindow::update()
                 ImPlot::SetupAxisLimits(ImAxis_Y1, yMin, yMax, ImPlotCond_Always);
                 for (std::size_t plotOrderIndex = 0; plotOrderIndex < methodRuntimeOrder.size(); plotOrderIndex++) {
                     const std::size_t methodIndex = methodRuntimeOrder[plotOrderIndex].first;
-                    const std::vector<float>* methodHistoryMs = profiler->getMethodHistoryMs(methods[methodIndex]);
+                    const std::vector<float>* methodHistoryMs = profiler.getMethodHistoryMs(methods[methodIndex]);
                     if (methodHistoryMs == nullptr || methodHistoryMs->size() < sampleCount) {
                         continue;
                     }

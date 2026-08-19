@@ -25,6 +25,5 @@ public:
     virtual glm::mat4 getCameraMatrix() const = 0;
 
 protected:
-    Engine* context = Engine::get();
     ProjectionType projectionType = ProjectionType::PERSPECTIVE;
 };

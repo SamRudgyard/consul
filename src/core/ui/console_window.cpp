@@ -11,8 +11,7 @@ void ConsoleWindow::update()
         return;
     }
 
-    Engine* context = Engine::get();
-    Window& window = context->window;
+    Window& window = Engine::get().window;
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 workPos = viewport ? viewport->WorkPos : ImVec2(0.0f, 0.0f);

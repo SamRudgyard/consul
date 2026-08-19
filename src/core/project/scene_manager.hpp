@@ -13,12 +13,13 @@ public:
     SceneManager() = default;
     ~SceneManager() = default;
 
-    void loadScene(std::unique_ptr<Scene> newScene, Engine& engine);
+    void loadScene(std::unique_ptr<Scene> newScene);
     void unloadScene();
     bool hasScene() const { return currentScene != nullptr; }
 
-    void update(Engine& engine, double deltaTime);
-    void render(Engine& engine, Renderer& renderer);
+
+    void update();
+    void render(Renderer& renderer);
     void shutdown();
 
 private:

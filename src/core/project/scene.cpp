@@ -2,21 +2,21 @@
 #include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
 
-void Scene::init(Engine& engine)
+void Scene::init()
 {
     CONSUL_PROFILE_METHOD();
 
     if (!isInitialised) {
-        onInit(engine);
+        onInit();
         isInitialised = true;
     }
 }
 
-void Scene::update(Engine& engine, double deltaTime)
+void Scene::update()
 {
     CONSUL_PROFILE_METHOD();
 
-    onUpdate(engine, deltaTime);
+    onUpdate();
 }
 
 void Scene::shutdown()

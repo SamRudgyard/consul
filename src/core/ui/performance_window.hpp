@@ -21,8 +21,8 @@ public:
 
 private:
     bool isOpen = true;
-    Time* time = &Engine::get()->time;
-    Profiler* profiler = &Engine::get()->profiler;
+    Time& time = Engine::get().time;
+    Profiler& profiler = Engine::get().profiler;
 
     // FPS graph
     static constexpr unsigned int MAX_SECONDS_RECORDED = 60;

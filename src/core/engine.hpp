@@ -3,7 +3,9 @@
 #include <memory>
 
 #include "core/profiling/profiler.hpp"
+#include "core/project/asset_defaults.hpp"
 #include "core/project/asset_manager.hpp"
+#include "core/project/importers/gltf_importer.hpp"
 #include "core/project/scene_manager.hpp"
 #include "core/time.hpp"
 #include "core/window.hpp"
@@ -16,10 +18,10 @@ class Engine
 {
 public:
 
-    static Engine* get()
+    static Engine& get()
     {
         static Engine instance;
-        return &instance;
+        return instance;
     }
 
     Engine(const Engine&) = delete; // Delete copy constructor
@@ -38,8 +40,8 @@ public:
     FragmentShaderAssetManager* getFragmentShaderAssetManager() { return &fragmentShaderManager; }
     TextureAssetManager* getTextureAssetManager() { return &textureManager; }
 
-    AssetDefaults& getAssetDefaults() { return *assetDefaults; }
-    GLTFImporter& getGLTFImporter() { return *gltfImporter; }
+    AssetDefaults& getAssetDefaults() { return assetDefaults; }
+    GLTFImporter& getGLTFImporter() { return gltfImporter; }
     SceneManager* getSceneManager() { return &sceneManager; }
 
 private:
@@ -54,7 +56,8 @@ private:
     FragmentShaderAssetManager fragmentShaderManager;
     TextureAssetManager textureManager;
 
-    std::unique_ptr<AssetDefaults> assetDefaults;
-    std::unique_ptr<GLTFImporter> gltfImporter;
+    AssetDefaults assetDefaults = AssetDefaults(materialManager, textureManager);
+    GLTFImporter gltfImporter = GLTFImporter(modelManager, meshManager, materialManager, textureManager, assetDefaults);
+
     SceneManager sceneManager;
 };

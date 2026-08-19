@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/engine.hpp"
 #include "graphics/renderer/renderer.hpp"
 
 enum class PlatformType
@@ -30,7 +29,4 @@ public:
     virtual void setMousePosition(unsigned int x, unsigned int y) = 0;
 
     virtual double getTime() = 0;
-
-protected:
-    Engine* context = Engine::get();
 };
