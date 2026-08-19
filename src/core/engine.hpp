@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "core/profiling/profiler.hpp"
 #include "core/project/asset_manager.hpp"
 #include "core/project/scene_manager.hpp"
 #include "core/time.hpp"
@@ -14,8 +15,12 @@ class GLTFImporter;
 class Engine
 {
 public:
-    Engine();
-    ~Engine();
+
+    static Engine* get()
+    {
+        static Engine instance;
+        return &instance;
+    }
 
     Engine(const Engine&) = delete; // Delete copy constructor
     Engine& operator=(const Engine&) = delete; // Delete copy assignment operator
@@ -23,6 +28,7 @@ public:
     Window window;
     Time time;
     InputSystem inputSystem;
+    Profiler profiler;
 
     MeshAssetManager* getMeshAssetManager() { return &meshManager; }
     ModelAssetManager* getModelAssetManager() { return &modelManager; }
@@ -37,6 +43,9 @@ public:
     SceneManager* getSceneManager() { return &sceneManager; }
 
 private:
+    Engine() = default;
+    ~Engine() = default;
+
     MeshAssetManager meshManager;
     ModelAssetManager modelManager;
     MaterialAssetManager materialManager;
