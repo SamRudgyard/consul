@@ -10,7 +10,7 @@ class Texture;
 class AssetDefaults
 {
 public:
-    AssetDefaults(std::shared_ptr<MaterialAssetManager> materialManager, std::shared_ptr<TextureAssetManager> textureManager);
+    AssetDefaults(MaterialAssetManager& materialManager, TextureAssetManager& textureManager);
     ~AssetDefaults() = default;
 
     std::shared_ptr<Material> getDefaultMaterial();
@@ -19,8 +19,8 @@ public:
     Material applyToMaterial(const Material& material);
 
 private:
-    std::shared_ptr<MaterialAssetManager> materialManager;
-    std::shared_ptr<TextureAssetManager> textureManager;
+    MaterialAssetManager& materialManager;
+    TextureAssetManager& textureManager;
     std::weak_ptr<Material> defaultMaterial;
     std::weak_ptr<Texture> defaultTexture;
 };

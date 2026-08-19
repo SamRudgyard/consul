@@ -12,7 +12,6 @@
 #include "graphics/renderer/renderer.hpp"
 
 enum class PlatformType;
-class AssetDefaults;
 class GLTFImporter;
 
 class Consul
@@ -59,8 +58,6 @@ public:
     */
     Renderer& getRenderer() { return *renderer; }
 
-    GLTFImporter& getGLTFImporter() { return *gltfImporter; }
-
     /**
      * Loads a scene. Ownership is transferred to the engine.
      * The previous scene (if any) will be shut down.
@@ -74,8 +71,6 @@ private:
     std::unique_ptr<Renderer> renderer;
     std::unique_ptr<Engine> engine = std::make_unique<Engine>();
     bool close = false;
-    std::shared_ptr<AssetDefaults> assetDefaults = nullptr;
-    std::shared_ptr<GLTFImporter> gltfImporter = nullptr;
 
     void initialiseWindow(PlatformType platformType);
     void initialiseRenderer(GraphicsAPI gfxApi);

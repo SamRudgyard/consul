@@ -3,7 +3,7 @@
 #include "graphics/material/material.hpp"
 #include "graphics/texture/texture.hpp"
 
-AssetDefaults::AssetDefaults(std::shared_ptr<MaterialAssetManager> materialManager, std::shared_ptr<TextureAssetManager> textureManager)
+AssetDefaults::AssetDefaults(MaterialAssetManager& materialManager, TextureAssetManager& textureManager)
     : materialManager(materialManager),
       textureManager(textureManager)
 {
@@ -16,7 +16,7 @@ std::shared_ptr<Material> AssetDefaults::getDefaultMaterial()
         Material material;
         material.setAlbedoTexture(getDefaultTexture());
         material.setSpecularTexture(getDefaultTexture());
-        materialAsset = materialManager->add("Default Material", material);
+        materialAsset = materialManager.add("Default Material", material);
         defaultMaterial = materialAsset;
     }
 
@@ -27,7 +27,7 @@ std::shared_ptr<Texture> AssetDefaults::getDefaultTexture()
 {
     std::shared_ptr<Texture> texture = defaultTexture.lock();
     if (!texture) {
-        texture = textureManager->add("Default Texture", Texture());
+        texture = textureManager.add("Default Texture", Texture());
         defaultTexture = texture;
     }
 

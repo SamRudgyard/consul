@@ -20,11 +20,11 @@ class GLTFImporter
 {
 public:
     GLTFImporter(
-        std::shared_ptr<ModelAssetManager> modelManager,
-        std::shared_ptr<MeshAssetManager> meshManager,
-        std::shared_ptr<MaterialAssetManager> materialManager,
-        std::shared_ptr<TextureAssetManager> textureManager,
-        std::shared_ptr<AssetDefaults> assetDefaults
+        ModelAssetManager& modelManager,
+        MeshAssetManager& meshManager,
+        MaterialAssetManager& materialManager,
+        TextureAssetManager& textureManager,
+        AssetDefaults& assetDefaults
     );
     ~GLTFImporter() = default;
 
@@ -37,11 +37,11 @@ public:
     std::shared_ptr<Model> import(const std::string& name, const std::string& filePath);
 
 private:
-    std::shared_ptr<ModelAssetManager> modelManager;
-    std::shared_ptr<MeshAssetManager> meshManager;
-    std::shared_ptr<MaterialAssetManager> materialManager;
-    std::shared_ptr<TextureAssetManager> textureManager;
-    std::shared_ptr<AssetDefaults> assetDefaults;
+    ModelAssetManager& modelManager;
+    MeshAssetManager& meshManager;
+    MaterialAssetManager& materialManager;
+    TextureAssetManager& textureManager;
+    AssetDefaults& assetDefaults;
 
     Model* currentModel = nullptr;
     std::string currentFileDirectory = "";

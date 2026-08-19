@@ -4,8 +4,6 @@
 #include <utility>
 
 #include "platforms/platform_glfw.hpp"
-#include "core/project/asset_defaults.hpp"
-#include "core/project/importers/gltf_importer.hpp"
 #include "graphics/renderer/opengl/opengl_renderer.hpp"
 #include "imgui.h"
 #include "implot.h"
@@ -21,8 +19,6 @@ void Consul::initialiseEngine()
     console.log("---- CONSUL ----");
 
     console.log("[Consul] Initialising Consul...");
-    assetDefaults = std::make_shared<AssetDefaults>(materialAssets, textureAssets);
-    gltfImporter = std::make_shared<GLTFImporter>(modelAssets, meshAssets, materialAssets, textureAssets, assetDefaults);
     initialiseWindow(PlatformType::GLFW);
     console.log("[Consul] Windowing platform initialised.");
 

@@ -17,11 +17,11 @@
 #include "utils.hpp"
 
 GLTFImporter::GLTFImporter(
-    std::shared_ptr<ModelAssetManager> modelManager,
-    std::shared_ptr<MeshAssetManager> meshManager,
-    std::shared_ptr<MaterialAssetManager> materialManager,
-    std::shared_ptr<TextureAssetManager> textureManager,
-    std::shared_ptr<AssetDefaults> assetDefaults
+    ModelAssetManager& modelManager,
+    MeshAssetManager& meshManager,
+    MaterialAssetManager& materialManager,
+    TextureAssetManager& textureManager,
+    AssetDefaults& assetDefaults
 ) : modelManager(modelManager),
     meshManager(meshManager),
     materialManager(materialManager),
@@ -82,8 +82,8 @@ std::shared_ptr<Model> GLTFImporter::import(const std::string& name, const std::
         traverseNode(nodeIndex);
     }
 
-    std::shared_ptr<Model> modelAsset = modelManager->add(name, model);
-    modelManager->setSourcePath(modelAsset, filePath);
+    std::shared_ptr<Model> modelAsset = modelManager.add(name, model);
+    modelManager.setSourcePath(modelAsset, filePath);
 
     resetImportState();
 
@@ -291,7 +291,7 @@ std::shared_ptr<Mesh> GLTFImporter::loadMesh(unsigned int meshIndex, const glm::
     const int materialIndex = primitives[0].value("material", -1);
     std::shared_ptr<Material> material = loadMaterial(materialIndex);
     if (!material) {
-        material = assetDefaults->getDefaultMaterial();
+        material = assetDefaults.getDefaultMaterial();
     }
 
     Mesh mesh(positions, normals, textureUVs, tangents, indices);
@@ -306,7 +306,7 @@ std::shared_ptr<Mesh> GLTFImporter::loadMesh(unsigned int meshIndex, const glm::
 
 std::shared_ptr<Mesh> GLTFImporter::addMesh(const std::string& name, const Mesh& mesh)
 {
-    return meshManager->add(name, mesh);
+    return meshManager.add(name, mesh);
 }
 
 std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
@@ -337,8 +337,8 @@ std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
             return;
         }
 
-        std::shared_ptr<Texture> texture = textureManager->add(uri, Texture(uri, type));
-        textureManager->setSourcePath(texture, uri);
+        std::shared_ptr<Texture> texture = textureManager.add(uri, Texture(uri, type));
+        textureManager.setSourcePath(texture, uri);
         switch (type) {
             case TextureType::DIFFUSE:
                 material.setAlbedoTexture(texture);
@@ -364,7 +364,7 @@ std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
 
 std::shared_ptr<Material> GLTFImporter::addMaterial(const std::string& name, const Material& material)
 {
-    return materialManager->add(name, assetDefaults->applyToMaterial(material));
+    return materialManager.add(name, assetDefaults.applyToMaterial(material));
 }
 
 std::vector<glm::vec2> GLTFImporter::toVec2(const std::vector<float> floatVec)
