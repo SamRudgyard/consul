@@ -189,6 +189,7 @@ void Consul::endTick()
     renderer->releaseExpiredResources();
 
     engine->getMeshAssetManager()->removeExpiredAssets();
+    engine->getModelAssetManager()->removeExpiredAssets();
     engine->getMaterialAssetManager()->removeExpiredAssets();
     engine->getTextureAssetManager()->removeExpiredAssets();
     engine->getShaderAssetManager()->removeExpiredAssets();
