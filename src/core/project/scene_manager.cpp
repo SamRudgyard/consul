@@ -6,9 +6,9 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "core/console/console.hpp"
+#include "core/engine.hpp"
 #include "core/ecs/components.hpp"
 #include "core/profiling/profile_method.hpp"
-#include "core/project/asset_library.hpp"
 #include "graphics/camera/camera.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
@@ -29,14 +29,9 @@ namespace
     }
 }
 
-void SceneManager::loadScene(std::unique_ptr<Scene> scene)
+void SceneManager::loadScene(std::unique_ptr<Scene> scene, Engine& engine)
 {
     CONSUL_PROFILE_METHOD();
-
-    if (!assets) {
-        Console::get().error("[SceneManager::loadScene] Cannot load scene - assets are not assigned!");
-        return;
-    }
 
     // Close previous scene's assets
     if (currentScene) {
@@ -49,7 +44,7 @@ void SceneManager::loadScene(std::unique_ptr<Scene> scene)
         return;
     }
 
-    currentScene->init(assets);
+    currentScene->init(engine);
 }
 
 void SceneManager::unloadScene()
@@ -68,17 +63,7 @@ void SceneManager::unloadScene()
     currentScene.reset();
 }
 
-void SceneManager::assignAssets(std::shared_ptr<AssetLibrary> assets)
-{
-    if (!assets) {
-        Console::get().error("[SceneManager::assignAssets] Provided assets are null_ptr!");
-        return;
-    }
-
-    this->assets = assets;
-}
-
-void SceneManager::update(double deltaTime)
+void SceneManager::update(Engine& engine, double deltaTime)
 {
     CONSUL_PROFILE_METHOD();
 
@@ -91,14 +76,14 @@ void SceneManager::update(double deltaTime)
         return;
     }
 
-    currentScene->update(assets, deltaTime);
+    currentScene->update(engine, deltaTime);
 }
 
-void SceneManager::render(Renderer& renderer)
+void SceneManager::render(Engine& engine, Renderer& renderer)
 {
     CONSUL_PROFILE_METHOD();
 
-    if (!currentScene || !currentScene->isInitialised || !assets) {
+    if (!currentScene || !currentScene->isInitialised) {
         return;
     }
 
@@ -108,7 +93,7 @@ void SceneManager::render(Renderer& renderer)
         return;
     }
 
-    const std::vector<std::shared_ptr<Shader>> shaders = assets->getShaders();
+    const std::vector<std::shared_ptr<Shader>> shaders = engine.getShaderAssetManager()->getAssets();
     if (shaders.empty()) {
         Console::get().error("[SceneManager::render] Cannot render assets without a shader!");
         return;

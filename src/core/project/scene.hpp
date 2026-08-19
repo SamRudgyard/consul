@@ -1,11 +1,9 @@
 #pragma once
 
-#include <memory>
-
 #include "core/ecs/ecs.hpp"
 
-class AssetLibrary;
 class Camera;
+class Engine;
 
 class Scene
 {
@@ -15,8 +13,8 @@ public:
 
     bool isInitialised = false;
 
-    void init(std::shared_ptr<AssetLibrary> assets);
-    void update(std::shared_ptr<AssetLibrary> assets, double deltaTime);
+    void init(Engine& engine);
+    void update(Engine& engine, double deltaTime);
     void shutdown();
 
     ECS& getECS() { return ecs; }
@@ -24,8 +22,8 @@ public:
     virtual Camera* getActiveCamera() { return nullptr; }
 
 protected:
-    virtual void onInit(std::shared_ptr<AssetLibrary> assets) {} // User hook for scene-specific initialization logic
-    virtual void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) {} // User hook for scene-specific update logic
+    virtual void onInit(Engine& engine) {} // User hook for scene-specific initialization logic
+    virtual void onUpdate(Engine& engine, double deltaTime) {} // User hook for scene-specific update logic
     virtual void onShutdown() {} // User hook for scene-specific shutdown logic
 
 private:
