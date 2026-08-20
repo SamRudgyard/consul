@@ -35,8 +35,12 @@ struct CameraComponent
     };
 
     ProjectionType projectionType = ProjectionType::PERSPECTIVE;
-    float fov = 60.0f;
-    float aspectRatio = 1.0f;
+    float fov = 60.0f; // Vertical field of view in degrees
+    float orthographicHeight = 2.0f; // Vertical view size in world units
     float nearPlane = 0.1f;
     float farPlane = 1000.0f;
+
+    [[nodiscard]] glm::mat4 getProjectionMatrix(float framebufferAspectRatio) const;
+    [[nodiscard]] glm::mat4 getViewMatrix(const Transform& transform) const;
+    [[nodiscard]] glm::mat4 getCameraMatrix(const Transform& transform, float framebufferAspectRatio) const;
 };
