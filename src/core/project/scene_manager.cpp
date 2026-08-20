@@ -88,7 +88,7 @@ void SceneManager::render(Renderer& renderer)
     }
 
     const ECS& ecs = currentScene->getECS();
-    const std::vector<Entity> cameraEntities = ecs.query<Transform, CameraComponent>();
+    const std::vector<Entity> cameraEntities = ecs.query<Transform, Camera>();
     if (cameraEntities.size() > 1) {
         Console::get().error("[SceneManager::render] Current scene has multiple camera entities!");
         return;
@@ -99,12 +99,12 @@ void SceneManager::render(Renderer& renderer)
     }
 
     const Entity cameraEntity = cameraEntities.front();
-    const CameraComponent& cameraComponent = ecs.getComponent<CameraComponent>(cameraEntity);
+    const Camera& camera = ecs.getComponent<Camera>(cameraEntity);
     const Transform& cameraTransform = ecs.getComponent<Transform>(cameraEntity);
     const glm::vec2 framebufferSize = Engine::get().window.framebufferSize;
     const float framebufferAspectRatio = framebufferSize.x / std::max(framebufferSize.y, 1.0f);
-    const RenderCamera camera = {
-        cameraComponent.getCameraMatrix(cameraTransform, framebufferAspectRatio),
+    const RenderCamera renderCamera = {
+        camera.getCameraMatrix(cameraTransform, framebufferAspectRatio),
         cameraTransform.position
     };
 
@@ -178,7 +178,7 @@ void SceneManager::render(Renderer& renderer)
         }
     );
 
-    renderer.render(renderShader, camera, renderItems);
+    renderer.render(renderShader, renderCamera, renderItems);
 }
 
 void SceneManager::shutdown()

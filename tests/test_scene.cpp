@@ -61,7 +61,7 @@ namespace
             cameraTransform.position = {1.0f, 2.0f, 3.0f};
             const Entity cameraEntity = ecs.createEntity();
             ecs.addComponent<Transform>(cameraEntity, cameraTransform);
-            ecs.addComponent<CameraComponent>(cameraEntity);
+            ecs.addComponent<Camera>(cameraEntity);
 
             std::shared_ptr<VertexShader> vertexShader = engine.getVertexShaderAssetManager()->add(
                 "Test Vertex Shader",

@@ -22,13 +22,13 @@ public:
         FragmentShaderAssetManager* fragmentShaderManager = engine.getFragmentShaderAssetManager();
         ShaderAssetManager* shaderManager = engine.getShaderAssetManager();
 
-        CameraComponent camera;
-        camera.projectionType = CameraComponent::ProjectionType::ORTHOGRAPHIC;
+        Camera camera;
+        camera.projectionType = Camera::ProjectionType::ORTHOGRAPHIC;
         camera.nearPlane = -1.0f;
         camera.farPlane = 1.0f;
         cameraEntity = ecs.createEntity();
         ecs.addComponent<Transform>(cameraEntity);
-        ecs.addComponent<CameraComponent>(cameraEntity, camera);
+        ecs.addComponent<Camera>(cameraEntity, camera);
 
         const std::string vertexShaderSource = readFile("shaders/default_vertex_2d.glsl");
         std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));

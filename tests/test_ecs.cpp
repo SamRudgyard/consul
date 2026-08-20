@@ -119,7 +119,7 @@ TEST_CASE("queries match living entities by component signature", "[ecs][query]"
     REQUIRE(ecs.query<Velocity>() == std::vector<Entity>{both, velocityOnly});
     REQUIRE(ecs.query<Transform, Velocity>() == std::vector<Entity>{both});
 
-    REQUIRE(ecs.query<CameraComponent>().empty());
+    REQUIRE(ecs.query<Camera>().empty());
 
     ecs.removeComponent<Velocity>(both);
     REQUIRE(ecs.query<Transform, Velocity>().empty());

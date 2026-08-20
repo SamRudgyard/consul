@@ -30,13 +30,13 @@ public:
 
         Transform cameraTransform;
         cameraTransform.position = {0.0f, 0.0f, 2.0f};
-        CameraComponent camera;
-        camera.projectionType = CameraComponent::ProjectionType::PERSPECTIVE;
+        Camera camera;
+        camera.projectionType = Camera::ProjectionType::PERSPECTIVE;
         camera.fov = 45.0f;
         camera.farPlane = 100.0f;
         cameraEntity = ecs.createEntity();
         ecs.addComponent<Transform>(cameraEntity, cameraTransform);
-        ecs.addComponent<CameraComponent>(cameraEntity, camera);
+        ecs.addComponent<Camera>(cameraEntity, camera);
 
         const std::string vertexShaderSource = readFile("shaders/default_vertex_3d.glsl");
         std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
