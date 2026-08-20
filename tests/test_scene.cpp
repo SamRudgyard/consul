@@ -7,7 +7,6 @@
 #include "core/engine.hpp"
 #include "core/project/scene.hpp"
 #include "core/project/scene_manager.hpp"
-#include "graphics/camera/camera.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
@@ -39,19 +38,9 @@ namespace
         std::weak_ptr<Model>& modelObserver;
     };
 
-    class TestCamera : public Camera
-    {
-    public:
-        void handleInputs(double) override {}
-        glm::vec3 getPosition() const override { return glm::vec3(0.0f); }
-        glm::mat4 getCameraMatrix() const override { return glm::mat4(1.0f); }
-    };
-
     class RenderableScene : public Scene
     {
     public:
-        Camera* getActiveCamera() override { return &camera; }
-
         const ModelPrimitive& getPrimitive() const
         {
             return getECS().getComponent<ModelRenderer>(renderEntity).model->getPrimitives().front();
@@ -66,6 +55,11 @@ namespace
         void onInit() override
         {
             Engine& engine = Engine::get();
+            ECS& ecs = getECS();
+
+            const Entity cameraEntity = ecs.createEntity();
+            ecs.addComponent<Transform>(cameraEntity);
+            ecs.addComponent<CameraComponent>(cameraEntity);
 
             std::shared_ptr<VertexShader> vertexShader = engine.getVertexShaderAssetManager()->add(
                 "Test Vertex Shader",
@@ -112,7 +106,6 @@ namespace
         }
 
     private:
-        TestCamera camera;
         std::shared_ptr<Shader> shader;
         std::shared_ptr<Model> unreferencedModel;
         Entity renderEntity = 0;

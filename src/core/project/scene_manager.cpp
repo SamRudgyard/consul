@@ -1,5 +1,7 @@
 #include "core/project/scene_manager.hpp"
 
+#include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -19,6 +21,36 @@
 
 namespace
 {
+    class CameraComponentAdapter final : public Camera
+    {
+    public:
+        CameraComponentAdapter(
+            const CameraComponent& camera,
+            const Transform& transform,
+            float framebufferAspectRatio
+        )
+            : camera(camera), transform(transform), framebufferAspectRatio(framebufferAspectRatio)
+        {
+        }
+
+        void handleInputs(double) override {}
+
+        glm::vec3 getPosition() const override
+        {
+            return transform.position;
+        }
+
+        glm::mat4 getCameraMatrix() const override
+        {
+            return camera.getCameraMatrix(transform, framebufferAspectRatio);
+        }
+
+    private:
+        const CameraComponent& camera;
+        const Transform& transform;
+        float framebufferAspectRatio;
+    };
+
     glm::mat4 composeTransformMatrix(const Transform& transform)
     {
         glm::mat4 matrix = glm::translate(glm::mat4(1.0f), transform.position);
@@ -87,7 +119,29 @@ void SceneManager::render(Renderer& renderer)
         return;
     }
 
-    Camera* camera = currentScene->getActiveCamera();
+    const ECS& ecs = currentScene->getECS();
+    const std::vector<Entity> cameraEntities = ecs.query<Transform, CameraComponent>();
+    if (cameraEntities.size() > 1) {
+        Console::get().error("[SceneManager::render] Current scene has multiple camera entities!");
+        return;
+    }
+
+    std::optional<CameraComponentAdapter> componentCamera;
+    Camera* camera = nullptr;
+    if (!cameraEntities.empty()) {
+        const Entity cameraEntity = cameraEntities.front();
+        const glm::vec2 framebufferSize = Engine::get().window.framebufferSize;
+        const float framebufferAspectRatio = framebufferSize.x / std::max(framebufferSize.y, 1.0f);
+        componentCamera.emplace(
+            ecs.getComponent<CameraComponent>(cameraEntity),
+            ecs.getComponent<Transform>(cameraEntity),
+            framebufferAspectRatio
+        );
+        camera = &componentCamera.value();
+    } else {
+        camera = currentScene->getActiveCamera();
+    }
+
     if (!camera) {
         Console::get().error("[SceneManager::render] Current scene has no active camera!");
         return;
@@ -141,7 +195,6 @@ void SceneManager::render(Renderer& renderer)
     }
 
     std::vector<RenderItem> renderItems;
-    const ECS& ecs = currentScene->getECS();
     ecs.forEach<Transform, ModelRenderer>(
         [&](Entity, const Transform& transform, const ModelRenderer& modelRenderer) {
             if (!modelRenderer.visible || !modelRenderer.model) {
