@@ -57,8 +57,10 @@ namespace
             Engine& engine = Engine::get();
             ECS& ecs = getECS();
 
+            Transform cameraTransform;
+            cameraTransform.position = {1.0f, 2.0f, 3.0f};
             const Entity cameraEntity = ecs.createEntity();
-            ecs.addComponent<Transform>(cameraEntity);
+            ecs.addComponent<Transform>(cameraEntity, cameraTransform);
             ecs.addComponent<CameraComponent>(cameraEntity);
 
             std::shared_ptr<VertexShader> vertexShader = engine.getVertexShaderAssetManager()->add(
@@ -126,13 +128,15 @@ namespace
 
         void render(
             const std::shared_ptr<Shader>&,
-            const Camera&,
+            const RenderCamera& camera,
             const std::vector<RenderItem>& renderItems
         ) override
         {
+            submittedCamera = camera;
             submittedItems = renderItems;
         }
 
+        RenderCamera submittedCamera;
         std::vector<RenderItem> submittedItems;
     };
 }
@@ -209,6 +213,7 @@ TEST_CASE("scene rendering submits active model primitives to the renderer")
     CapturingRenderer renderer;
     sceneManager->render(renderer);
 
+    REQUIRE(renderer.submittedCamera.position == glm::vec3(1.0f, 2.0f, 3.0f));
     REQUIRE(renderer.submittedItems.size() == 1);
     REQUIRE(renderer.submittedItems.front().mesh == scenePointer->getPrimitive().mesh);
     REQUIRE(renderer.submittedItems.front().material == scenePointer->getPrimitive().material);

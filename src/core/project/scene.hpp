@@ -2,7 +2,6 @@
 
 #include "core/ecs/ecs.hpp"
 
-class Camera;
 class Engine;
 
 class Scene
@@ -19,7 +18,6 @@ public:
 
     ECS& getECS() { return ecs; }
     const ECS& getECS() const { return ecs; }
-    virtual Camera* getActiveCamera() { return nullptr; }
 
 protected:
     virtual void onInit() {} // User hook for scene-specific initialization logic

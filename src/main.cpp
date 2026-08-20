@@ -1,3 +1,4 @@
+#include <cmath>
 #include <memory>
 #include <utility>
 
@@ -6,7 +7,6 @@
 #include "core/engine.hpp"
 #include "core/window.hpp"
 #include "core/project/scene.hpp"
-#include "graphics/camera/camera_3d.hpp"
 #include "graphics/geometry/geometry_3d.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
@@ -28,8 +28,15 @@ public:
         MaterialAssetManager* materialManager = engine.getMaterialAssetManager();
         MeshAssetManager* meshManager = engine.getMeshAssetManager();
 
-        camera.setProjectionType(ProjectionType::PERSPECTIVE);
-        camera.setPosition({0.0f, 0.0f, 2.0f});
+        Transform cameraTransform;
+        cameraTransform.position = {0.0f, 0.0f, 2.0f};
+        CameraComponent camera;
+        camera.projectionType = CameraComponent::ProjectionType::PERSPECTIVE;
+        camera.fov = 45.0f;
+        camera.farPlane = 100.0f;
+        cameraEntity = ecs.createEntity();
+        ecs.addComponent<Transform>(cameraEntity, cameraTransform);
+        ecs.addComponent<CameraComponent>(cameraEntity, camera);
 
         const std::string vertexShaderSource = readFile("shaders/default_vertex_3d.glsl");
         std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
@@ -70,15 +77,56 @@ public:
 
     void onUpdate() override
     {
-        double deltaTime = Engine::get().time.deltaTime;
-        camera.handleInputs(deltaTime);
+        Engine& engine = Engine::get();
+        InputSystem& input = engine.inputSystem;
+        Transform& cameraTransform = getECS().getComponent<Transform>(cameraEntity);
+        const float deltaTime = static_cast<float>(engine.time.deltaTime);
+        const float movementSpeed = input.isKeyDown(KeyboardKey::KEY_LEFT_SHIFT) ? 10.0f : 5.0f;
+
+        const float pitch = cameraTransform.rotation.x;
+        const float yaw = cameraTransform.rotation.y;
+        const glm::vec3 forward = glm::normalize(glm::vec3(
+            -std::sin(yaw) * std::cos(pitch),
+            std::sin(pitch),
+            -std::cos(yaw) * std::cos(pitch)
+        ));
+        const glm::vec3 up(0.0f, 1.0f, 0.0f);
+        const glm::vec3 right = glm::normalize(glm::cross(forward, up));
+        const float movement = movementSpeed * deltaTime;
+
+        if (input.isKeyDown(KeyboardKey::KEY_W)) {
+            cameraTransform.position += forward * movement;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_A)) {
+            cameraTransform.position -= right * movement;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_S)) {
+            cameraTransform.position -= forward * movement;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_D)) {
+            cameraTransform.position += right * movement;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_SPACE)) {
+            cameraTransform.position += up * movement;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_LEFT_CONTROL)) {
+            cameraTransform.position -= up * movement;
+        }
+
+        if (input.isMouseButtonDown(MouseButton::BUTTON_RIGHT)) {
+            input.setMouseVisibility(false);
+
+            const glm::vec2 mouseDelta = input.getMousePosition() - input.getPreviousMousePosition();
+            constexpr float mouseSensitivity = 0.1f;
+            cameraTransform.rotation.x -= glm::radians(mouseDelta.y * mouseSensitivity);
+            cameraTransform.rotation.y -= glm::radians(mouseDelta.x * mouseSensitivity);
+        } else {
+            input.setMouseVisibility(true);
+        }
     }
 
-    // A bit hacky, but will do for the moment
-    Camera* getActiveCamera() override { return &camera; }
-
 private:
-    Camera3D camera;
+    Entity cameraEntity = 0;
     std::shared_ptr<Shader> defaultShader;
 };
 

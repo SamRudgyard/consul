@@ -5,7 +5,6 @@
 #include "core/ecs/components.hpp"
 #include "core/engine.hpp"
 #include "core/project/scene.hpp"
-#include "graphics/camera/camera_2d.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
 #include "graphics/material/material.hpp"
@@ -13,37 +12,23 @@
 #include "graphics/shader/shader.hpp"
 #include "utils.hpp"
 
-class RotatingCamera2D : public Camera2D {
-public:
-    void handleInputs(double deltaTime) override
-    {
-        InputSystem& input = Engine::get().inputSystem;
-
-        if (input.isKeyDown(KeyboardKey::KEY_A)) {
-            rotationDeg += rotationSpeedDeg * deltaTime;
-        }
-        if (input.isKeyDown(KeyboardKey::KEY_D)) {
-            rotationDeg -= rotationSpeedDeg * deltaTime;
-        }
-
-        setRotation(rotationDeg);
-    }
-
-private:
-    float rotationDeg = 0.0f;
-    float rotationSpeedDeg = 90.0f;
-};
-
 class RotateCameraScene : public Scene {
 public:
     void onInit() override
     {
         Engine& engine = Engine::get();
+        ECS& ecs = getECS();
         VertexShaderAssetManager* vertexShaderManager = engine.getVertexShaderAssetManager();
         FragmentShaderAssetManager* fragmentShaderManager = engine.getFragmentShaderAssetManager();
         ShaderAssetManager* shaderManager = engine.getShaderAssetManager();
 
-        camera.setPosition({0.0f, 0.0f});
+        CameraComponent camera;
+        camera.projectionType = CameraComponent::ProjectionType::ORTHOGRAPHIC;
+        camera.nearPlane = -1.0f;
+        camera.farPlane = 1.0f;
+        cameraEntity = ecs.createEntity();
+        ecs.addComponent<Transform>(cameraEntity);
+        ecs.addComponent<CameraComponent>(cameraEntity, camera);
 
         const std::string vertexShaderSource = readFile("shaders/default_vertex_2d.glsl");
         std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
@@ -64,10 +49,18 @@ public:
 
     void onUpdate() override
     {
-        camera.handleInputs(Engine::get().time.deltaTime);
-    }
+        Engine& engine = Engine::get();
+        InputSystem& input = engine.inputSystem;
+        Transform& cameraTransform = getECS().getComponent<Transform>(cameraEntity);
+        const float rotation = glm::radians(90.0f) * static_cast<float>(engine.time.deltaTime);
 
-    Camera* getActiveCamera() override { return &camera; }
+        if (input.isKeyDown(KeyboardKey::KEY_A)) {
+            cameraTransform.rotation.z += rotation;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_D)) {
+            cameraTransform.rotation.z -= rotation;
+        }
+    }
 
 private:
     void createQuad(const glm::vec3& position, const Colour& tint)
@@ -97,7 +90,7 @@ private:
         ecs.addComponent<ModelRenderer>(entity, ModelRenderer{std::move(modelAsset), true});
     }
 
-    RotatingCamera2D camera;
+    Entity cameraEntity = 0;
     std::shared_ptr<Shader> defaultShader;
 };
 

@@ -11,11 +11,16 @@ enum class GraphicsAPI
     // Future graphics APIs can be added here (e.g., Vulkan, DirectX, etc.)
 };
 
-class Camera;
 class Material;
 class Mesh;
 class Shader;
 class Texture;
+
+struct RenderCamera
+{
+    glm::mat4 viewProjectionMatrix = glm::mat4(1.0f);
+    glm::vec3 position = glm::vec3(0.0f);
+};
 
 struct RenderItem
 {
@@ -50,7 +55,7 @@ public:
 
     virtual void render(
         const std::shared_ptr<Shader>& shader,
-        const Camera& camera,
+        const RenderCamera& camera,
         const std::vector<RenderItem>& renderItems
     ) = 0;
 };

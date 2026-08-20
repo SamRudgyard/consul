@@ -101,7 +101,7 @@ public:
      */
     void render(
         const std::shared_ptr<Shader>& shader,
-        const Camera& camera,
+        const RenderCamera& camera,
         const std::vector<RenderItem>& renderItems
     ) override;
 

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -5,7 +6,6 @@
 #include "core/ecs/components.hpp"
 #include "core/engine.hpp"
 #include "core/project/scene.hpp"
-#include "graphics/camera/camera_2d.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
@@ -23,7 +23,13 @@ public:
         MaterialAssetManager* materialManager = engine.getMaterialAssetManager();
         MeshAssetManager* meshManager = engine.getMeshAssetManager();
 
-        camera.setPosition({0.0f, 0.0f});
+        CameraComponent camera;
+        camera.projectionType = CameraComponent::ProjectionType::ORTHOGRAPHIC;
+        camera.nearPlane = -1.0f;
+        camera.farPlane = 1.0f;
+        cameraEntity = ecs.createEntity();
+        ecs.addComponent<Transform>(cameraEntity);
+        ecs.addComponent<CameraComponent>(cameraEntity, camera);
 
         const std::string vertexShaderSource = readFile("shaders/default_vertex_2d.glsl");
         std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
@@ -53,13 +59,38 @@ public:
     }
 
     void onUpdate() override {
-        camera.handleInputs(Engine::get().time.deltaTime);
+        Engine& engine = Engine::get();
+        InputSystem& input = engine.inputSystem;
+        ECS& ecs = getECS();
+        Transform& cameraTransform = ecs.getComponent<Transform>(cameraEntity);
+        CameraComponent& camera = ecs.getComponent<CameraComponent>(cameraEntity);
+        const float deltaTime = static_cast<float>(engine.time.deltaTime);
+        constexpr float movementSpeed = 5.0f;
+
+        if (input.isKeyDown(KeyboardKey::KEY_W)) {
+            cameraTransform.position.y += movementSpeed * deltaTime;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_A)) {
+            cameraTransform.position.x -= movementSpeed * deltaTime;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_S)) {
+            cameraTransform.position.y -= movementSpeed * deltaTime;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_D)) {
+            cameraTransform.position.x += movementSpeed * deltaTime;
+        }
+
+        const float scrollOffset = input.getMouseScrollOffset().y;
+        if (scrollOffset != 0.0f) {
+            constexpr float defaultViewHeight = 2.0f;
+            float zoom = defaultViewHeight / camera.orthographicHeight;
+            zoom = std::clamp(zoom + 0.1f * scrollOffset, 0.1f, 1.0f);
+            camera.orthographicHeight = defaultViewHeight / zoom;
+        }
     }
 
-    Camera* getActiveCamera() override { return &camera; }
-
 private:
-    Camera2D camera;
+    Entity cameraEntity = 0;
     std::shared_ptr<Shader> defaultShader;
 };
 

@@ -13,7 +13,6 @@
 
 #include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
-#include "graphics/camera/camera.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
@@ -394,7 +393,7 @@ void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
 
 void OpenGLRenderer::render(
     const std::shared_ptr<Shader>& shader,
-    const Camera& camera,
+    const RenderCamera& camera,
     const std::vector<RenderItem>& renderItems
 )
 {
@@ -409,8 +408,8 @@ void OpenGLRenderer::render(
     glUseProgram(programID);
     glCheckError();
 
-    setUniformMat4(programID, "cameraMatrix", camera.getCameraMatrix());
-    setUniformVec3(programID, "cameraPosition", camera.getPosition());
+    setUniformMat4(programID, "cameraMatrix", camera.viewProjectionMatrix);
+    setUniformVec3(programID, "cameraPosition", camera.position);
     setUniformVec3(programID, "lightPosition", glm::vec3(5.0f, 5.0f, 5.0f));
     setUniformVec3(programID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
     setUniformVec3(programID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
