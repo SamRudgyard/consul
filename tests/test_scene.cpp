@@ -3,11 +3,8 @@
 
 #include <memory>
 
-#include "core/project/asset_defaults.hpp"
-#include "core/project/asset_library.hpp"
-#include "core/project/asset_manager.hpp"
 #include "core/ecs/components.hpp"
-#include "core/project/importers/gltf_importer.hpp"
+#include "core/engine.hpp"
 #include "core/project/scene.hpp"
 #include "core/project/scene_manager.hpp"
 #include "graphics/camera/camera.hpp"
@@ -19,30 +16,6 @@
 
 namespace
 {
-    std::shared_ptr<AssetLibrary> makeAssetLibrary()
-    {
-        auto modelManager = std::make_shared<ModelAssetManager>();
-        auto meshManager = std::make_shared<MeshAssetManager>();
-        auto materialManager = std::make_shared<MaterialAssetManager>();
-        auto textureManager = std::make_shared<TextureAssetManager>();
-        auto shaderManager = std::make_shared<ShaderAssetManager>();
-        auto vertexShaderManager = std::make_shared<VertexShaderAssetManager>();
-        auto fragmentShaderManager = std::make_shared<FragmentShaderAssetManager>();
-        auto defaults = std::make_shared<AssetDefaults>(materialManager, textureManager);
-        auto importer = std::make_shared<GLTFImporter>(modelManager, meshManager, materialManager, textureManager, defaults);
-
-        return std::make_shared<AssetLibrary>(
-            modelManager,
-            meshManager,
-            materialManager,
-            textureManager,
-            shaderManager,
-            vertexShaderManager,
-            fragmentShaderManager,
-            defaults,
-            importer
-        );
-    }
 
     class ModelOwningScene : public Scene
     {
@@ -53,9 +26,9 @@ namespace
         }
 
     protected:
-        void onInit(std::shared_ptr<AssetLibrary> assets) override
+        void onInit() override
         {
-            std::shared_ptr<Model> model = assets->addModel("Scene Model", Model{});
+            std::shared_ptr<Model> model = Engine::get().getModelAssetManager()->add("Scene Model", Model{});
             modelObserver = model;
 
             const Entity entity = getECS().createEntity();
@@ -90,25 +63,39 @@ namespace
         }
 
     protected:
-        void onInit(std::shared_ptr<AssetLibrary> assets) override
+        void onInit() override
         {
-            std::shared_ptr<VertexShader> vertexShader = assets->addVertexShader("Test Vertex Shader", VertexShader("vertex source"));
-            std::shared_ptr<FragmentShader> fragmentShader = assets->addFragmentShader("Test Fragment Shader", FragmentShader("fragment source"));
-            shader = assets->addShader("Test Shader", Shader(std::move(vertexShader), std::move(fragmentShader)));
+            Engine& engine = Engine::get();
+
+            std::shared_ptr<VertexShader> vertexShader = engine.getVertexShaderAssetManager()->add(
+                "Test Vertex Shader",
+                VertexShader("vertex source")
+            );
+            std::shared_ptr<FragmentShader> fragmentShader = engine.getFragmentShaderAssetManager()->add(
+                "Test Fragment Shader",
+                FragmentShader("fragment source")
+            );
+            shader = engine.getShaderAssetManager()->add(
+                "Test Shader",
+                Shader(std::move(vertexShader), std::move(fragmentShader))
+            );
 
             Material material;
-            std::shared_ptr<Material> materialAsset = assets->addMaterial("Test Material", material);
+            std::shared_ptr<Material> materialAsset = engine.getMaterialAssetManager()->add(
+                "Test Material",
+                engine.getAssetDefaults().applyToMaterial(material)
+            );
 
             Mesh meshData;
-            std::shared_ptr<Mesh> mesh = assets->addMesh("Test Mesh", meshData);
+            std::shared_ptr<Mesh> mesh = engine.getMeshAssetManager()->add("Test Mesh", meshData);
             glm::mat4 localTransform(1.0f);
             localTransform[3][0] = 1.0f;
             localTransform[3][1] = 2.0f;
 
             Model modelData;
             modelData.addPrimitive(std::move(mesh), std::move(materialAsset), localTransform);
-            std::shared_ptr<Model> model = assets->addModel("Test Model", modelData);
-            unreferencedModel = assets->addModel("Unreferenced Test Model", modelData);
+            std::shared_ptr<Model> model = engine.getModelAssetManager()->add("Test Model", modelData);
+            unreferencedModel = engine.getModelAssetManager()->add("Unreferenced Test Model", modelData);
 
             Transform transform;
             transform.position = {3.0f, 4.0f, 0.0f};
@@ -179,52 +166,55 @@ TEST_CASE("scenes own independent ECS worlds")
 
 TEST_CASE("unloading a scene preserves assets retained by another owner")
 {
-    std::shared_ptr<AssetLibrary> assets = makeAssetLibrary();
-    SceneManager scenes;
-    scenes.assignAssets(assets);
-    std::weak_ptr<Model> modelObserver;
-    scenes.loadScene(std::make_unique<ModelOwningScene>(modelObserver));
-    std::shared_ptr<Model> retainedModel = assets->getModels().front();
+    Engine& engine = Engine::get();
+    SceneManager* sceneManager = engine.getSceneManager();
+    ModelAssetManager* modelManager = engine.getModelAssetManager();
 
-    scenes.unloadScene();
+    std::weak_ptr<Model> modelObserver;
+    sceneManager->loadScene(std::make_unique<ModelOwningScene>(modelObserver));
+    std::shared_ptr<Model> retainedModel = modelManager->get("Scene Model");
+
+    sceneManager->unloadScene();
 
     REQUIRE_FALSE(modelObserver.expired());
-    REQUIRE(assets->getModels().size() == 1);
+    REQUIRE(modelManager->get("Scene Model") == retainedModel);
 
     retainedModel.reset();
 
     REQUIRE(modelObserver.expired());
-    REQUIRE(assets->getModels().empty());
+    REQUIRE_FALSE(modelManager->get("Scene Model"));
 }
 
 TEST_CASE("shutting down a scene releases its unshared assets")
 {
-    std::shared_ptr<AssetLibrary> assets = makeAssetLibrary();
-    SceneManager scenes;
-    scenes.assignAssets(assets);
+    Engine& engine = Engine::get();
+    SceneManager* sceneManager = engine.getSceneManager();
+    ModelAssetManager* modelManager = engine.getModelAssetManager();
+
     std::weak_ptr<Model> modelObserver;
-    scenes.loadScene(std::make_unique<ModelOwningScene>(modelObserver));
+    sceneManager->loadScene(std::make_unique<ModelOwningScene>(modelObserver));
 
-    scenes.shutdown();
+    sceneManager->shutdown();
 
-    REQUIRE_FALSE(scenes.hasScene());
+    REQUIRE_FALSE(sceneManager->hasScene());
     REQUIRE(modelObserver.expired());
-    REQUIRE(assets->getModels().empty());
+    REQUIRE_FALSE(modelManager->get("Scene Model"));
 }
 
 TEST_CASE("scene rendering submits active model primitives to the renderer")
 {
-    std::shared_ptr<AssetLibrary> assets = makeAssetLibrary();
-    SceneManager scenes;
-    scenes.assignAssets(assets);
+    Engine& engine = Engine::get();
+    SceneManager* sceneManager = engine.getSceneManager();
+    ModelAssetManager* modelManager = engine.getModelAssetManager();
 
     auto scene = std::make_unique<RenderableScene>();
     RenderableScene* scenePointer = scene.get();
-    scenes.loadScene(std::move(scene));
-    REQUIRE(assets->getModels().size() == 2);
+    sceneManager->loadScene(std::move(scene));
+    REQUIRE(modelManager->get("Test Model"));
+    REQUIRE(modelManager->get("Unreferenced Test Model"));
 
     CapturingRenderer renderer;
-    scenes.render(renderer);
+    sceneManager->render(renderer);
 
     REQUIRE(renderer.submittedItems.size() == 1);
     REQUIRE(renderer.submittedItems.front().mesh == scenePointer->getPrimitive().mesh);
@@ -233,7 +223,7 @@ TEST_CASE("scene rendering submits active model primitives to the renderer")
     REQUIRE(renderer.submittedItems.front().modelMatrix[3][1] == Catch::Approx(6.0f));
 
     scenePointer->setVisible(false);
-    scenes.render(renderer);
+    sceneManager->render(renderer);
 
     REQUIRE(renderer.submittedItems.empty());
 }
