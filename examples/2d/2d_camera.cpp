@@ -16,44 +16,40 @@ class ExampleScene : public Scene {
 public:
     void onInit() override {
         Engine& engine = Engine::get();
+        ECS& ecs = getECS();
+        VertexShaderAssetManager* vertexShaderManager = engine.getVertexShaderAssetManager();
+        FragmentShaderAssetManager* fragmentShaderManager = engine.getFragmentShaderAssetManager();
+        ShaderAssetManager* shaderManager = engine.getShaderAssetManager();
+        MaterialAssetManager* materialManager = engine.getMaterialAssetManager();
+        MeshAssetManager* meshManager = engine.getMeshAssetManager();
 
         camera.setPosition({0.0f, 0.0f});
 
-        std::shared_ptr<VertexShader> vertexShader = engine.getVertexShaderAssetManager()->add(
-            "default_VertexShader",
-            VertexShader(readFile("shaders/default_vertex_2d.glsl"))
-        );
-        engine.getVertexShaderAssetManager()->setSourcePath(vertexShader, "shaders/default_vertex_2d.glsl");
+        const std::string vertexShaderSource = readFile("shaders/default_vertex_2d.glsl");
+        std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
+        vertexShaderManager->setSourcePath(vertexShader, "shaders/default_vertex_2d.glsl");
 
-        std::shared_ptr<FragmentShader> fragmentShader = engine.getFragmentShaderAssetManager()->add(
-            "default_FragmentShader",
-            FragmentShader(readFile("shaders/default_fragment_2d.glsl"))
-        );
-        engine.getFragmentShaderAssetManager()->setSourcePath(fragmentShader, "shaders/default_fragment_2d.glsl");
+        const std::string fragmentShaderSource = readFile("shaders/default_fragment_2d.glsl");
+        std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->add("default_FragmentShader", FragmentShader(fragmentShaderSource));
+        fragmentShaderManager->setSourcePath(fragmentShader, "shaders/default_fragment_2d.glsl");
 
-        defaultShader = engine.getShaderAssetManager()->add(
-            "default",
-            Shader(std::move(vertexShader), std::move(fragmentShader))
-        );
+        defaultShader = shaderManager->add("default", Shader(std::move(vertexShader), std::move(fragmentShader)));
 
         Mesh mesh = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
 
         Material material;
         material.setAlbedo(Colour(20, 200, 200));
-        std::shared_ptr<Material> materialAsset = engine.getMaterialAssetManager()->add(
-            "quadMaterial",
-            engine.getAssetDefaults().applyToMaterial(material)
-        );
+        std::shared_ptr<Material> materialAsset = materialManager->add("quadMaterial", engine.getAssetDefaults().applyToMaterial(material));
 
-        std::shared_ptr<Mesh> meshAsset = engine.getMeshAssetManager()->add("quadMesh", mesh);
+        std::shared_ptr<Mesh> meshAsset = meshManager->add("quadMesh", mesh);
 
         Model model;
         model.addPrimitive(std::move(meshAsset), std::move(materialAsset));
         std::shared_ptr<Model> modelAsset = engine.getModelAssetManager()->add("quadModel", model);
 
-        const Entity entity = getECS().createEntity();
-        getECS().addComponent<Transform>(entity);
-        getECS().addComponent<ModelRenderer>(entity, ModelRenderer{std::move(modelAsset), true});
+        const Entity entity = ecs.createEntity();
+        ecs.addComponent<Transform>(entity);
+        ecs.addComponent<ModelRenderer>(entity, ModelRenderer{std::move(modelAsset), true});
     }
 
     void onUpdate() override {
