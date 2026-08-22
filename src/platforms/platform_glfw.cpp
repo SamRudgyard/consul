@@ -207,8 +207,8 @@ void PlatformGLFW::onFramebufferResized(GLFWwindow* window, int width, int heigh
         return; // When window is minimised GLFW may send a resize event with 0 width and/or height
     }
 
-    Engine* context = (Engine*)(glfwGetWindowUserPointer(window));
-    context->window.framebufferSize = glm::vec2((float)width, (float)height);
+    Engine& engine = Engine::get();
+    engine.window.framebufferSize = glm::vec2((float)width, (float)height);
 
     Console::get().logOnDebug("[GLFW] Framebuffer resized to " + std::to_string(width) + "x" + std::to_string(height));
 }
@@ -219,29 +219,29 @@ void PlatformGLFW::onWindowResized(GLFWwindow* window, int width, int height)
         return; // When window is minimised GLFW may send a resize event with 0 width and/or height
     }
 
-    Engine* context = (Engine*)(glfwGetWindowUserPointer(window));
-    context->window.windowSize = glm::vec2((float)width, (float)height);
+    Engine& engine = Engine::get();
+    engine.window.windowSize = glm::vec2((float)width, (float)height);
 
     Console::get().logOnDebug("[GLFW] Window resized to " + std::to_string(width) + "x" + std::to_string(height));
 }
 
 void PlatformGLFW::onWindowPosChanged(GLFWwindow* window, int xpos, int ypos)
 {
-    Engine* context = (Engine*)(glfwGetWindowUserPointer(window));
-    context->window.position = glm::vec2((float)xpos, (float)ypos);
+    Engine& engine = Engine::get();
+    engine.window.position = glm::vec2((float)xpos, (float)ypos);
 
     Console::get().logOnDebug("[GLFW] Window position changed to ("
-                    + std::to_string((int)context->window.position.x) + ", "
-                    + std::to_string((int)context->window.position.y) +
+                    + std::to_string((int)engine.window.position.x) + ", "
+                    + std::to_string((int)engine.window.position.y) +
                     ")");
 }
 
 void PlatformGLFW::onWindowMaximised(GLFWwindow* window, int maximised)
 {
-    Engine* context = (Engine*)(glfwGetWindowUserPointer(window));
-    context->window.isMaximised = maximised;
+    Engine& engine = Engine::get();
+    engine.window.isMaximised = maximised;
 
-    if (context->window.isMaximised) {
+    if (engine.window.isMaximised) {
         Console::get().logOnDebug("[GLFW] Window maximised");
     } else {
         Console::get().logOnDebug("[GLFW] Window restored from maximised state");
@@ -250,10 +250,10 @@ void PlatformGLFW::onWindowMaximised(GLFWwindow* window, int maximised)
 
 void PlatformGLFW::onWindowMinimised(GLFWwindow* window, int iconified)
 {
-    Engine* context = (Engine*)(glfwGetWindowUserPointer(window));
-    context->window.isMinimised = iconified;
+    Engine& engine = Engine::get();
+    engine.window.isMinimised = iconified;
 
-    if (context->window.isMinimised) {
+    if (engine.window.isMinimised) {
         Console::get().logOnDebug("[GLFW] Window minimised");
     } else {
         Console::get().logOnDebug("[GLFW] Window restored from minimised state");
@@ -262,10 +262,10 @@ void PlatformGLFW::onWindowMinimised(GLFWwindow* window, int iconified)
 
 void PlatformGLFW::onWindowFocused(GLFWwindow* window, int focused)
 {
-    Engine* context = (Engine*)(glfwGetWindowUserPointer(window));
-    context->window.isFocused = focused;
+    Engine& engine = Engine::get();
+    engine.window.isFocused = focused;
 
-    if (context->window.isFocused) {
+    if (engine.window.isFocused) {
         Console::get().logOnDebug("[GLFW] Window focused");
     } else {
         Console::get().logOnDebug("[GLFW] Window lost focus");
@@ -274,8 +274,8 @@ void PlatformGLFW::onWindowFocused(GLFWwindow* window, int focused)
 
 void PlatformGLFW::onContentScaleChanged(GLFWwindow* window, float xscale, float yscale)
 {
-    Engine* context = (Engine*)(glfwGetWindowUserPointer(window));
-    context->window.contentScale = glm::vec2(xscale, yscale);
+    Engine& engine = Engine::get();
+    engine.window.contentScale = glm::vec2(xscale, yscale);
 
     Console::get().logOnDebug("[GLFW] Window content scale changed to ("
                     + std::to_string(xscale) + ", "
