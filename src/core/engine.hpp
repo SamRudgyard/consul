@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "core/profiling/profiler.hpp"
-#include "core/project/asset_defaults.hpp"
 #include "core/project/asset_manager.hpp"
 #include "core/project/importers/gltf_importer.hpp"
 #include "core/project/scene_manager.hpp"
@@ -40,7 +39,6 @@ public:
     FragmentShaderAssetManager* getFragmentShaderAssetManager() { return &fragmentShaderManager; }
     TextureAssetManager* getTextureAssetManager() { return &textureManager; }
 
-    AssetDefaults& getAssetDefaults() { return assetDefaults; }
     GLTFImporter& getGLTFImporter() { return gltfImporter; }
     SceneManager* getSceneManager() { return &sceneManager; }
 
@@ -56,8 +54,7 @@ private:
     FragmentShaderAssetManager fragmentShaderManager;
     TextureAssetManager textureManager;
 
-    AssetDefaults assetDefaults = AssetDefaults(materialManager, textureManager);
-    GLTFImporter gltfImporter = GLTFImporter(modelManager, meshManager, materialManager, textureManager, assetDefaults);
+    GLTFImporter gltfImporter = GLTFImporter(modelManager, meshManager, materialManager, textureManager);
 
     SceneManager sceneManager;
 };

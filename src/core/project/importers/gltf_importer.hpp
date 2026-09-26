@@ -7,7 +7,6 @@
 #include "nlohmann/json.hpp"
 
 #include "core/project/asset_manager.hpp"
-#include "core/project/asset_defaults.hpp"
 #include "core/project/asset_types.hpp"
 #include "graphics/mesh/mesh.hpp"
 
@@ -23,8 +22,7 @@ public:
         ModelAssetManager& modelManager,
         MeshAssetManager& meshManager,
         MaterialAssetManager& materialManager,
-        TextureAssetManager& textureManager,
-        AssetDefaults& assetDefaults
+        TextureAssetManager& textureManager
     );
     ~GLTFImporter() = default;
 
@@ -41,7 +39,6 @@ private:
     MeshAssetManager& meshManager;
     MaterialAssetManager& materialManager;
     TextureAssetManager& textureManager;
-    AssetDefaults& assetDefaults;
 
     Model* currentModel = nullptr;
     std::string currentFileDirectory = "";
@@ -95,8 +92,6 @@ private:
 	 * @returns Material with textures referenced by the glTF material.
 	 */
 	std::shared_ptr<Material> loadMaterial(int materialIndex);
-
-    std::shared_ptr<Material> addMaterial(const std::string& name, const Material& material);
 
 	/**
 	 * Convert a float array to a vec2 array.

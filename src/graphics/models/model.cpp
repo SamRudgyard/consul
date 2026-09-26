@@ -3,8 +3,8 @@
 #include <utility>
 
 void Model::addPrimitive(
-    std::shared_ptr<Mesh> mesh,
-    std::shared_ptr<Material> material,
+    const std::shared_ptr<Mesh>& mesh,
+    const std::shared_ptr<Material>& material,
     const glm::mat4& localTransform
 )
 {

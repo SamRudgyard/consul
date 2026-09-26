@@ -20,6 +20,8 @@ public:
 
     void onInit() override
     {
+        const std::string assetsDirectory = ASSETS_DIR;
+        const std::string shadersDirectory = SHADERS_DIR;
         Engine& engine = Engine::get();
         ECS& ecs = getECS();
         VertexShaderAssetManager* vertexShaderManager = engine.getVertexShaderAssetManager();
@@ -38,17 +40,17 @@ public:
         ecs.addComponent<Transform>(cameraEntity, cameraTransform);
         ecs.addComponent<Camera>(cameraEntity, camera);
 
-        const std::string vertexShaderSource = readFile("shaders/default_vertex_3d.glsl");
+        const std::string vertexShaderSource = readFile(shadersDirectory + "/default_vertex_3d.glsl");
         std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
-        vertexShaderManager->setSourcePath(vertexShader, "shaders/default_vertex_3d.glsl");
+        vertexShaderManager->setSourcePath(vertexShader, shadersDirectory + "/default_vertex_3d.glsl");
 
-        const std::string fragmentShaderSource = readFile("shaders/default_fragment_3d.glsl");
+        const std::string fragmentShaderSource = readFile(shadersDirectory + "/default_fragment_3d.glsl");
         std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->add("default_FragmentShader", FragmentShader(fragmentShaderSource));
-        fragmentShaderManager->setSourcePath(fragmentShader, "shaders/default_fragment_3d.glsl");
+        fragmentShaderManager->setSourcePath(fragmentShader, shadersDirectory + "/default_fragment_3d.glsl");
 
         defaultShader = shaderManager->add("default", Shader(std::move(vertexShader), std::move(fragmentShader)));
 
-        std::shared_ptr<Model> shibaModel = engine.getGLTFImporter().import("shiba", "assets/shiba/scene.gltf");
+        std::shared_ptr<Model> shibaModel = engine.getGLTFImporter().import("shiba", assetsDirectory + "/shiba/scene.gltf");
 
         const Entity shibaEntity = getECS().createEntity();
         ecs.addComponent<Transform>(shibaEntity);
@@ -60,14 +62,14 @@ public:
 
         Material material;
         material.setAlbedo(Colour(20, 200, 200));
-        std::shared_ptr<Material> materialAsset = materialManager->add("cubeMaterial", engine.getAssetDefaults().applyToMaterial(material));
+        std::shared_ptr<Material> materialAsset = materialManager->add("cubeMaterial", material);
 
         std::shared_ptr<Mesh> meshAsset = meshManager->add("cubeMesh", mesh);
         std::shared_ptr<Mesh> outlineMeshAsset = meshManager->add("cubeOutlineMesh", outlineMesh);
 
         Model cube;
         cube.addPrimitive(std::move(meshAsset), std::move(materialAsset));
-        cube.addPrimitive(std::move(outlineMeshAsset), engine.getAssetDefaults().getDefaultMaterial());
+        cube.addPrimitive(outlineMeshAsset, std::make_shared<Material>());
         std::shared_ptr<Model> cubeModel = engine.getModelAssetManager()->add("cubeModel", cube);
 
         const Entity cubeEntity = ecs.createEntity();

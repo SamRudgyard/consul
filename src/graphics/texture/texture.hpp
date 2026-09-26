@@ -15,17 +15,13 @@ enum TextureType {
 class Texture
 {
 public:
-    Texture();
+    Texture(const TextureType& textureType);
 
     Texture(std::string texturePath, TextureType textureType);
 
-    static Texture getDefaultDiffuseTexture();
-
-    static Texture getDefaultSpecularTexture();
-
     const std::string& getPath() const { return path; }
     TextureType getType() const { return type; }
-    const char* getTextureTypeAsString() const { return textureTypeToString.at(type); }
+    const std::string& getTextureTypeAsString() const;
 
     const bool operator==( const Texture& other ) const;
 
@@ -39,4 +35,6 @@ private:
         {TextureType::SPECULAR, "specular"},
         {TextureType::NORMAL, "normal"}
     };
+
+    static std::string getDefaultTexturePath();
 };

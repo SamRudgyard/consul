@@ -34,8 +34,8 @@ public:
 	 * @param localTransform Transform from mesh-local space to model space.
 	 */
 	void addPrimitive(
-		std::shared_ptr<Mesh> mesh,
-		std::shared_ptr<Material> material,
+		const std::shared_ptr<Mesh>& mesh,
+		const std::shared_ptr<Material>& material,
 		const glm::mat4& localTransform = glm::mat4(1.0f)
 	);
 

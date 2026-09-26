@@ -10,7 +10,6 @@
 
 #include "core/console/console.hpp"
 #include "core/project/asset_manager.hpp"
-#include "core/project/asset_defaults.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
 #include "graphics/texture/texture.hpp"
@@ -20,13 +19,11 @@ GLTFImporter::GLTFImporter(
     ModelAssetManager& modelManager,
     MeshAssetManager& meshManager,
     MaterialAssetManager& materialManager,
-    TextureAssetManager& textureManager,
-    AssetDefaults& assetDefaults
+    TextureAssetManager& textureManager
 ) : modelManager(modelManager),
     meshManager(meshManager),
     materialManager(materialManager),
-    textureManager(textureManager),
-    assetDefaults(assetDefaults)
+    textureManager(textureManager)
 {
 }
 
@@ -291,7 +288,7 @@ std::shared_ptr<Mesh> GLTFImporter::loadMesh(unsigned int meshIndex, const glm::
     const int materialIndex = primitives[0].value("material", -1);
     std::shared_ptr<Material> material = loadMaterial(materialIndex);
     if (!material) {
-        material = assetDefaults.getDefaultMaterial();
+        material = std::make_shared<Material>();
     }
 
     Mesh mesh(positions, normals, textureUVs, tangents, indices);
@@ -359,12 +356,7 @@ std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
     }
     addTextureIfPresent(materialJson, "normalTexture", TextureType::NORMAL);
 
-    return addMaterial("Material_" + std::to_string(materialIndex), material);
-}
-
-std::shared_ptr<Material> GLTFImporter::addMaterial(const std::string& name, const Material& material)
-{
-    return materialManager.add(name, assetDefaults.applyToMaterial(material));
+    return materialManager.add("Material_" + std::to_string(materialIndex), material);
 }
 
 std::vector<glm::vec2> GLTFImporter::toVec2(const std::vector<float> floatVec)
