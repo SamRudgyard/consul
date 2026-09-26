@@ -4,8 +4,6 @@
 #include <utility>
 #include <vector>
 
-#include "glm/gtc/matrix_transform.hpp"
-
 #include "core/console/console.hpp"
 #include "core/engine.hpp"
 #include "core/ecs/components.hpp"
@@ -16,18 +14,6 @@
 #include "graphics/renderer/renderer.hpp"
 #include "graphics/shader/shader.hpp"
 #include "graphics/texture/texture.hpp"
-
-namespace
-{
-    glm::mat4 composeTransformMatrix(const Transform& transform)
-    {
-        glm::mat4 matrix = glm::translate(glm::mat4(1.0f), transform.position);
-        matrix = glm::rotate(matrix, transform.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-        matrix = glm::rotate(matrix, transform.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-        matrix = glm::rotate(matrix, transform.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-        return glm::scale(matrix, transform.scale);
-    }
-}
 
 void SceneManager::loadScene(std::unique_ptr<Scene> scene)
 {
@@ -77,108 +63,6 @@ void SceneManager::update()
     }
 
     currentScene->update();
-}
-
-void SceneManager::render(Renderer& renderer)
-{
-    CONSUL_PROFILE_METHOD();
-
-    if (!currentScene || !currentScene->isInitialised) {
-        return;
-    }
-
-    const ECS& ecs = currentScene->getECS();
-    const std::vector<Entity> cameraEntities = ecs.query<Transform, Camera>();
-    if (cameraEntities.size() > 1) {
-        Console::get().error("[SceneManager::render] Current scene has multiple camera entities!");
-        return;
-    }
-    if (cameraEntities.empty()) {
-        Console::get().error("[SceneManager::render] Current scene has no camera entity!");
-        return;
-    }
-
-    const Entity cameraEntity = cameraEntities.front();
-    const Camera& camera = ecs.getComponent<Camera>(cameraEntity);
-    const Transform& cameraTransform = ecs.getComponent<Transform>(cameraEntity);
-    const glm::vec2 framebufferSize = Engine::get().window.framebufferSize;
-    const float framebufferAspectRatio = framebufferSize.x / std::max(framebufferSize.y, 1.0f);
-    const RenderCamera renderCamera = {
-        camera.getCameraMatrix(cameraTransform, framebufferAspectRatio),
-        cameraTransform.position
-    };
-
-    const std::vector<std::shared_ptr<Shader>> shaders = Engine::get().getShaderAssetManager()->getAssets();
-    if (shaders.empty()) {
-        Console::get().error("[SceneManager::render] Cannot render assets without a shader!");
-        return;
-    }
-
-    auto uploadPrimitive = [&renderer](const ModelPrimitive& primitive) {
-        const std::shared_ptr<Mesh>& mesh = primitive.mesh;
-        renderer.uploadMesh(mesh);
-
-        const std::shared_ptr<Material>& material = primitive.material;
-        if (!material) {
-            return;
-        }
-
-        std::shared_ptr<Texture> albedoTexture = material->getAlbedoTexture();
-        std::shared_ptr<Texture> specularTexture = material->getSpecularTexture();
-        std::shared_ptr<Texture> normalTexture = material->getNormalTexture();
-        if (albedoTexture) renderer.uploadTexture(albedoTexture);
-        if (specularTexture) renderer.uploadTexture(specularTexture);
-        if (normalTexture) renderer.uploadTexture(normalTexture);
-    };
-
-    std::shared_ptr<Shader> renderShader;
-    for (const std::shared_ptr<Shader>& shader : shaders) {
-        if (!shader) {
-            continue;
-        }
-
-        std::shared_ptr<VertexShader> vertexShader = shader->getVertexShader();
-        std::shared_ptr<FragmentShader> fragmentShader = shader->getFragmentShader();
-        if (!vertexShader || !fragmentShader) {
-            Console::get().error("[SceneManager::render] Shader references a missing vertex or fragment shader asset.");
-            continue;
-        }
-
-        renderer.uploadShader(shader);
-        if (!renderShader) {
-            renderShader = shader;
-        }
-    }
-
-    if (!renderShader) {
-        Console::get().error("[SceneManager::render] Cannot render assets without a valid shader!");
-        return;
-    }
-
-    std::vector<RenderItem> renderItems;
-    ecs.forEach<Transform, ModelRenderer>(
-        [&](Entity, const Transform& transform, const ModelRenderer& modelRenderer) {
-            if (!modelRenderer.visible || !modelRenderer.model) {
-                return;
-            }
-
-            const glm::mat4 modelTransform = composeTransformMatrix(transform);
-            for (const ModelPrimitive& primitive : modelRenderer.model->getPrimitives()) {
-                if (!primitive.mesh) {
-                    continue;
-                }
-
-                uploadPrimitive(primitive);
-                renderItems.push_back({
-                    primitive.mesh,
-                    primitive.material,
-                    modelTransform * primitive.localTransform
-                });
-            }
-        }
-    );
-
-    renderer.render(renderShader, renderCamera, renderItems);
 }
 
 void SceneManager::shutdown()

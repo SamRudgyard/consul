@@ -16,10 +16,10 @@ public:
     void loadScene(std::unique_ptr<Scene> newScene);
     void unloadScene();
     bool hasScene() const { return currentScene != nullptr; }
+    const Scene& getCurrentScene() const { return *currentScene; }
 
 
     void update();
-    void render(Renderer& renderer);
     void shutdown();
 
 private:

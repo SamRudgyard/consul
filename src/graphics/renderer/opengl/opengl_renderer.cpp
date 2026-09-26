@@ -1,5 +1,6 @@
 #include "opengl_renderer.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,10 +13,13 @@
 #include <stb_image.h>
 
 #include "core/console/console.hpp"
+#include "core/ecs/components.hpp"
+#include "core/project/scene.hpp"
 #include "core/profiling/profile_method.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
+#include "graphics/models/model.hpp"
 #include "graphics/shader/shader.hpp"
 #include "graphics/texture/texture.hpp"
 #include "utils.hpp"
@@ -391,100 +395,117 @@ void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
     glCheckError();
 }
 
-void OpenGLRenderer::render(
-    const std::shared_ptr<Shader>& shader,
-    const RenderCamera& camera,
-    const std::vector<RenderItem>& renderItems
-)
+void OpenGLRenderer::render(const Scene& scene)
 {
     CONSUL_PROFILE_METHOD();
 
-    const auto shaderIt = shaders.find(shader);
-    if (shaderIt == shaders.end()) {
-        Console::get().error("[OpenGLRenderer::render] Attempting to render with a shader that hasn't been uploaded.");
-        return;
-    }
-    const GLuint programID = shaderIt->second.id;
-    glUseProgram(programID);
-    glCheckError();
+    const Engine& engine = Engine::get();
+    const ECS& ecs = scene.getECS();
 
-    setUniformMat4(programID, "cameraMatrix", camera.viewProjectionMatrix);
-    setUniformVec3(programID, "cameraPosition", camera.position);
-    setUniformVec3(programID, "lightPosition", glm::vec3(5.0f, 5.0f, 5.0f));
-    setUniformVec3(programID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
-    setUniformVec3(programID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
+    const glm::vec2 framebufferSize = Engine::get().window.framebufferSize;
+    const float framebufferAspectRatio = framebufferSize.x / std::max(framebufferSize.y, 1.0f);
 
-    for (const RenderItem& renderItem : renderItems) {
-        const std::shared_ptr<Mesh>& mesh = renderItem.mesh;
-        if (!mesh) {
-            continue;
+    ecs.forEach<ModelRenderer, Transform>([&](const Entity& entity, const ModelRenderer& modelRenderer, const Transform& transform) {
+        const std::shared_ptr<Model>& model = modelRenderer.model;
+        if (!model) {
+            return;
+        }
+        if (!modelRenderer.visible) {
+            return;
         }
 
-        const auto meshBufferIt = meshes.find(mesh);
-        if (meshBufferIt == meshes.end()) {
-            Console::get().error("[OpenGLRenderer::render] Attempting to render a mesh that hasn't been uploaded.");
-            continue;
-        }
+        std::vector<ModelPrimitive> modelPrimitives = model->getPrimitives();
+        for (const ModelPrimitive& modelPrimitive : modelPrimitives) {
+            const std::shared_ptr<Mesh>& mesh = modelPrimitive.mesh;
+            if (!mesh) {
+                continue;
+            }
 
-        const MeshBuffer& meshBuffer = meshBufferIt->second;
-        const std::shared_ptr<Material>& material = renderItem.material;
-        if (!material) {
-            Console::get().logOnDebug("[OpenGLRenderer::render] Mesh has no material, so will be rendered with default material.");
-        }
+            const auto meshBufferIt = meshes.find(mesh);
+            if (meshBufferIt == meshes.end()) {
+                Console::get().error("[OpenGLRenderer::render] Attempting to render a mesh that hasn't been uploaded.");
+                continue;
+            }
 
-        if (material) {
+            const MeshBuffer& meshBuffer = meshBufferIt->second;
+
+            const std::shared_ptr<Material>& material = modelPrimitive.material;
+            if (!material) {
+                Console::get().error("[OpenGLRenderer::render] Mesh has no material.");
+            }
+
+            std::shared_ptr<Shader> shader = material->getShader();
+            if (!shader) {
+                Console::get().error("[OpenGLRenderer::render] Material has no shader.");
+            }
+
+            const auto shaderIt = shaders.find(shader);
+            if (shaderIt == shaders.end()) {
+                Console::get().error("[OpenGLRenderer::render] Attempting to render with a shader that hasn't been uploaded.");
+            }
+
+            const unsigned int shaderProgramID = shaderIt->second.id;
+            glUseProgram(shaderProgramID);
+            glCheckError();
+
             unsigned int textureUnit = 0;
             std::shared_ptr<Texture> albedoTexture = material->getAlbedoTexture();
             std::shared_ptr<Texture> specularTexture = material->getSpecularTexture();
 
             if (albedoTexture) {
-                bindTexture(programID, textureUnit++, "diffuse0", albedoTexture);
+                bindTexture(shaderProgramID, textureUnit++, "diffuse0", albedoTexture);
             }
             if (specularTexture) {
-                bindTexture(programID, textureUnit++, "specular0", specularTexture);
+                bindTexture(shaderProgramID, textureUnit++, "specular0", specularTexture);
             }
-        }
 
-        const glm::mat4& modelMatrix = renderItem.modelMatrix;
-        const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
+            ecs.forEach<Camera, Transform>([&](const Entity& entity, const Camera& camera, const Transform& transform) {
+                setUniformMat4(shaderProgramID, "cameraMatrix", camera.getCameraMatrix(transform, framebufferAspectRatio));
+                setUniformVec3(shaderProgramID, "cameraPosition", transform.position);
+            });
 
-        if (material) {
+            setUniformVec3(shaderProgramID, "lightPosition", glm::vec3(5.0f, 5.0f, 5.0f));
+            setUniformVec3(shaderProgramID, "lightColour", glm::vec3(1.0f, 1.0f, 1.0f));
+            setUniformVec3(shaderProgramID, "ambientColour", glm::vec3(0.2f, 0.2f, 0.2f));
+
             for (const ShaderUniform& uniform : material->getUniforms()) {
                 const char* uniformName = uniform.name.c_str();
                 if (const int* intUniform = std::get_if<int>(&uniform.value)) {
-                    setUniformInt(programID, uniformName, *intUniform);
+                    setUniformInt(shaderProgramID, uniformName, *intUniform);
                 } else if (const float* floatUniform = std::get_if<float>(&uniform.value)) {
-                    setUniformFloat(programID, uniformName, *floatUniform);
+                    setUniformFloat(shaderProgramID, uniformName, *floatUniform);
                 } else if (const glm::vec2* vec2Uniform = std::get_if<glm::vec2>(&uniform.value)) {
-                    setUniformVec2(programID, uniformName, *vec2Uniform); 
+                    setUniformVec2(shaderProgramID, uniformName, *vec2Uniform); 
                 } else if (const glm::vec3* vec3Uniform = std::get_if<glm::vec3>(&uniform.value)) {
-                    setUniformVec3(programID, uniformName, *vec3Uniform);
+                    setUniformVec3(shaderProgramID, uniformName, *vec3Uniform);
                 } else if (const glm::vec4* vec4Uniform = std::get_if<glm::vec4>(&uniform.value)) {
-                    setUniformVec4(programID, uniformName, *vec4Uniform);
+                    setUniformVec4(shaderProgramID, uniformName, *vec4Uniform);
                 } else if (const Colour* colourUniform = std::get_if<Colour>(&uniform.value)) {
-                    setUniformVec4(programID, uniformName, colourUniform->toVec4());
+                    setUniformVec4(shaderProgramID, uniformName, colourUniform->toVec4());
                 } else if (const glm::mat4* mat4Uniform = std::get_if<glm::mat4>(&uniform.value)) {
-                    setUniformMat4(programID, uniformName, *mat4Uniform);
+                    setUniformMat4(shaderProgramID, uniformName, *mat4Uniform);
                 } else {
                     Console::get().error("[OpenGLRenderer::render] Unsupported uniform type for uniform '" + uniform.name + "'");
                 }
             }
+
+            const glm::mat4 model = transform.getModelMatrix();
+            setUniformMat4(shaderProgramID, "model", model);
+            const glm::mat3 normal = glm::transpose(glm::inverse(glm::mat3(model)));
+            setUniformMat3(shaderProgramID, "normalMatrix", normal);
+            setUniformInt(shaderProgramID, "useLighting", mesh->hasAttribute(AttributeType::NORMAL) ? 1 : 0);
+
+            glBindVertexArray(meshBuffer.vao);
+            glDrawElements(
+                mesh->getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
+                (GLsizei)(mesh->getNumIndices()),
+                GL_UNSIGNED_INT,
+                nullptr
+            );
+
+            glCheckError();
         }
-
-        setUniformMat4(programID, "model", modelMatrix);
-        setUniformMat3(programID, "normalMatrix", normalMatrix);
-        setUniformInt(programID, "useLighting", mesh->hasAttribute(AttributeType::NORMAL) ? 1 : 0);
-
-        glBindVertexArray(meshBuffer.vao);
-        glDrawElements(
-            mesh->getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
-            (GLsizei)(mesh->getNumIndices()),
-            GL_UNSIGNED_INT,
-            nullptr
-        );
-
-        glCheckError();
-    }
+    });
 
     glBindVertexArray(0);
     glActiveTexture(GL_TEXTURE0);

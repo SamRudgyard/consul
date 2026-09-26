@@ -172,7 +172,8 @@ void Consul::endTick()
     time.frameCount++;
 
     // Rendering
-    engine.getSceneManager()->render(*renderer);
+    const Scene& currentScene = engine.getSceneManager()->getCurrentScene();
+    renderer->render(currentScene);
 
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();

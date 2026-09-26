@@ -15,12 +15,7 @@ class Material;
 class Mesh;
 class Shader;
 class Texture;
-
-struct RenderCamera
-{
-    glm::mat4 viewProjectionMatrix = glm::mat4(1.0f);
-    glm::vec3 position = glm::vec3(0.0f);
-};
+class Scene;
 
 struct RenderItem
 {
@@ -53,9 +48,5 @@ public:
 
     virtual void releaseExpiredResources() = 0;
 
-    virtual void render(
-        const std::shared_ptr<Shader>& shader,
-        const RenderCamera& camera,
-        const std::vector<RenderItem>& renderItems
-    ) = 0;
+    virtual void render(const Scene& scene) = 0;
 };

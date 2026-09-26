@@ -83,9 +83,22 @@ public:
      */
     std::shared_ptr<Texture> getNormalTexture() const { return normalTexture; }
 
+    /**
+     * Sets the shader associated with this material.
+     * @param shader Shader to set.
+     */
+    void setShader(std::shared_ptr<Shader> shader) { this->shader = std::move(shader); }
+
+    /**
+     * Gets the shader associated with this material.
+     * @returns Shader associated with this material.
+     */
+    std::shared_ptr<Shader> getShader() const { return shader; }
+
 private:
     Colour albedo = Colour(255, 255, 255);
     std::shared_ptr<Texture> albedoTexture;
     std::shared_ptr<Texture> specularTexture;
     std::shared_ptr<Texture> normalTexture;
+    std::shared_ptr<Shader> shader;
 };
