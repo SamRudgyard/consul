@@ -17,6 +17,7 @@ public:
     void onInit() override {
         Engine& engine = Engine::get();
         ECS& ecs = getECS();
+        const std::string shadersDirectory = SHADERS_DIR;
         VertexShaderAssetManager* vertexShaderManager = engine.getVertexShaderAssetManager();
         FragmentShaderAssetManager* fragmentShaderManager = engine.getFragmentShaderAssetManager();
         ShaderAssetManager* shaderManager = engine.getShaderAssetManager();
@@ -31,21 +32,22 @@ public:
         ecs.addComponent<Transform>(cameraEntity);
         ecs.addComponent<Camera>(cameraEntity, camera);
 
-        const std::string vertexShaderSource = readFile("shaders/default_vertex_2d.glsl");
+        const std::string vertexShaderSource = readFile(shadersDirectory + "/default_vertex_2d.glsl");
         std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
-        vertexShaderManager->setSourcePath(vertexShader, "shaders/default_vertex_2d.glsl");
+        vertexShaderManager->setSourcePath(vertexShader, shadersDirectory + "/default_vertex_2d.glsl");
 
-        const std::string fragmentShaderSource = readFile("shaders/default_fragment_2d.glsl");
+        const std::string fragmentShaderSource = readFile(shadersDirectory + "/default_fragment_2d.glsl");
         std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->add("default_FragmentShader", FragmentShader(fragmentShaderSource));
-        fragmentShaderManager->setSourcePath(fragmentShader, "shaders/default_fragment_2d.glsl");
+        fragmentShaderManager->setSourcePath(fragmentShader, shadersDirectory + "/default_fragment_2d.glsl");
 
         defaultShader = shaderManager->add("default", Shader(std::move(vertexShader), std::move(fragmentShader)));
 
         Mesh mesh = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
 
         Material material;
+        material.setShader(defaultShader);
         material.setAlbedo(Colour(20, 200, 200));
-        std::shared_ptr<Material> materialAsset = materialManager->add("quadMaterial", engine.getAssetDefaults().applyToMaterial(material));
+        std::shared_ptr<Material> materialAsset = materialManager->add("quadMaterial", material);
 
         std::shared_ptr<Mesh> meshAsset = meshManager->add("quadMesh", mesh);
 

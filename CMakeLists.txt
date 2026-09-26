@@ -147,8 +147,8 @@ add_library(consul::consul ALIAS consul)
 
 target_include_directories(consul PUBLIC ${SRC_DIR} ${stb_SOURCE_DIR})
 
-target_compile_definitions(consul PUBLIC ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets")
-target_compile_definitions(consul PUBLIC SHADERS_DIR="${CMAKE_SOURCE_DIR}/shaders")
+target_compile_definitions(consul PUBLIC ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
+target_compile_definitions(consul PUBLIC SHADERS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders")
 if(CONSUL_CONSOLE_STDOUT)
   target_compile_definitions(consul PUBLIC CONSUL_CONSOLE_STDOUT)
 endif()
