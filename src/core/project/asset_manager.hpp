@@ -25,6 +25,14 @@ public:
     AssetManager() = default;
     ~AssetManager() = default;
 
+    std::shared_ptr<T> create(const std::string& name, const bool preserved = false)
+    {
+        if (preserved) {
+            return this->addPreserved(name, T());
+        }
+        return this->add(name, T());
+    }
+
     std::shared_ptr<T> add(const std::string& name, const T& asset)
     {
         std::shared_ptr<T> assetPointer = std::make_shared<T>(asset);

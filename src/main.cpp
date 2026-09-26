@@ -41,14 +41,14 @@ public:
         ecs.addComponent<Camera>(cameraEntity, camera);
 
         const std::string vertexShaderSource = readFile(shadersDirectory + "/default_vertex_3d.glsl");
-        std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
+        std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->create("default_VertexShader");
         vertexShaderManager->setSourcePath(vertexShader, shadersDirectory + "/default_vertex_3d.glsl");
 
         const std::string fragmentShaderSource = readFile(shadersDirectory + "/default_fragment_3d.glsl");
-        std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->add("default_FragmentShader", FragmentShader(fragmentShaderSource));
+        std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->create("default_FragmentShader");
         fragmentShaderManager->setSourcePath(fragmentShader, shadersDirectory + "/default_fragment_3d.glsl");
 
-        defaultShader = shaderManager->add("default", Shader(std::move(vertexShader), std::move(fragmentShader)));
+        defaultShader = shaderManager->create("defaultShader");
 
         std::shared_ptr<Model> shibaModel = engine.getGLTFImporter().import("shiba", assetsDirectory + "/shiba/scene.gltf");
 
