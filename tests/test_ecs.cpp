@@ -171,12 +171,12 @@ TEST_CASE("render components can be queried and release their model assets", "[e
     std::weak_ptr<Model> modelObserver = model;
 
     ecs.addComponent<Transform>(entity, transform);
-    ecs.addComponent<ModelRenderer>(entity, ModelRenderer{model, true});
+    ecs.addComponent<Renderable>(entity, Renderable{true, model});
     model.reset();
 
     bool visited = false;
-    ecs.forEach<Transform, ModelRenderer>(
-        [&](Entity visitedEntity, Transform& storedTransform, ModelRenderer& renderer) {
+    ecs.forEach<Renderable, Transform>(
+        [&](Entity visitedEntity, Renderable& renderer, Transform& storedTransform) {
             visited = true;
             REQUIRE(visitedEntity == entity);
             REQUIRE(storedTransform.position == glm::vec3(1.0f, 2.0f, 3.0f));

@@ -32,10 +32,11 @@ struct Velocity
     float z = 0.0f;
 };
 
-struct ModelRenderer
+struct Renderable
 {
-    std::shared_ptr<Model> model;
     bool visible = true;
+    std::shared_ptr<Model> model;
+    
 };
 
 struct Camera

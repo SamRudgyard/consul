@@ -31,7 +31,7 @@ namespace
             modelObserver = model;
 
             const Entity entity = getECS().createEntity();
-            getECS().addComponent<ModelRenderer>(entity, ModelRenderer{std::move(model), true});
+            getECS().addComponent<Renderable>(entity, Renderable{true, model});
         }
 
     private:
@@ -41,14 +41,14 @@ namespace
     class RenderableScene : public Scene
     {
     public:
-        const ModelPrimitive& getPrimitive() const
+        const Mesh& getMesh() const
         {
-            return getECS().getComponent<ModelRenderer>(renderEntity).model->getPrimitives().front();
+            return getECS().getComponent<Renderable>(renderEntity).model->getMeshes().front();
         }
 
         void setVisible(bool visible)
         {
-            getECS().getComponent<ModelRenderer>(renderEntity).visible = visible;
+            getECS().getComponent<Renderable>(renderEntity).visible = visible;
         }
 
     protected:
@@ -89,7 +89,7 @@ namespace
             localTransform[3][1] = 2.0f;
 
             Model modelData;
-            modelData.addPrimitive(std::move(mesh), std::move(materialAsset), localTransform);
+            modelData.addMesh(mesh, materialAsset, localTransform);
             std::shared_ptr<Model> model = engine.getModelAssetManager()->add("Test Model", modelData);
             unreferencedModel = engine.getModelAssetManager()->add("Unreferenced Test Model", modelData);
 
@@ -100,11 +100,11 @@ namespace
 
             renderEntity = getECS().createEntity();
             getECS().addComponent<Transform>(renderEntity, transform);
-            getECS().addComponent<ModelRenderer>(renderEntity, ModelRenderer{model, true});
+            getECS().addComponent<Renderable>(renderEntity, Renderable{true, model});
 
             const Entity hiddenEntity = getECS().createEntity();
             getECS().addComponent<Transform>(hiddenEntity);
-            getECS().addComponent<ModelRenderer>(hiddenEntity, ModelRenderer{std::move(model), false});
+            getECS().addComponent<Renderable>(hiddenEntity, Renderable{false, model});
         }
 
     private:
@@ -198,7 +198,7 @@ TEST_CASE("shutting down a scene releases its unshared assets")
     REQUIRE_FALSE(modelManager->get("Scene Model"));
 }
 
-TEST_CASE("scene rendering submits active model primitives to the renderer")
+TEST_CASE("scene rendering submits active model to the renderer")
 {
     Engine& engine = Engine::get();
     SceneManager* sceneManager = engine.getSceneManager();
@@ -215,8 +215,8 @@ TEST_CASE("scene rendering submits active model primitives to the renderer")
 
     REQUIRE(renderer.submittedCamera.position == glm::vec3(1.0f, 2.0f, 3.0f));
     REQUIRE(renderer.submittedItems.size() == 1);
-    REQUIRE(renderer.submittedItems.front().mesh == scenePointer->getPrimitive().mesh);
-    REQUIRE(renderer.submittedItems.front().material == scenePointer->getPrimitive().material);
+    REQUIRE(renderer.submittedItems.front().mesh == scenePointer->getMesh().mesh);
+    REQUIRE(renderer.submittedItems.front().material == scenePointer->getMesh().material);
     REQUIRE(renderer.submittedItems.front().modelMatrix[3][0] == Catch::Approx(-3.0f));
     REQUIRE(renderer.submittedItems.front().modelMatrix[3][1] == Catch::Approx(6.0f));
 

@@ -7,7 +7,7 @@
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/models/model.hpp"
 
-TEST_CASE("a model owns its primitive assets")
+TEST_CASE("A model owns its mesh, material, and local transform")
 {
     auto mesh = std::make_shared<Mesh>();
     auto material = std::make_shared<Material>();
@@ -15,14 +15,16 @@ TEST_CASE("a model owns its primitive assets")
     std::weak_ptr<Material> materialObserver = material;
     Model model;
 
-    model.addPrimitive(std::move(mesh), std::move(material));
+    model.addMesh(mesh, material);
 
     REQUIRE_FALSE(meshObserver.expired());
     REQUIRE_FALSE(materialObserver.expired());
-    REQUIRE(model.getPrimitives().size() == 1);
+    REQUIRE(model.getMeshes().size() == 1);
+    REQUIRE(model.getMaterials().size() == 1);
+    REQUIRE(model.getLocalTransforms().size() == 1);
 }
 
-TEST_CASE("shared primitive assets survive until their final model is destroyed")
+TEST_CASE("A model assets survive until their final reference is destroyed")
 {
     auto mesh = std::make_shared<Mesh>();
     auto material = std::make_shared<Material>();
@@ -30,8 +32,8 @@ TEST_CASE("shared primitive assets survive until their final model is destroyed"
     std::weak_ptr<Material> materialObserver = material;
     auto firstModel = std::make_unique<Model>();
     auto secondModel = std::make_unique<Model>();
-    firstModel->addPrimitive(mesh, material);
-    secondModel->addPrimitive(mesh, material);
+    firstModel->addMesh(mesh, material);
+    secondModel->addMesh(mesh, material);
     mesh.reset();
     material.reset();
 
@@ -44,15 +46,15 @@ TEST_CASE("shared primitive assets survive until their final model is destroyed"
     REQUIRE(materialObserver.expired());
 }
 
-TEST_CASE("a model primitive preserves its local transform")
+TEST_CASE("A model correctly stores its local transform")
 {
     glm::mat4 localTransform(1.0f);
     localTransform[3][0] = 2.0f;
     localTransform[3][1] = 3.0f;
 
     Model model;
-    model.addPrimitive(std::make_shared<Mesh>(), std::make_shared<Material>(), localTransform);
+    model.addMesh(std::make_shared<Mesh>(), std::make_shared<Material>(), localTransform);
 
-    REQUIRE(model.getPrimitives().front().localTransform[3][0] == 2.0f);
-    REQUIRE(model.getPrimitives().front().localTransform[3][1] == 3.0f);
+    REQUIRE(model.getLocalTransforms().front()[3][0] == 2.0f);
+    REQUIRE(model.getLocalTransforms().front()[3][1] == 3.0f);
 }

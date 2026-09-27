@@ -2,15 +2,24 @@
 
 #include <utility>
 
-void Model::addPrimitive(
+#include "core/console/console.hpp"
+
+void Model::addMesh(
     const std::shared_ptr<Mesh>& mesh,
     const std::shared_ptr<Material>& material,
     const glm::mat4& localTransform
 )
 {
     if (!mesh) {
+        Console::get().error("[Model::addMesh] Mesh is null!");
+        return;
+    }
+    if (!material) {
+        Console::get().error("[Model::addMesh] Material is null!");
         return;
     }
 
-    primitives.push_back({std::move(mesh), std::move(material), localTransform});
+    meshes.push_back(mesh);
+    materials.push_back(material);
+    localTransforms.push_back(localTransform);
 }

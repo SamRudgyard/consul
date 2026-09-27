@@ -54,7 +54,7 @@ public:
 
         const Entity shibaEntity = getECS().createEntity();
         ecs.addComponent<Transform>(shibaEntity);
-        ecs.addComponent<ModelRenderer>(shibaEntity, ModelRenderer{std::move(shibaModel), true});
+        ecs.addComponent<Renderable>(shibaEntity, Renderable{true, shibaModel});
 
         Mesh mesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
         Mesh outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
@@ -68,13 +68,13 @@ public:
         std::shared_ptr<Mesh> outlineMeshAsset = meshManager->add("cubeOutlineMesh", outlineMesh);
 
         Model cube;
-        cube.addPrimitive(std::move(meshAsset), std::move(materialAsset));
-        cube.addPrimitive(outlineMeshAsset, std::make_shared<Material>());
+        cube.addMesh(meshAsset, materialAsset);
+        cube.addMesh(outlineMeshAsset, std::make_shared<Material>());
         std::shared_ptr<Model> cubeModel = engine.getModelAssetManager()->add("cubeModel", cube);
 
         const Entity cubeEntity = ecs.createEntity();
         ecs.addComponent<Transform>(cubeEntity);
-        ecs.addComponent<ModelRenderer>(cubeEntity, ModelRenderer{std::move(cubeModel), true});
+        ecs.addComponent<Renderable>(cubeEntity, Renderable{true, cubeModel});
     }
 
     void onUpdate() override

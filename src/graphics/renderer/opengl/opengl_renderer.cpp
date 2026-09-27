@@ -121,37 +121,47 @@ void OpenGLRenderer::render(const Scene& scene)
     const glm::vec2 framebufferSize = Engine::get().window.framebufferSize;
     const float framebufferAspectRatio = framebufferSize.x / std::max(framebufferSize.y, 1.0f);
 
-    ecs.forEach<ModelRenderer, Transform>([&](const Entity& entity, const ModelRenderer& modelRenderer, const Transform& transform) {
-        const std::shared_ptr<Model>& model = modelRenderer.model;
+    ecs.forEach<Renderable, Transform>([&](const Entity& entity, const Renderable& renderable, const Transform& transform) {
+        const std::shared_ptr<Model>& model = renderable.model;
         if (!model) {
+            Console::get().error("[OpenGLRenderer::render] Invalid model.");
             return;
         }
-        if (!modelRenderer.visible) {
+        if (!renderable.visible) {
             return;
         }
 
-        std::vector<ModelPrimitive> modelPrimitives = model->getPrimitives();
-        for (const ModelPrimitive& modelPrimitive : modelPrimitives) {
-            const std::shared_ptr<Mesh>& mesh = modelPrimitive.mesh;
+        std::vector<std::shared_ptr<Mesh>> meshes = model->getMeshes();
+        std::vector<std::shared_ptr<Material>> materials = model->getMaterials();
+        std::vector<glm::mat4> localTransforms = model->getLocalTransforms();
+
+        if (meshes.size() != materials.size() || meshes.size() != localTransforms.size()) {
+            Console::get().error("[OpenGLRenderer::render] Model has inconsistent number of meshes, materials, and local transforms.");
+            return;
+        }
+
+        for (unsigned int im = 0; im < meshes.size(); im++) {
+            const std::shared_ptr<Mesh>& mesh = meshes[im];
             if (!mesh) {
-                 Console::get().error("[OpenGLRenderer::render] ModelPrimitive has no mesh.");
+                 Console::get().error("[OpenGLRenderer::render] Invalid mesh.");
+                return;
             }
-
             uploadMesh(mesh);
 
-            const std::shared_ptr<Material>& material = modelPrimitive.material;
+            const std::shared_ptr<Material>& material = materials[im];
             if (!material) {
-                Console::get().error("[OpenGLRenderer::render] Mesh has no material.");
+                Console::get().error("[OpenGLRenderer::render] Invalid material.");
+                return;
             }
-
             uploadMaterial(material);
 
             const std::shared_ptr<Shader>& shader = material->getShader();
             if (!shader) {
-                Console::get().error("[OpenGLRenderer::render] Material has no shader.");
+                Console::get().error("[OpenGLRenderer::render] Invalid shader.");
+                return;
             }
 
-            const unsigned int shaderProgramID = shaders[shader].id;
+            const unsigned int shaderProgramID = this->shaders[shader].id;
             glUseProgram(shaderProgramID);
             glCheckError();
 
@@ -202,7 +212,7 @@ void OpenGLRenderer::render(const Scene& scene)
             setUniformMat3(shaderProgramID, "normalMatrix", normal);
             setUniformInt(shaderProgramID, "useLighting", mesh->hasAttribute(AttributeType::NORMAL) ? 1 : 0);
 
-            glBindVertexArray(meshes[mesh].vao);
+            glBindVertexArray(this->meshes[mesh].vao);
             glDrawElements(
                 mesh->getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
                 (GLsizei)(mesh->getNumIndices()),
