@@ -206,7 +206,8 @@ void OpenGLRenderer::render(const Scene& scene)
                 }
             }
 
-            const glm::mat4 model = transform.getModelMatrix();
+            const glm::mat4 localTransform = localTransforms[im];
+            const glm::mat4 model = transform.getModelMatrix() * localTransform;
             setUniformMat4(shaderProgramID, "model", model);
             const glm::mat3 normal = glm::transpose(glm::inverse(glm::mat3(model)));
             setUniformMat3(shaderProgramID, "normalMatrix", normal);
