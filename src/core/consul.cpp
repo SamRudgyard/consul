@@ -151,6 +151,18 @@ void Consul::endTick()
 {
     CONSUL_PROFILE_METHOD();
 
+    
+
+    // Check for expired assets and release them from CPU
+    engine.getMeshAssetManager()->removeExpiredAssets();
+    engine.getModelAssetManager()->removeExpiredAssets();
+    engine.getMaterialAssetManager()->removeExpiredAssets();
+    engine.getTextureAssetManager()->removeExpiredAssets();
+    engine.getShaderAssetManager()->removeExpiredAssets();
+    engine.getVertexShaderAssetManager()->removeExpiredAssets();
+    engine.getFragmentShaderAssetManager()->removeExpiredAssets();
+    renderer->releaseExpiredResources(); // Release from GPU
+
     engine.window.shouldClose = platform->shouldClose();
     engine.inputSystem.endTick();
 
@@ -186,8 +198,11 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     platform->swapBuffers();
+}
 
-    renderer->releaseExpiredResources();
+void Consul::syncAssets()
+{
+    CONSUL_PROFILE_METHOD();
 
     engine.getMeshAssetManager()->removeExpiredAssets();
     engine.getModelAssetManager()->removeExpiredAssets();

@@ -134,33 +134,24 @@ void OpenGLRenderer::render(const Scene& scene)
         for (const ModelPrimitive& modelPrimitive : modelPrimitives) {
             const std::shared_ptr<Mesh>& mesh = modelPrimitive.mesh;
             if (!mesh) {
-                continue;
+                 Console::get().error("[OpenGLRenderer::render] ModelPrimitive has no mesh.");
             }
 
-            auto meshBufferIt = meshes.find(mesh);
-            if (meshBufferIt == meshes.end()) {
-                Console::get().error("[OpenGLRenderer::render] Attempting to render a mesh that hasn't been uploaded.");
-                continue;
-            }
-
-            const MeshBuffer& meshBuffer = meshBufferIt->second;
+            uploadMesh(mesh);
 
             const std::shared_ptr<Material>& material = modelPrimitive.material;
             if (!material) {
                 Console::get().error("[OpenGLRenderer::render] Mesh has no material.");
             }
 
-            std::shared_ptr<Shader> shader = material->getShader();
+            uploadMaterial(material);
+
+            const std::shared_ptr<Shader>& shader = material->getShader();
             if (!shader) {
                 Console::get().error("[OpenGLRenderer::render] Material has no shader.");
             }
 
-            const auto shaderIt = shaders.find(shader);
-            if (shaderIt == shaders.end()) {
-                Console::get().error("[OpenGLRenderer::render] Attempting to render with a shader that hasn't been uploaded.");
-            }
-
-            const unsigned int shaderProgramID = shaderIt->second.id;
+            const unsigned int shaderProgramID = shaders[shader].id;
             glUseProgram(shaderProgramID);
             glCheckError();
 
@@ -211,7 +202,7 @@ void OpenGLRenderer::render(const Scene& scene)
             setUniformMat3(shaderProgramID, "normalMatrix", normal);
             setUniformInt(shaderProgramID, "useLighting", mesh->hasAttribute(AttributeType::NORMAL) ? 1 : 0);
 
-            glBindVertexArray(meshBuffer.vao);
+            glBindVertexArray(meshes[mesh].vao);
             glDrawElements(
                 mesh->getDrawMode() == DrawMode::LINES ? GL_LINES : GL_TRIANGLES,
                 (GLsizei)(mesh->getNumIndices()),
@@ -318,35 +309,31 @@ void OpenGLRenderer::uploadShader(const std::shared_ptr<Shader>& shader)
     Console::get().logOnDebug("[OpenGLRenderer::uploadShader] Successfully uploaded Shader to GPU.");
 }
 
-void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
+void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& mesh)
 {
     CONSUL_PROFILE_METHOD();
 
-    if (!meshAsset) {
+    if (!mesh) {
         return;
     }
 
-    std::weak_ptr<Mesh> meshKey = meshAsset;
-    auto [it, inserted] = meshes.try_emplace(meshKey);
-    MeshBuffer& meshBuffer = it->second;
-    Mesh& mesh = *meshAsset;
-
-    if (!inserted && !mesh.isAnyDirty()) return;
-
-    if (inserted) {
-        glGenVertexArrays(1, &meshBuffer.vao);
+    if (!mesh->isAnyDirty()) {
+        return;
     }
+
+    MeshBuffer meshBuffer;
+    glGenVertexArrays(1, &meshBuffer.vao);
     glBindVertexArray(meshBuffer.vao);
     glCheckError();
 
-    const bool uploadPositions = inserted || mesh.isDirty(AttributeType::POSITION);
-    const bool uploadNormals = inserted || mesh.isDirty(AttributeType::NORMAL);
-    const bool uploadTexCoords = inserted || mesh.isDirty(AttributeType::TEXCOORD);
-    const bool uploadTangents = inserted || mesh.isDirty(AttributeType::TANGENT);
-    const bool uploadIndices = inserted || mesh.isDirty(AttributeType::INDICES);
+    const bool uploadPositions = mesh->isDirty(AttributeType::POSITION);
+    const bool uploadNormals = mesh->isDirty(AttributeType::NORMAL);
+    const bool uploadTexCoords = mesh->isDirty(AttributeType::TEXCOORD);
+    const bool uploadTangents = mesh->isDirty(AttributeType::TANGENT);
+    const bool uploadIndices = mesh->isDirty(AttributeType::INDICES);
 
     if (uploadPositions) {
-        if (!mesh.hasAttribute(AttributeType::POSITION)) {
+        if (!mesh->hasAttribute(AttributeType::POSITION)) {
             Console::get().error("[OpenGLRenderer::uploadMesh] Provided Mesh has no position data");
             return;
         }
@@ -360,8 +347,8 @@ void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
             meshBuffer.positionVBO = 0;
         }
 
-        meshBuffer.positionVBO = enableVertexBuffer(mesh.getPositions(), AttributeType::POSITION, false);
-        mesh.clean(AttributeType::POSITION);
+        meshBuffer.positionVBO = enableVertexBuffer(mesh->getPositions(), AttributeType::POSITION, false);
+        mesh->clean(AttributeType::POSITION);
         glCheckError();
     }
     
@@ -373,13 +360,13 @@ void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
             meshBuffer.normalVBO = 0;
         }
 
-        if (mesh.hasAttribute(AttributeType::NORMAL)) {
-            meshBuffer.normalVBO = enableVertexBuffer(mesh.getNormals(), AttributeType::NORMAL, false);
+        if (mesh->hasAttribute(AttributeType::NORMAL)) {
+            meshBuffer.normalVBO = enableVertexBuffer(mesh->getNormals(), AttributeType::NORMAL, false);
         } else {
             glDisableVertexAttribArray((unsigned int)(AttributeType::NORMAL));
             glVertexAttrib3fv((unsigned int)(AttributeType::NORMAL), glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f)));
         }
-        mesh.clean(AttributeType::NORMAL);
+        mesh->clean(AttributeType::NORMAL);
         glCheckError();
     }
 
@@ -391,13 +378,13 @@ void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
             meshBuffer.texCoordVBO = 0;
         }
         
-        if (mesh.hasAttribute(AttributeType::TEXCOORD)) {
-            meshBuffer.texCoordVBO = enableVertexBuffer(mesh.getTextureCoords(), AttributeType::TEXCOORD, false);
+        if (mesh->hasAttribute(AttributeType::TEXCOORD)) {
+            meshBuffer.texCoordVBO = enableVertexBuffer(mesh->getTextureCoords(), AttributeType::TEXCOORD, false);
         } else {
             glDisableVertexAttribArray((unsigned int)(AttributeType::TEXCOORD));
             glVertexAttrib2fv((unsigned int)(AttributeType::TEXCOORD), glm::value_ptr(glm::vec2(0.0f, 0.0f)));
         }
-        mesh.clean(AttributeType::TEXCOORD);
+        mesh->clean(AttributeType::TEXCOORD);
         glCheckError();
     }
 
@@ -409,19 +396,19 @@ void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
             meshBuffer.tangentVBO = 0;
         }
 
-        if (mesh.hasAttribute(AttributeType::TANGENT)) {
-            meshBuffer.tangentVBO = enableVertexBuffer(mesh.getTangents(), AttributeType::TANGENT, false);
+        if (mesh->hasAttribute(AttributeType::TANGENT)) {
+            meshBuffer.tangentVBO = enableVertexBuffer(mesh->getTangents(), AttributeType::TANGENT, false);
         } else {
             glDisableVertexAttribArray((unsigned int)(AttributeType::TANGENT));
             glVertexAttrib4fv((unsigned int)(AttributeType::TANGENT), glm::value_ptr(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)));
         }
-        mesh.clean(AttributeType::TANGENT);
+        mesh->clean(AttributeType::TANGENT);
         glCheckError();
     }    
 
     if (uploadIndices) {
         // Generate element buffer object (EBO) for indices
-        std::vector<unsigned int> indices = mesh.getIndices();
+        std::vector<unsigned int> indices = mesh->getIndices();
 
         const bool alreadyHasEBO = meshBuffer.ebo != 0;
 
@@ -434,8 +421,10 @@ void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshBuffer.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
         glCheckError();
-        mesh.clean(AttributeType::INDICES);
+        mesh->clean(AttributeType::INDICES);
     }
+
+    meshes[mesh] = meshBuffer;
 
     // Unbind all to prevent accidental modification
     glBindVertexArray(0);                       // Unbind VAO first
@@ -444,6 +433,41 @@ void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& meshAsset)
     glCheckError();
 
     Console::get().logOnDebug("[OpenGLRenderer::uploadMesh] Successfully uploaded Mesh to GPU.");
+}
+
+void OpenGLRenderer::uploadMaterial(const std::shared_ptr<Material>& material)
+{
+    CONSUL_PROFILE_METHOD();
+
+    if (!material) {
+        return;
+    }
+
+    std::shared_ptr<Shader> shader = material->getShader();
+    if (!shader) {
+        Console::get().error("[OpenGLRenderer::uploadMaterial] Material has no shader.");
+        return;
+    }
+    std::shared_ptr<Texture> albedoTexture = material->getAlbedoTexture();
+    if (!albedoTexture) {
+        Console::get().error("[OpenGLRenderer::uploadMaterial] Material has no albedo texture.");
+        return;
+    }
+    std::shared_ptr<Texture> specularTexture = material->getSpecularTexture();
+    if (!specularTexture) {
+        Console::get().error("[OpenGLRenderer::uploadMaterial] Material has no specular texture.");
+        return;
+    }
+    std::shared_ptr<Texture> normalTexture = material->getNormalTexture();
+    if (!normalTexture) {
+        Console::get().error("[OpenGLRenderer::uploadMaterial] Material has no normal texture.");
+        return;
+    }
+    
+    uploadShader(shader);
+    uploadTexture(albedoTexture);
+    uploadTexture(specularTexture);
+    uploadTexture(normalTexture);
 }
 
 void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)

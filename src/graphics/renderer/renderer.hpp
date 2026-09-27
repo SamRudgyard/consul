@@ -49,5 +49,7 @@ protected:
 
     virtual void uploadMesh(const std::shared_ptr<Mesh>& mesh) = 0;
 
+    virtual void uploadMaterial(const std::shared_ptr<Material>& material) = 0;
+
     virtual void uploadTexture(const std::shared_ptr<Texture>& texture) = 0;
 };

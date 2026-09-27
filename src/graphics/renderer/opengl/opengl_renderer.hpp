@@ -95,6 +95,12 @@ protected:
     void uploadMesh(const std::shared_ptr<Mesh>& mesh) override;
 
     /**
+     * Uploads the given Material to the GPU.
+     * @param material The material data to upload to the GPU.
+     */
+    void uploadMaterial(const std::shared_ptr<Material>& material) override;
+
+    /**
      * Uploads the given Texture to the GPU.
      * @param texture The texture data to upload to the GPU.
      */

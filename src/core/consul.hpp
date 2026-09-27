@@ -77,4 +77,6 @@ private:
 
     void beginTick();
     void endTick();
+
+    void syncAssets();
 };
