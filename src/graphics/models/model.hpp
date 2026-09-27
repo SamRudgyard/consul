@@ -39,15 +39,6 @@ public:
 		const glm::mat4& localTransform = glm::mat4(1.0f)
 	);
 
-	/**
-	 * Get the file path of this model, if it was loaded from a file.
-	 * @returns Full path to the model file, or an empty string if the model was not imported from a file.
-	 */
-	const std::string& getFilePath() const { return fileFullPath; }
-
-	void setFilePath(const std::string& filePath) { fileFullPath = filePath; }
-
 private:
-	std::string fileFullPath = "";
 	std::vector<ModelPrimitive> primitives;
 };

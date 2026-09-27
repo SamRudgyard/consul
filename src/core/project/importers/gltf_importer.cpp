@@ -53,7 +53,6 @@ std::shared_ptr<Model> GLTFImporter::import(const std::string& name, const std::
     binaryData = std::vector<unsigned char>(binaryContents.begin(), binaryContents.end());
 
     Model model;
-    model.setFilePath(currentFilePath);
     currentModel = &model;
 
     if (!jsonContents.contains("scenes") || jsonContents["scenes"].empty()) {
