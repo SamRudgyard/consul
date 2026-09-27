@@ -76,6 +76,13 @@ public:
     void setViewport(int x, int y, int width, int height) override;
 
     /**
+     * Render the provided scene.
+     * @param scene Scene to render.
+     */
+    void render(const Scene& scene) override;
+
+protected:
+     /**
      * Uploads the given Shader to the GPU.
      * @param shader Shader to upload to the GPU.
      */
@@ -92,12 +99,6 @@ public:
      * @param texture The texture data to upload to the GPU.
      */
     void uploadTexture(const std::shared_ptr<Texture>& texture) override;
-
-    /**
-     * Render the provided scene.
-     * @param scene Scene to render.
-     */
-    void render(const Scene& scene) override;
 
 private:
     std::map<std::weak_ptr<Shader>, ShaderBuffer, std::owner_less<>> shaders;

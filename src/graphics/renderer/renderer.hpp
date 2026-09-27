@@ -40,13 +40,14 @@ public:
 
     virtual void setViewport(int x, int y, int width, int height) = 0;
 
+    virtual void releaseExpiredResources() = 0;
+
+    virtual void render(const Scene& scene) = 0;
+
+protected:
     virtual void uploadShader(const std::shared_ptr<Shader>& shader) = 0;
 
     virtual void uploadMesh(const std::shared_ptr<Mesh>& mesh) = 0;
 
     virtual void uploadTexture(const std::shared_ptr<Texture>& texture) = 0;
-
-    virtual void releaseExpiredResources() = 0;
-
-    virtual void render(const Scene& scene) = 0;
 };
