@@ -62,29 +62,38 @@ public:
 
         Material material;
         material.setAlbedo(Colour(20, 200, 200));
-        std::shared_ptr<Material> materialAsset = materialManager->add("cubeMaterial", material);
+        std::shared_ptr<Material> materialAsset = materialManager->add("icosphereMaterial", material);
 
-        std::shared_ptr<Mesh> meshAsset = meshManager->add("cubeMesh", mesh);
-        std::shared_ptr<Mesh> outlineMeshAsset = meshManager->add("cubeOutlineMesh", outlineMesh);
+        std::shared_ptr<Mesh> meshAsset = meshManager->add("icosphereMesh", mesh);
+        std::shared_ptr<Mesh> outlineMeshAsset = meshManager->add("icosphereOutlineMesh", outlineMesh);
 
-        Model cube;
-        cube.addMesh(meshAsset, materialAsset);
-        cube.addMesh(outlineMeshAsset, std::make_shared<Material>());
-        std::shared_ptr<Model> cubeModel = engine.getModelAssetManager()->add("cubeModel", cube);
+        Model icosphere;
+        icosphere.addMesh(meshAsset, materialAsset);
+        icosphere.addMesh(outlineMeshAsset, std::make_shared<Material>());
+        std::shared_ptr<Model> icosphereModel = engine.getModelAssetManager()->add("icosphereModel", icosphere);
 
-        const Entity cubeEntity = ecs.createEntity();
-        ecs.addComponent<Transform>(cubeEntity);
-        ecs.addComponent<Renderable>(cubeEntity, Renderable{true, cubeModel});
+        icosphereEntity = ecs.createEntity();
+        ecs.addComponent<Transform>(icosphereEntity);
+        ecs.addComponent<Renderable>(icosphereEntity, Renderable{true, icosphereModel});
     }
 
     void onUpdate() override
     {
         Engine& engine = Engine::get();
         InputSystem& input = engine.inputSystem;
-        Transform& cameraTransform = getECS().getComponent<Transform>(cameraEntity);
         const float deltaTime = static_cast<float>(engine.time.deltaTime);
-        const float movementSpeed = input.isKeyDown(KeyboardKey::KEY_LEFT_SHIFT) ? 10.0f : 5.0f;
 
+        Transform& icosphereTransform = getECS().getComponent<Transform>(icosphereEntity);
+        const float anglePerSecond = glm::radians(45.0f);
+        constexpr float radius = 1.5f;
+        icosphereTransform.rotation.y += anglePerSecond * deltaTime;
+        icosphereTransform.position = {
+            radius * std::cos(icosphereTransform.rotation.y),
+            0.0f,
+            radius * std::sin(icosphereTransform.rotation.y)
+        };
+
+        Transform& cameraTransform = getECS().getComponent<Transform>(cameraEntity);
         const float pitch = cameraTransform.rotation.x;
         const float yaw = cameraTransform.rotation.y;
         const glm::vec3 forward = glm::normalize(glm::vec3(
@@ -94,6 +103,7 @@ public:
         ));
         const glm::vec3 up(0.0f, 1.0f, 0.0f);
         const glm::vec3 right = glm::normalize(glm::cross(forward, up));
+        const float movementSpeed = input.isKeyDown(KeyboardKey::KEY_LEFT_SHIFT) ? 10.0f : 5.0f;
         const float movement = movementSpeed * deltaTime;
 
         if (input.isKeyDown(KeyboardKey::KEY_W)) {
@@ -129,6 +139,7 @@ public:
 
 private:
     Entity cameraEntity = 0;
+    Entity icosphereEntity = 0;
     std::shared_ptr<Shader> defaultShader;
 };
 
