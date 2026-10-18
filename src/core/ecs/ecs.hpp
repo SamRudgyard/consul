@@ -146,7 +146,7 @@ public:
      * 
      * @param entity The entity whose component should be removed.
      */
-    void removeComponent(Entity entity)
+    void removeComponent(Entity entity) override
     {
         if (!hasComponent(entity)) {
             Console::get().error(
