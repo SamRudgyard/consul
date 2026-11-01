@@ -81,7 +81,7 @@ private:
         std::shared_ptr<Mesh> meshAsset = meshManager->add("quadMesh", mesh);
 
         Model model;
-        model.addMesh(meshAsset, materialAsset);
+        model.addPrimitive(meshAsset, materialAsset);
         std::shared_ptr<Model> modelAsset = engine.getModelAssetManager()->add("quadModel", model);
 
         Transform transform;

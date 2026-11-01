@@ -294,7 +294,7 @@ std::shared_ptr<Mesh> GLTFImporter::loadMesh(unsigned int meshIndex, const glm::
 
     std::shared_ptr<Mesh> meshAsset = addMesh("Mesh_" + std::to_string(meshIndex), mesh);
     if (currentModel) {
-        currentModel->addMesh(meshAsset, material, initialTransform);
+        currentModel->addPrimitive(meshAsset, material, initialTransform);
     }
 
     return meshAsset;
