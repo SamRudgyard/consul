@@ -8,12 +8,7 @@
 #include "core/engine.hpp"
 #include "core/ecs/components.hpp"
 #include "core/profiling/profile_method.hpp"
-#include "graphics/material/material.hpp"
-#include "graphics/mesh/mesh.hpp"
-#include "graphics/models/model.hpp"
 #include "graphics/renderer/renderer.hpp"
-#include "graphics/shader/shader.hpp"
-#include "graphics/texture/texture.hpp"
 
 void SceneManager::loadScene(std::unique_ptr<Scene> scene)
 {

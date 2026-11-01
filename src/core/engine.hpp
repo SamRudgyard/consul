@@ -54,7 +54,7 @@ private:
     FragmentShaderAssetManager fragmentShaderManager;
     TextureAssetManager textureManager;
 
-    GLTFImporter gltfImporter = GLTFImporter(modelManager, meshManager, materialManager, textureManager);
+    GLTFImporter gltfImporter = GLTFImporter(meshManager, materialManager, textureManager);
 
     SceneManager sceneManager;
 };

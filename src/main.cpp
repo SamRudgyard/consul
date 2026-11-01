@@ -9,7 +9,7 @@
 #include "core/project/scene.hpp"
 #include "graphics/geometry/geometry_3d.hpp"
 #include "graphics/material/material.hpp"
-#include "graphics/models/model.hpp"
+#include "graphics/model_primitive/model_primitive.hpp"
 #include "graphics/shader/shader.hpp"
 #include "utils.hpp"
 
@@ -50,11 +50,13 @@ public:
 
         defaultShader = shaderManager->create("defaultShader");
 
-        std::shared_ptr<Model> shibaModel = engine.getGLTFImporter().import("shiba", assetsDirectory + "/shiba/scene.gltf");
+        std::vector<ModelPrimitive> shibaPrimitives = engine.getGLTFImporter().import("shiba", assetsDirectory + "/shiba/scene.gltf");
 
         const Entity shibaEntity = getECS().createEntity();
         ecs.addComponent<Transform>(shibaEntity);
-        ecs.addComponent<Renderable>(shibaEntity, Renderable{true, shibaModel});
+        Model model;
+        model.primitives = shibaPrimitives;
+        ecs.addComponent<Model>(shibaEntity, model);
 
         Mesh mesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
         Mesh outlineMesh = Geometry3D::get()->sphereIcosphere(0.5f, 2);
@@ -68,13 +70,12 @@ public:
         std::shared_ptr<Mesh> outlineMeshAsset = meshManager->add("icosphereOutlineMesh", outlineMesh);
 
         Model icosphere;
-        icosphere.addMesh(meshAsset, materialAsset);
-        icosphere.addMesh(outlineMeshAsset, std::make_shared<Material>());
-        std::shared_ptr<Model> icosphereModel = engine.getModelAssetManager()->add("icosphereModel", icosphere);
+        icosphere.primitives.emplace_back(meshAsset, materialAsset, glm::mat4(1.0f));
+        icosphere.primitives.emplace_back(outlineMeshAsset, std::make_shared<Material>(), glm::mat4(1.0f));
 
         icosphereEntity = ecs.createEntity();
         ecs.addComponent<Transform>(icosphereEntity);
-        ecs.addComponent<Renderable>(icosphereEntity, Renderable{true, icosphereModel});
+        ecs.addComponent<Model>(icosphereEntity, icosphere);
     }
 
     void onUpdate() override

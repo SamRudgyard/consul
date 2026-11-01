@@ -80,16 +80,18 @@ private:
 
         std::shared_ptr<Mesh> meshAsset = meshManager->add("quadMesh", mesh);
 
+        ModelPrimitive modelPrimitive;
+        modelPrimitive.mesh = meshAsset;
+        modelPrimitive.material = materialAsset;
         Model model;
-        model.addPrimitive(meshAsset, materialAsset);
-        std::shared_ptr<Model> modelAsset = engine.getModelAssetManager()->add("quadModel", model);
+        model.primitives.push_back(modelPrimitive);
 
         Transform transform;
         transform.position = position;
 
         const Entity entity = ecs.createEntity();
         ecs.addComponent<Transform>(entity, transform);
-        ecs.addComponent<Renderable>(entity, Renderable{true, modelAsset});
+        ecs.addComponent<Model>(entity, model);
     }
 
     Entity cameraEntity = 0;

@@ -43,21 +43,22 @@ public:
         defaultShader = shaderManager->add("default", Shader(std::move(vertexShader), std::move(fragmentShader)));
 
         Mesh mesh = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
+        std::shared_ptr<Mesh> meshAsset = meshManager->add("quadMesh", mesh);
 
         Material material;
         material.setShader(defaultShader);
         material.setAlbedo(Colour(20, 200, 200));
         std::shared_ptr<Material> materialAsset = materialManager->add("quadMaterial", material);
 
-        std::shared_ptr<Mesh> meshAsset = meshManager->add("quadMesh", mesh);
-
+        ModelPrimitive modelPrimitive;
+        modelPrimitive.mesh = meshAsset;
+        modelPrimitive.material = materialAsset;
         Model model;
-        model.addPrimitive(meshAsset, materialAsset);
-        std::shared_ptr<Model> modelAsset = engine.getModelAssetManager()->add("quadModel", model);
+        model.primitives.push_back(modelPrimitive);
 
         const Entity entity = ecs.createEntity();
         ecs.addComponent<Transform>(entity);
-        ecs.addComponent<Renderable>(entity, Renderable{true, modelAsset});
+        ecs.addComponent<Model>(entity, model);
     }
 
     void onUpdate() override {

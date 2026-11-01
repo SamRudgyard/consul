@@ -7,7 +7,7 @@
 
 #include "core/ecs/components.hpp"
 #include "core/ecs/ecs.hpp"
-#include "graphics/models/model.hpp"
+#include "graphics/model_primitive/model_primitive.hpp"
 
 namespace
 {
@@ -159,36 +159,33 @@ TEST_CASE("forEach exposes entity IDs and component references", "[ecs][query]")
     REQUIRE(total == static_cast<float>(first + second) + 30.0f);
 }
 
-TEST_CASE("render components can be queried and release their model assets", "[ecs][component][render]")
+TEST_CASE("Components can be queried", "[ecs][component][query]")
 {
     ECS ecs;
     const Entity entity = ecs.createEntity();
 
     Transform transform;
-    transform.position = {1.0f, 2.0f, 3.0f};
-
-    std::shared_ptr<Model> model = std::make_shared<Model>();
-    std::weak_ptr<Model> modelObserver = model;
+    const glm::vec3 position = {1.0f, 2.0f, 3.0f};
+    transform.position = position;
 
     ecs.addComponent<Transform>(entity, transform);
-    ecs.addComponent<Renderable>(entity, Renderable{true, model});
-    model.reset();
+
+    ModelPrimitive modelPrimitive;
+
+    Model model;
+    model.primitives.push_back(modelPrimitive);
+    ecs.addComponent<Model>(entity, model);
 
     bool visited = false;
-    ecs.forEach<Renderable, Transform>(
-        [&](Entity visitedEntity, Renderable& renderer, Transform& storedTransform) {
+    ecs.forEach<Model, Transform>(
+        [&](Entity visitedEntity, Model& model, Transform& storedTransform) {
             visited = true;
             REQUIRE(visitedEntity == entity);
-            REQUIRE(storedTransform.position == glm::vec3(1.0f, 2.0f, 3.0f));
-            REQUIRE(renderer.model != nullptr);
-            REQUIRE(renderer.visible);
+            REQUIRE(storedTransform.position == position);
+            REQUIRE(model.primitives.size() == 1);
+            REQUIRE(model.visible);
         }
     );
 
     REQUIRE(visited);
-    REQUIRE_FALSE(modelObserver.expired());
-
-    ecs.destroyEntity(entity);
-
-    REQUIRE(modelObserver.expired());
 }

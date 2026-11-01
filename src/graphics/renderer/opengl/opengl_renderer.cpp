@@ -19,7 +19,7 @@
 #include "graphics/colour.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/mesh/mesh.hpp"
-#include "graphics/models/model.hpp"
+#include "graphics/model_primitive/model_primitive.hpp"
 #include "graphics/shader/shader.hpp"
 #include "graphics/texture/texture.hpp"
 #include "utils.hpp"
@@ -121,45 +121,32 @@ void OpenGLRenderer::render(const Scene& scene)
     const glm::vec2 framebufferSize = Engine::get().window.framebufferSize;
     const float framebufferAspectRatio = framebufferSize.x / std::max(framebufferSize.y, 1.0f);
 
-    ecs.forEach<Renderable, Transform>([&](const Entity& entity, const Renderable& renderable, const Transform& transform) {
-        const std::shared_ptr<Model>& model = renderable.model;
-        if (!model) {
-            Console::get().error("[OpenGLRenderer::render] Invalid model.");
-            return;
-        }
-        if (!renderable.visible) {
+    ecs.forEach<Model, Transform>([&](const Entity& entity, const Model& model, const Transform& transform) {
+        if (!model.visible) {
             return;
         }
 
-        std::vector<std::shared_ptr<Mesh>> meshes = model->getMeshes();
-        std::vector<std::shared_ptr<Material>> materials = model->getMaterials();
-        std::vector<glm::mat4> localTransforms = model->getLocalTransforms();
+        for (const ModelPrimitive& primitive : model.primitives) {
+            const std::shared_ptr<Mesh>& mesh = primitive.getMesh();
+            const std::shared_ptr<Material>& material = primitive.getMaterial();
+            const std::shared_ptr<Shader>& shader = material->getShader();
+            const glm::mat4& localTransform = primitive.getLocalTransform();
 
-        if (meshes.size() != materials.size() || meshes.size() != localTransforms.size()) {
-            Console::get().error("[OpenGLRenderer::render] Model has inconsistent number of meshes, materials, and local transforms.");
-            return;
-        }
-
-        for (unsigned int im = 0; im < meshes.size(); im++) {
-            const std::shared_ptr<Mesh>& mesh = meshes[im];
             if (!mesh) {
                  Console::get().error("[OpenGLRenderer::render] Invalid mesh.");
                 return;
             }
-            uploadMesh(mesh);
-
-            const std::shared_ptr<Material>& material = materials[im];
             if (!material) {
                 Console::get().error("[OpenGLRenderer::render] Invalid material.");
                 return;
             }
-            uploadMaterial(material);
-
-            const std::shared_ptr<Shader>& shader = material->getShader();
             if (!shader) {
                 Console::get().error("[OpenGLRenderer::render] Invalid shader.");
                 return;
             }
+
+            uploadMesh(mesh);
+            uploadMaterial(material);
 
             const unsigned int shaderProgramID = this->shaders[shader].id;
             glUseProgram(shaderProgramID);
@@ -206,7 +193,6 @@ void OpenGLRenderer::render(const Scene& scene)
                 }
             }
 
-            const glm::mat4 localTransform = localTransforms[im];
             const glm::mat4 model = transform.getModelMatrix() * localTransform;
             setUniformMat4(shaderProgramID, "model", model);
             const glm::mat3 normal = glm::transpose(glm::inverse(glm::mat3(model)));

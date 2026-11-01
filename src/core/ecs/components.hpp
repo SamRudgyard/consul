@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-class Model;
+class ModelPrimitive;
 
 struct Transform
 {
@@ -32,11 +32,10 @@ struct Velocity
     float z = 0.0f;
 };
 
-struct Renderable
+struct Model
 {
     bool visible = true;
-    std::shared_ptr<Model> model;
-    
+    std::vector<ModelPrimitive> primitives;
 };
 
 struct Camera
