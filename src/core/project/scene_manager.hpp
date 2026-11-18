@@ -4,7 +4,7 @@
 
 #include "core/project/scene.hpp"
 
-class AssetLibrary;
+class Engine;
 class Renderer;
 
 class SceneManager
@@ -16,14 +16,12 @@ public:
     void loadScene(std::unique_ptr<Scene> newScene);
     void unloadScene();
     bool hasScene() const { return currentScene != nullptr; }
+    const Scene& getCurrentScene() const { return *currentScene; }
 
-    void assignAssets(std::shared_ptr<AssetLibrary> assets);
 
-    void update(double deltaTime);
-    void render(Renderer& renderer);
+    void update();
     void shutdown();
 
 private:
     std::unique_ptr<Scene> currentScene;
-    std::shared_ptr<AssetLibrary> assets;
 };

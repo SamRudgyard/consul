@@ -3,8 +3,6 @@
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/colour.hpp"
 
-#include "glm/vec4.hpp"
-
 class Geometry3D
 {
 public:

@@ -1,63 +1,99 @@
+#include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "core/consul.hpp"
-#include "core/project/asset_library.hpp"
+#include "core/ecs/components.hpp"
+#include "core/engine.hpp"
 #include "core/project/scene.hpp"
-#include "graphics/camera/camera_2d.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
-
-class CubeNode : public Node {
-public:
-    void initialise(std::shared_ptr<AssetLibrary> assets) {
-        Mesh mesh = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
-
-        Material material;
-        material.setAlbedo(Colour(20, 200, 200));
-        std::shared_ptr<Material> materialAsset = assets->addMaterial("quadMaterial", material);
-
-        mesh.setMaterial(std::move(materialAsset));
-        std::shared_ptr<Mesh> meshAsset = assets->addMesh("quadMesh", mesh);
-
-        Model model;
-        model.addMesh(std::move(meshAsset));
-        modelAsset = assets->addModel("quadModel", model);
-    }
-
-protected:
-    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override {
-        if (!modelAsset) {
-            return;
-        }
-
-        modelAsset->setTransform(getLocalTransform());
-    }
-
-private:
-    std::shared_ptr<Model> modelAsset;
-};
+#include "graphics/shader/shader.hpp"
+#include "utils.hpp"
 
 class ExampleScene : public Scene {
 public:
-    void onInit(std::shared_ptr<AssetLibrary> assets) override {
-        camera.setPosition({0.0f, 0.0f});
-        defaultShader = assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
+    void onInit() override {
+        Engine& engine = Engine::get();
+        ECS& ecs = getECS();
+        const std::string shadersDirectory = SHADERS_DIR;
+        VertexShaderAssetManager* vertexShaderManager = engine.getVertexShaderAssetManager();
+        FragmentShaderAssetManager* fragmentShaderManager = engine.getFragmentShaderAssetManager();
+        ShaderAssetManager* shaderManager = engine.getShaderAssetManager();
+        MaterialAssetManager* materialManager = engine.getMaterialAssetManager();
+        MeshAssetManager* meshManager = engine.getMeshAssetManager();
 
-        CubeNode* cubeNode = getRoot().createChild<CubeNode>();
-        cubeNode->setPosition({0.0f, 0.0f, 0.0f});
-        cubeNode->initialise(assets);
+        Camera camera;
+        camera.projectionType = Camera::ProjectionType::ORTHOGRAPHIC;
+        camera.nearPlane = -1.0f;
+        camera.farPlane = 1.0f;
+        cameraEntity = ecs.createEntity();
+        ecs.addComponent<Transform>(cameraEntity);
+        ecs.addComponent<Camera>(cameraEntity, camera);
+
+        const std::string vertexShaderSource = readFile(shadersDirectory + "/default_vertex_2d.glsl");
+        std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
+        vertexShaderManager->setSourcePath(vertexShader, shadersDirectory + "/default_vertex_2d.glsl");
+
+        const std::string fragmentShaderSource = readFile(shadersDirectory + "/default_fragment_2d.glsl");
+        std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->add("default_FragmentShader", FragmentShader(fragmentShaderSource));
+        fragmentShaderManager->setSourcePath(fragmentShader, shadersDirectory + "/default_fragment_2d.glsl");
+
+        defaultShader = shaderManager->add("default", Shader(std::move(vertexShader), std::move(fragmentShader)));
+
+        Mesh mesh = Geometry2D::get()->rect({-0.5f, -0.5f}, {0.5f, 0.5f});
+        std::shared_ptr<Mesh> meshAsset = meshManager->add("quadMesh", mesh);
+
+        Material material;
+        material.setShader(defaultShader);
+        material.setAlbedo(Colour(20, 200, 200));
+        std::shared_ptr<Material> materialAsset = materialManager->add("quadMaterial", material);
+
+        ModelPrimitive modelPrimitive;
+        modelPrimitive.mesh = meshAsset;
+        modelPrimitive.material = materialAsset;
+        Model model;
+        model.primitives.push_back(modelPrimitive);
+
+        const Entity entity = ecs.createEntity();
+        ecs.addComponent<Transform>(entity);
+        ecs.addComponent<Model>(entity, model);
     }
 
-    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override {
-        camera.handleInputs(deltaTime);
-    }
+    void onUpdate() override {
+        Engine& engine = Engine::get();
+        InputSystem& input = engine.inputSystem;
+        ECS& ecs = getECS();
+        Transform& cameraTransform = ecs.getComponent<Transform>(cameraEntity);
+        Camera& camera = ecs.getComponent<Camera>(cameraEntity);
+        const float deltaTime = static_cast<float>(engine.time.deltaTime);
+        constexpr float movementSpeed = 5.0f;
 
-    Camera* getActiveCamera() override { return &camera; }
+        if (input.isKeyDown(KeyboardKey::KEY_W)) {
+            cameraTransform.position.y += movementSpeed * deltaTime;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_A)) {
+            cameraTransform.position.x -= movementSpeed * deltaTime;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_S)) {
+            cameraTransform.position.y -= movementSpeed * deltaTime;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_D)) {
+            cameraTransform.position.x += movementSpeed * deltaTime;
+        }
+
+        const float scrollOffset = input.getMouseScrollOffset().y;
+        if (scrollOffset != 0.0f) {
+            constexpr float defaultViewHeight = 2.0f;
+            float zoom = defaultViewHeight / camera.orthographicHeight;
+            zoom = std::clamp(zoom + 0.1f * scrollOffset, 0.1f, 1.0f);
+            camera.orthographicHeight = defaultViewHeight / zoom;
+        }
+    }
 
 private:
-    Camera2D camera;
+    Entity cameraEntity = 0;
     std::shared_ptr<Shader> defaultShader;
 };
 

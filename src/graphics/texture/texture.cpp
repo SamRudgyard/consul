@@ -1,9 +1,11 @@
 #include "texture.hpp"
 
-Texture::Texture()
-    : Texture("assets/default/default.png", TextureType::DIFFUSE)
-{
+#include "core/console/console.hpp"
 
+Texture::Texture(const TextureType& textureType)
+    : type(textureType)
+{
+    path = getDefaultTexturePath();
 }
 
 Texture::Texture(std::string texturePath, TextureType textureType)
@@ -11,19 +13,30 @@ Texture::Texture(std::string texturePath, TextureType textureType)
 {
 }
 
-Texture Texture::getDefaultDiffuseTexture()
+const std::string& Texture::getTextureTypeAsString() const
 {
-    static std::string defaultTexturePath = "assets/default/default.png";
-    return Texture(defaultTexturePath, TextureType::DIFFUSE);
-}
+    static const std::map<TextureType, std::string> textureTypeToString = {
+        {TextureType::DIFFUSE, "diffuse"},
+        {TextureType::SPECULAR, "specular"},
+        {TextureType::NORMAL, "normal"}
+    };
 
-Texture Texture::getDefaultSpecularTexture()
-{
-    static std::string defaultTexturePath = "assets/default/default.png";
-    return Texture(defaultTexturePath, TextureType::SPECULAR);
+    auto it = textureTypeToString.find(type);
+    if (it == textureTypeToString.end()) {
+        Console::get().error("[Texture::getTextureTypeAsString] Unknown texture type!");
+    }
+
+    return it->second;
 }
 
 const bool Texture::operator==( const Texture& other ) const
 {
     return path == other.path && type == other.type;
+}
+
+
+std::string Texture::getDefaultTexturePath()
+{
+    const std::string assetsDirectory = ASSETS_DIR;
+    return assetsDirectory + "/default/default.png";
 }

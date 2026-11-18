@@ -2,97 +2,99 @@
 #include <utility>
 
 #include "core/consul.hpp"
-#include "core/project/asset_library.hpp"
+#include "core/ecs/components.hpp"
+#include "core/engine.hpp"
 #include "core/project/scene.hpp"
-#include "graphics/camera/camera_2d.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/geometry/geometry_2d.hpp"
 #include "graphics/material/material.hpp"
 #include "graphics/models/model.hpp"
-
-class RotatingCamera2D : public Camera2D {
-public:
-    void handleInputs(double deltaTime) override
-    {
-        InputSystem& input = EngineContext::get()->inputSystem;
-
-        if (input.isKeyDown(KeyboardKey::KEY_A)) {
-            rotationDeg += rotationSpeedDeg * deltaTime;
-        }
-        if (input.isKeyDown(KeyboardKey::KEY_D)) {
-            rotationDeg -= rotationSpeedDeg * deltaTime;
-        }
-
-        setRotation(rotationDeg);
-    }
-
-private:
-    float rotationDeg = 0.0f;
-    float rotationSpeedDeg = 90.0f;
-};
-
-class ColouredQuadNode : public Node {
-public:
-    void initialise(std::shared_ptr<AssetLibrary> assets, const Colour& tint)
-    {
-        Mesh mesh = Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f});
-
-        Material material;
-        material.setAlbedo(tint);
-        std::shared_ptr<Material> materialAsset = assets->addMaterial("quadMaterial", material);
-
-        mesh.setMaterial(std::move(materialAsset));
-        std::shared_ptr<Mesh> meshAsset = assets->addMesh("quadMesh", mesh);
-
-        Model model;
-        model.addMesh(std::move(meshAsset));
-        modelAsset = assets->addModel("quadModel", model);
-    }
-
-protected:
-    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override
-    {
-        if (!modelAsset) {
-            return;
-        }
-
-        modelAsset->setTransform(getLocalTransform());
-    }
-
-private:
-    std::shared_ptr<Model> modelAsset;
-};
+#include "graphics/shader/shader.hpp"
+#include "utils.hpp"
 
 class RotateCameraScene : public Scene {
 public:
-    void onInit(std::shared_ptr<AssetLibrary> assets) override
+    void onInit() override
     {
-        camera.setPosition({0.0f, 0.0f});
-        defaultShader = assets->importShader("default", "shaders/default_vertex_2d.glsl", "shaders/default_fragment_2d.glsl");
+        Engine& engine = Engine::get();
+        ECS& ecs = getECS();
+        const std::string shadersDirectory = SHADERS_DIR;
+        VertexShaderAssetManager* vertexShaderManager = engine.getVertexShaderAssetManager();
+        FragmentShaderAssetManager* fragmentShaderManager = engine.getFragmentShaderAssetManager();
+        ShaderAssetManager* shaderManager = engine.getShaderAssetManager();
 
-        createQuad(assets, {-1.25f, 0.0f, 0.0f}, Colour(220, 80, 80));
-        createQuad(assets, {0.0f, 0.0f, 0.0f}, Colour(240, 200, 90));
-        createQuad(assets, {1.25f, 0.0f, 0.0f}, Colour(80, 180, 220));
-        createQuad(assets, {0.0f, 1.15f, 0.0f}, Colour(110, 220, 140));
-        createQuad(assets, {0.0f, -1.15f, 0.0f}, Colour(170, 120, 230));
+        Camera camera;
+        camera.projectionType = Camera::ProjectionType::ORTHOGRAPHIC;
+        camera.nearPlane = -1.0f;
+        camera.farPlane = 1.0f;
+        cameraEntity = ecs.createEntity();
+        ecs.addComponent<Transform>(cameraEntity);
+        ecs.addComponent<Camera>(cameraEntity, camera);
+
+        const std::string vertexShaderSource = readFile(shadersDirectory + "/default_vertex_2d.glsl");
+        std::shared_ptr<VertexShader> vertexShader = vertexShaderManager->add("default_VertexShader", VertexShader(vertexShaderSource));
+        vertexShaderManager->setSourcePath(vertexShader, shadersDirectory + "/default_vertex_2d.glsl");
+
+        const std::string fragmentShaderSource = readFile(shadersDirectory + "/default_fragment_2d.glsl");
+        std::shared_ptr<FragmentShader> fragmentShader = fragmentShaderManager->add("default_FragmentShader", FragmentShader(fragmentShaderSource));
+        fragmentShaderManager->setSourcePath(fragmentShader, shadersDirectory + "/default_fragment_2d.glsl");
+
+        defaultShader = shaderManager->add("default", Shader(std::move(vertexShader), std::move(fragmentShader)));
+
+        createQuad({-1.25f, 0.0f, 0.0f}, Colour(220, 80, 80));
+        createQuad({0.0f, 0.0f, 0.0f}, Colour(240, 200, 90));
+        createQuad({1.25f, 0.0f, 0.0f}, Colour(80, 180, 220));
+        createQuad({0.0f, 1.15f, 0.0f}, Colour(110, 220, 140));
+        createQuad({0.0f, -1.15f, 0.0f}, Colour(170, 120, 230));
     }
 
-    void onUpdate(std::shared_ptr<AssetLibrary> assets, double deltaTime) override
+    void onUpdate() override
     {
-        camera.handleInputs(deltaTime);
-    }
+        Engine& engine = Engine::get();
+        InputSystem& input = engine.inputSystem;
+        Transform& cameraTransform = getECS().getComponent<Transform>(cameraEntity);
+        const float rotation = glm::radians(90.0f) * static_cast<float>(engine.time.deltaTime);
 
-    Camera* getActiveCamera() override { return &camera; }
+        if (input.isKeyDown(KeyboardKey::KEY_A)) {
+            cameraTransform.rotation.z += rotation;
+        }
+        if (input.isKeyDown(KeyboardKey::KEY_D)) {
+            cameraTransform.rotation.z -= rotation;
+        }
+    }
 
 private:
-    void createQuad(std::shared_ptr<AssetLibrary> assets, const glm::vec3& position, const Colour& tint)
+    void createQuad(const glm::vec3& position, const Colour& tint)
     {
-        ColouredQuadNode* quad = getRoot().createChild<ColouredQuadNode>();
-        quad->setPosition(position);
-        quad->initialise(assets, tint);
+        Engine& engine = Engine::get();
+        ECS& ecs = getECS();
+        MaterialAssetManager* materialManager = engine.getMaterialAssetManager();
+        MeshAssetManager* meshManager = engine.getMeshAssetManager();
+
+        Mesh mesh = Geometry2D::get()->rect({-0.35f, -0.35f}, {0.35f, 0.35f});
+
+        Material material;
+        material.setShader(defaultShader);
+        material.setAlbedo(tint);
+        std::shared_ptr<Material> materialAsset = materialManager->add("quadMaterial", material);
+
+        std::shared_ptr<Mesh> meshAsset = meshManager->add("quadMesh", mesh);
+
+        ModelPrimitive modelPrimitive;
+        modelPrimitive.mesh = meshAsset;
+        modelPrimitive.material = materialAsset;
+        Model model;
+        model.primitives.push_back(modelPrimitive);
+
+        Transform transform;
+        transform.position = position;
+
+        const Entity entity = ecs.createEntity();
+        ecs.addComponent<Transform>(entity, transform);
+        ecs.addComponent<Model>(entity, model);
     }
 
-    RotatingCamera2D camera;
+    Entity cameraEntity = 0;
     std::shared_ptr<Shader> defaultShader;
 };
 

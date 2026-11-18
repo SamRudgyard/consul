@@ -1,14 +1,9 @@
 #pragma once
 
-#include "core/ui/property_registry.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/shader/uniform.hpp"
-
-#include <memory>
-#include <utility>
-#include <vector>
-
-class Texture;
+#include "graphics/texture/texture.hpp"
+#include "graphics/shader/shader.hpp"
 
 class Material
 {
@@ -18,22 +13,13 @@ public:
     /**
      * Registers the properties of the Material class, allowing them to be edited in the UI.
      */
-    static void registerProperties()
-    {
-        PropertyRegistry& registry = PropertyRegistry::get();
-        registry.registerProperty(PropertyInfo("Material", PropertyType::COLOUR, "Albedo"), &Material::getAlbedo, &Material::setAlbedo);
-    }
+    static void registerProperties();
 
     /**
      * Gets the shader uniforms associated with this material.
      * @returns Vector of shader uniforms.
      */
-    std::vector<ShaderUniform> getUniforms()
-    {
-        std::vector<ShaderUniform> uniforms;
-        uniforms.push_back({"albedo", albedo});
-        return uniforms;
-    }
+    std::vector<ShaderUniform> getUniforms();
 
     /**
      * Sets the albedo colour for this material.
@@ -83,9 +69,22 @@ public:
      */
     std::shared_ptr<Texture> getNormalTexture() const { return normalTexture; }
 
+    /**
+     * Sets the shader associated with this material.
+     * @param shader Shader to set.
+     */
+    void setShader(std::shared_ptr<Shader> shader) { this->shader = std::move(shader); }
+
+    /**
+     * Gets the shader associated with this material.
+     * @returns Shader associated with this material.
+     */
+    std::shared_ptr<Shader> getShader() const { return shader; }
+
 private:
     Colour albedo = Colour(255, 255, 255);
-    std::shared_ptr<Texture> albedoTexture;
-    std::shared_ptr<Texture> specularTexture;
-    std::shared_ptr<Texture> normalTexture;
+    std::shared_ptr<Texture> albedoTexture = std::make_shared<Texture>(TextureType::DIFFUSE);
+    std::shared_ptr<Texture> specularTexture = std::make_shared<Texture>(TextureType::SPECULAR);
+    std::shared_ptr<Texture> normalTexture = std::make_shared<Texture>(TextureType::NORMAL);
+    std::shared_ptr<Shader> shader = std::make_shared<Shader>();
 };

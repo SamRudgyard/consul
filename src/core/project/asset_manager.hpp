@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/project/asset_types.hpp"
-
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -9,6 +7,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "core/project/asset_types.hpp"
 
 class Material;
 class Mesh;
@@ -25,12 +25,52 @@ public:
     AssetManager() = default;
     ~AssetManager() = default;
 
+    std::shared_ptr<T> create(const std::string& name, const bool preserved = false)
+    {
+        if (preserved) {
+            return this->addPreserved(name, T());
+        }
+        return this->add(name, T());
+    }
+
     std::shared_ptr<T> add(const std::string& name, const T& asset)
     {
         std::shared_ptr<T> assetPointer = std::make_shared<T>(asset);
         nonOwningAssets.push_back(assetPointer);
         assetMetadata.emplace(assetPointer, AssetMetadata{name, {}});
         return assetPointer;
+    }
+
+    std::shared_ptr<T> addPreserved(const std::string& name, const T& asset)
+    {
+        std::shared_ptr<T> assetPointer = std::make_shared<T>(asset);
+        preservedAssets.push_back(assetPointer);
+        assetMetadata.emplace(assetPointer, AssetMetadata{name, {}});
+        return assetPointer;
+    }
+
+    std::shared_ptr<T> get(const std::string& name) const
+    {
+        for (const std::weak_ptr<T>& nonOwningAsset : nonOwningAssets) {
+            std::shared_ptr<T> asset = nonOwningAsset.lock();
+            if (!asset) {
+                continue;
+            }
+
+            auto it = assetMetadata.find(nonOwningAsset);
+            if (it != assetMetadata.end() && it->second.name == name) {
+                return asset;
+            }
+        }
+
+        for (const std::shared_ptr<T>& preservedAsset : preservedAssets) {
+            auto it = assetMetadata.find(std::weak_ptr<T>(preservedAsset));
+            if (it != assetMetadata.end() && it->second.name == name) {
+                return preservedAsset;
+            }
+        }
+
+        return nullptr;
     }
 
     std::optional<AssetMetadata> getMetadata(const std::shared_ptr<T>& asset) const

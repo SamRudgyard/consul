@@ -15,18 +15,16 @@
 #include <unistd.h>
 #endif
 
-bool doesFileExist(const char* filePath)
+bool doesFileExist(const std::string& filePath)
 {
     std::ifstream file(filePath);
     return file.good();
 }
 
-const std::string readFile(const char* filePath)
+const std::string readFile(const std::string& filePath)
 {
     CONSUL_PROFILE_METHOD();
-    if (!filePath) Console::get().error("[readFile] Provided file path is null");
-
-    if (!doesFileExist(filePath)) Console::get().error("[readFile] File does not exist: '" + std::string(filePath) + "'");
+    if (!doesFileExist(filePath)) Console::get().error("[readFile] File does not exist: '" + filePath + "'");
 
     // Read the file contents
     std::ifstream file(filePath, std::ios::binary);
@@ -41,23 +39,14 @@ const std::string readFile(const char* filePath)
     return contents;
 }
 
-const std::string getFileExtension(const char* filePath) {
+const std::string getFileExtension(const std::string& filePath) {
     std::string pathStr(filePath);
     size_t dotPos = pathStr.find_last_of('.');
     if (dotPos == std::string::npos || dotPos == pathStr.length() - 1) {
-        Console::get().logOnDebug("[getFileExtension] No file extension found in path: '" + std::string(filePath) + "'");
+        Console::get().logOnDebug("[getFileExtension] No file extension found in path: '" + filePath + "'");
         return "";
     }
     return pathStr.substr(dotPos);
-}
-
-void unloadFileText(char* text) {
-    if (!text) {
-        Console::get().logOnDebug("[unloadFileText] Unnecessary call to unload text");
-        return;
-    }
-
-    delete[] text;
 }
 
 bool isSubstring(const std::string& str, const std::string& substr) {

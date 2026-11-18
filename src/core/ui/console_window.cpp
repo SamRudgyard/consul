@@ -1,7 +1,7 @@
 #include "console_window.hpp"
 
 #include "imgui.h"
-#include "core/engine_context.hpp"
+#include "core/engine.hpp"
 #include "core/window.hpp"
 #include "utils.hpp"
 
@@ -11,8 +11,7 @@ void ConsoleWindow::update()
         return;
     }
 
-    EngineContext* context = EngineContext::get();
-    Window& window = context->window;
+    Window& window = Engine::get().window;
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 workPos = viewport ? viewport->WorkPos : ImVec2(0.0f, 0.0f);

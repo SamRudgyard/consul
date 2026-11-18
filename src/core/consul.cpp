@@ -4,8 +4,6 @@
 #include <utility>
 
 #include "platforms/platform_glfw.hpp"
-#include "core/project/asset_defaults.hpp"
-#include "core/project/importers/gltf_importer.hpp"
 #include "graphics/renderer/opengl/opengl_renderer.hpp"
 #include "imgui.h"
 #include "implot.h"
@@ -21,29 +19,6 @@ void Consul::initialiseEngine()
     console.log("---- CONSUL ----");
 
     console.log("[Consul] Initialising Consul...");
-    modelAssets = std::make_shared<ModelAssetManager>();
-    meshAssets = std::make_shared<MeshAssetManager>();
-    materialAssets = std::make_shared<MaterialAssetManager>();
-    textureAssets = std::make_shared<TextureAssetManager>();
-    shaderAssets = std::make_shared<ShaderAssetManager>();
-    vertexShaderAssets = std::make_shared<VertexShaderAssetManager>();
-    fragmentShaderAssets = std::make_shared<FragmentShaderAssetManager>();
-    assetDefaults = std::make_shared<AssetDefaults>(materialAssets, textureAssets);
-    gltfImporter = std::make_shared<GLTFImporter>(modelAssets, meshAssets, materialAssets, textureAssets, assetDefaults);
-    assets = std::make_shared<AssetLibrary>(
-        modelAssets,
-        meshAssets,
-        materialAssets,
-        textureAssets,
-        shaderAssets,
-        vertexShaderAssets,
-        fragmentShaderAssets,
-        assetDefaults,
-        gltfImporter
-    );
-    sceneManager = std::make_shared<SceneManager>();
-    sceneManager->assignAssets(assets);
-
     initialiseWindow(PlatformType::GLFW);
     console.log("[Consul] Windowing platform initialised.");
 
@@ -65,9 +40,9 @@ void Consul::initialiseEngine()
     renderer->initialiseImGui();
     console.log("[Consul] ImGui initialised.");
 
-    context->time.previousTime = platform->getTime();
-    context->time.currentTime = context->time.previousTime;
-    context->time.deltaTime = context->time.targetFrameTime;
+    engine.time.previousTime = platform->getTime();
+    engine.time.currentTime = engine.time.previousTime;
+    engine.time.deltaTime = engine.time.targetFrameTime;
 }
 
 void Consul::initialiseWindow(PlatformType platformType)
@@ -105,6 +80,8 @@ Consul::~Consul()
 {
     console.log("[Consul] Shutting down Game Engine...");
 
+    SceneManager* sceneManager = engine.getSceneManager();
+
     if (sceneManager) {
         sceneManager->shutdown();
     }
@@ -127,6 +104,8 @@ void Consul::loadScene(std::unique_ptr<Scene> newScene)
 {
     CONSUL_PROFILE_METHOD();
 
+    SceneManager* sceneManager = engine.getSceneManager();
+
     if (!sceneManager) {
         console.error("[Consul::loadScene] Cannot load scene - scene manager is not initialised!");
         return;
@@ -143,18 +122,18 @@ void Consul::run()
 {
     while (!close) {
         beginTick();
-        Time& time = context->time;
-        sceneManager->update(time.deltaTime);
+        Time& time = engine.time;
+        engine.getSceneManager()->update();
         endTick();
 
-        close = context->window.shouldClose && platform->shouldClose();
+        close = engine.window.shouldClose && platform->shouldClose();
     }
 }
 
 void Consul::beginTick()
 {
-    Time& time = context->time;
-    context->profiler.beginFrame((float)(time.deltaTime));
+    Time& time = engine.time;
+    engine.profiler.beginFrame((float)(time.deltaTime));
     CONSUL_PROFILE_METHOD();
 
     time.currentTime = platform->getTime();
@@ -162,9 +141,9 @@ void Consul::beginTick()
     time.previousTime = time.currentTime;
 
     renderer->clearBackground(glm::vec4(0.f, 0.f, 0.f, 1.f));
-    renderer->setViewport(0, 0, (int)context->window.framebufferSize.x, (int)context->window.framebufferSize.y);
+    renderer->setViewport(0, 0, (int)engine.window.framebufferSize.x, (int)engine.window.framebufferSize.y);
 
-    context->inputSystem.beginTick();
+    engine.inputSystem.beginTick();
     platform->pollEvents();
 }
 
@@ -172,10 +151,22 @@ void Consul::endTick()
 {
     CONSUL_PROFILE_METHOD();
 
-    context->window.shouldClose = platform->shouldClose();
-    context->inputSystem.endTick();
+    
 
-    Time& time = context->time;
+    // Check for expired assets and release them from CPU
+    engine.getMeshAssetManager()->removeExpiredAssets();
+    engine.getModelAssetManager()->removeExpiredAssets();
+    engine.getMaterialAssetManager()->removeExpiredAssets();
+    engine.getTextureAssetManager()->removeExpiredAssets();
+    engine.getShaderAssetManager()->removeExpiredAssets();
+    engine.getVertexShaderAssetManager()->removeExpiredAssets();
+    engine.getFragmentShaderAssetManager()->removeExpiredAssets();
+    renderer->releaseExpiredResources(); // Release from GPU
+
+    engine.window.shouldClose = platform->shouldClose();
+    engine.inputSystem.endTick();
+
+    Time& time = engine.time;
 
     time.currentTime = platform->getTime();
     time.updateTime = time.currentTime - time.previousTime;
@@ -193,7 +184,8 @@ void Consul::endTick()
     time.frameCount++;
 
     // Rendering
-    sceneManager->render(*renderer);
+    const Scene& currentScene = engine.getSceneManager()->getCurrentScene();
+    renderer->render(currentScene);
 
     // Start the ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -206,14 +198,17 @@ void Consul::endTick()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     platform->swapBuffers();
+}
 
-    renderer->releaseExpiredResources();
+void Consul::syncAssets()
+{
+    CONSUL_PROFILE_METHOD();
 
-    modelAssets->removeExpiredAssets();
-    meshAssets->removeExpiredAssets();
-    materialAssets->removeExpiredAssets();
-    textureAssets->removeExpiredAssets();
-    shaderAssets->removeExpiredAssets();
-    vertexShaderAssets->removeExpiredAssets();
-    fragmentShaderAssets->removeExpiredAssets();
+    engine.getMeshAssetManager()->removeExpiredAssets();
+    engine.getModelAssetManager()->removeExpiredAssets();
+    engine.getMaterialAssetManager()->removeExpiredAssets();
+    engine.getTextureAssetManager()->removeExpiredAssets();
+    engine.getShaderAssetManager()->removeExpiredAssets();
+    engine.getVertexShaderAssetManager()->removeExpiredAssets();
+    engine.getFragmentShaderAssetManager()->removeExpiredAssets();
 }

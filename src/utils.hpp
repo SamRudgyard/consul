@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <vector>
 
 enum ColourCode {
@@ -47,7 +48,7 @@ public:
  * @param filePath Path to the file.
  * @returns True if the file exists; false otherwise.
  */
-bool doesFileExist(const char* filePath);
+bool doesFileExist(const std::string& filePath);
 
 /**
  * Read the contents of the given file.
@@ -55,7 +56,7 @@ bool doesFileExist(const char* filePath);
  * @param filePath Path to the file.
  * @returns File contents as a string.
  */
-const std::string readFile(const char* filePath);
+const std::string readFile(const std::string& filePath);
 
 /** 
  * Get the file extension from a given file path.
@@ -63,14 +64,7 @@ const std::string readFile(const char* filePath);
  * @param filePath Path to the file.
  * @returns File extension including the dot (e.g. ".txt"), or empty string if none.
  */
-const std::string getFileExtension(const char* filePath);
-
-/**
- * Frees memory previously allocated for a text buffer.
- * 
- * @param text Pointer to the char buffer to delete.
- */
-void unloadFileText(char* text);
+const std::string getFileExtension(const std::string& filePath);
 
 /**
  * Determine if a substring exists within a string.

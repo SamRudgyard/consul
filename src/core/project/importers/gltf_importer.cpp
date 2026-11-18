@@ -10,59 +10,51 @@
 
 #include "core/console/console.hpp"
 #include "core/project/asset_manager.hpp"
-#include "core/project/asset_defaults.hpp"
 #include "graphics/material/material.hpp"
-#include "graphics/models/model.hpp"
 #include "graphics/texture/texture.hpp"
 #include "utils.hpp"
 
 GLTFImporter::GLTFImporter(
-    std::shared_ptr<ModelAssetManager> modelManager,
-    std::shared_ptr<MeshAssetManager> meshManager,
-    std::shared_ptr<MaterialAssetManager> materialManager,
-    std::shared_ptr<TextureAssetManager> textureManager,
-    std::shared_ptr<AssetDefaults> assetDefaults
-) : modelManager(modelManager),
-    meshManager(meshManager),
+    MeshAssetManager& meshManager,
+    MaterialAssetManager& materialManager,
+    TextureAssetManager& textureManager
+) : meshManager(meshManager),
     materialManager(materialManager),
-    textureManager(textureManager),
-    assetDefaults(assetDefaults)
+    textureManager(textureManager)
 {
 }
 
-std::shared_ptr<Model> GLTFImporter::import(const std::string& name, const std::string& filePath)
+std::vector<ModelPrimitive> GLTFImporter::import(const std::string& name, const std::string& filePath)
 {
+    currentPrimitives.clear();
+    currentFileDirectory.clear();
+    binaryData.clear();
+    jsonContents.clear();
+
     currentFilePath = filePath;
 
-    if (!doesFileExist(filePath.c_str())) {
-        Console::get().error("[GLTFImporter::import] Invalid file path: '" + currentFilePath + "'");
-        resetImportState();
-        return nullptr;
+    if (!doesFileExist(currentFilePath.c_str())) {
+        Console::get().error("[GLTFImporter::import] File path does not exist: '" + currentFilePath + "'");
+        return currentPrimitives;
     }
 
-    if (getFileExtension(filePath.c_str()) != ".gltf") {
+    if (getFileExtension(currentFilePath.c_str()) != ".gltf") {
         Console::get().error("[GLTFImporter::import] Invalid file extension (expected .gltf): '" + currentFilePath + "'");
-        resetImportState();
-        return nullptr;
+        return currentPrimitives;
     }
 
-    std::string text = readFile(currentFilePath.c_str());
+    const std::string text = readFile(currentFilePath.c_str());
     jsonContents = json::parse(text);
 
-    std::string uri = jsonContents["buffers"][0]["uri"];
+    const std::string uri = jsonContents["buffers"][0]["uri"];
     const size_t directoryEnd = currentFilePath.find_last_of("/\\");
     currentFileDirectory = directoryEnd == std::string::npos ? "" : currentFilePath.substr(0, directoryEnd + 1);
-    std::string binaryContents = readFile((currentFileDirectory + uri).c_str());
+    const std::string binaryContents = readFile((currentFileDirectory + uri).c_str());
     binaryData = std::vector<unsigned char>(binaryContents.begin(), binaryContents.end());
-
-    Model model;
-    model.setFilePath(currentFilePath);
-    currentModel = &model;
 
     if (!jsonContents.contains("scenes") || jsonContents["scenes"].empty()) {
         Console::get().warn("[GLTFImporter::import] No scenes found in glTF file: '" + currentFilePath + "'");
-        resetImportState();
-        return nullptr;
+        return currentPrimitives;
     }
 
     unsigned int sceneIndex = jsonContents.value("scene", 0);
@@ -74,29 +66,14 @@ std::shared_ptr<Model> GLTFImporter::import(const std::string& name, const std::
     const json& scene = jsonContents["scenes"][sceneIndex];
     if (!scene.contains("nodes")) {
         Console::get().warn("[GLTFImporter::import] Scene contains no nodes: '" + currentFilePath + "'");
-        resetImportState();
-        return nullptr;
+        return currentPrimitives;
     }
 
     for (const auto& nodeIndex : scene["nodes"]) {
         traverseNode(nodeIndex);
     }
 
-    std::shared_ptr<Model> modelAsset = modelManager->add(name, model);
-    modelManager->setSourcePath(modelAsset, filePath);
-
-    resetImportState();
-
-    return modelAsset;
-}
-
-void GLTFImporter::resetImportState()
-{
-    currentModel = nullptr;
-    currentFileDirectory.clear();
-    currentFilePath.clear();
-    binaryData.clear();
-    jsonContents.clear();
+    return currentPrimitives;
 }
 
 void GLTFImporter::traverseNode(unsigned int nextNode, glm::mat4 parentTransMatrix)
@@ -277,33 +254,29 @@ std::shared_ptr<Mesh> GLTFImporter::loadMesh(unsigned int meshIndex, const glm::
     }
 
     const json& attributes = primitives[0]["attributes"];
-    unsigned int positionAccessorIndex = attributes["POSITION"];
-    unsigned int normalAccessorIndex = attributes["NORMAL"];
-    unsigned int texCoordAccessorIndex = attributes["TEXCOORD_0"];
-    unsigned int indexAccessorIndex = primitives[0]["indices"];
+    const unsigned int positionAccessorIndex = attributes["POSITION"];
+    const unsigned int normalAccessorIndex = attributes["NORMAL"];
+    const unsigned int texCoordAccessorIndex = attributes["TEXCOORD_0"];
+    const unsigned int indexAccessorIndex = primitives[0]["indices"];
 
-    std::vector<glm::vec3> positions = toVec3(readAccessorFloats(jsonContents["accessors"][positionAccessorIndex]));
-    std::vector<glm::vec3> normals = toVec3(readAccessorFloats(jsonContents["accessors"][normalAccessorIndex]));
-    std::vector<glm::vec2> textureUVs = toVec2(readAccessorFloats(jsonContents["accessors"][texCoordAccessorIndex]));
-    std::vector<glm::vec4> tangents;
-    std::vector<unsigned int> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
+    const std::vector<glm::vec3> positions = toVec3(readAccessorFloats(jsonContents["accessors"][positionAccessorIndex]));
+    const std::vector<glm::vec3> normals = toVec3(readAccessorFloats(jsonContents["accessors"][normalAccessorIndex]));
+    const std::vector<glm::vec2> textureUVs = toVec2(readAccessorFloats(jsonContents["accessors"][texCoordAccessorIndex]));
+    const std::vector<glm::vec4> tangents;
+    const std::vector<unsigned int> indices = readAccessorIndices(jsonContents["accessors"][indexAccessorIndex]);
 
     const int materialIndex = primitives[0].value("material", -1);
     std::shared_ptr<Material> material = loadMaterial(materialIndex);
-    Mesh mesh(positions, normals, textureUVs, tangents, indices);
-    mesh.setMaterial(std::move(material));
-
-    std::shared_ptr<Mesh> meshAsset = addMesh("Mesh_" + std::to_string(meshIndex), mesh);
-    if (currentModel) {
-        currentModel->addMesh(meshAsset, initialTransform);
+    if (!material) {
+        material = std::make_shared<Material>();
     }
 
-    return meshAsset;
-}
+    Mesh mesh(positions, normals, textureUVs, tangents, indices);
+    std::shared_ptr<Mesh> meshAsset = meshManager.add("Mesh_" + std::to_string(meshIndex), mesh);
 
-std::shared_ptr<Mesh> GLTFImporter::addMesh(const std::string& name, const Mesh& mesh)
-{
-    return meshManager->add(name, assetDefaults->applyToMesh(mesh));
+    currentPrimitives.emplace_back(meshAsset, material, initialTransform);
+
+    return meshAsset;
 }
 
 std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
@@ -334,8 +307,8 @@ std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
             return;
         }
 
-        std::shared_ptr<Texture> texture = textureManager->add(uri, Texture(uri, type));
-        textureManager->setSourcePath(texture, uri);
+        std::shared_ptr<Texture> texture = textureManager.add(uri, Texture(uri, type));
+        textureManager.setSourcePath(texture, uri);
         switch (type) {
             case TextureType::DIFFUSE:
                 material.setAlbedoTexture(texture);
@@ -356,12 +329,7 @@ std::shared_ptr<Material> GLTFImporter::loadMaterial(int materialIndex)
     }
     addTextureIfPresent(materialJson, "normalTexture", TextureType::NORMAL);
 
-    return addMaterial("Material_" + std::to_string(materialIndex), material);
-}
-
-std::shared_ptr<Material> GLTFImporter::addMaterial(const std::string& name, const Material& material)
-{
-    return materialManager->add(name, assetDefaults->applyToMaterial(material));
+    return materialManager.add("Material_" + std::to_string(materialIndex), material);
 }
 
 std::vector<glm::vec2> GLTFImporter::toVec2(const std::vector<float> floatVec)
