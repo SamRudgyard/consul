@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "maths/vectors.hpp"
+
 class ModelPrimitive;
 
 struct Transform
@@ -11,15 +13,15 @@ struct Transform
     glm::vec3 rotation = {0.0f, 0.0f, 0.0f}; // Radians
     glm::vec3 scale = {1.0f, 1.0f, 1.0f};
 
-    [[nodiscard]] glm::mat4 getModelMatrix() const
+    [[nodiscard]] glm::mat4 toMatrix() const
     {
-        glm::mat4 model(1.0f);
-        model = glm::translate(model, position);
-        model = glm::rotate(model, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::scale(model, scale);
-        return model;
+        glm::mat4 transformation(1.0f);
+        transformation = glm::translate(transformation, position);
+        transformation = glm::rotate(transformation, rotation.x, X_AXIS);
+        transformation = glm::rotate(transformation, rotation.y, Y_AXIS);
+        transformation = glm::rotate(transformation, rotation.z, Z_AXIS);
+        transformation = glm::scale(transformation, scale);
+        return transformation;
     }
 };
 
