@@ -128,22 +128,24 @@ void OpenGLRenderer::render(const Scene& scene)
 
         for (const ModelPrimitive& primitive : model.primitives) {
             const std::shared_ptr<Mesh>& mesh = primitive.getMesh();
-            const std::shared_ptr<Material>& material = primitive.getMaterial();
-            const std::shared_ptr<Shader>& shader = material->getShader();
-            const glm::mat4& localTransform = primitive.getLocalTransform();
-
             if (!mesh) {
                  Console::get().error("[OpenGLRenderer::render] Invalid mesh.");
                 return;
             }
+
+            const std::shared_ptr<Material>& material = primitive.getMaterial();
             if (!material) {
                 Console::get().error("[OpenGLRenderer::render] Invalid material.");
                 return;
             }
+
+            const std::shared_ptr<Shader>& shader = material->getShader();
             if (!shader) {
                 Console::get().error("[OpenGLRenderer::render] Invalid shader.");
                 return;
             }
+
+            const glm::mat4& localTransform = primitive.getLocalTransform();
 
             uploadMesh(mesh);
             uploadMaterial(material);
