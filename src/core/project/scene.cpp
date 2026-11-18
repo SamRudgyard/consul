@@ -1,4 +1,5 @@
 #include "scene.hpp"
+
 #include "core/console/console.hpp"
 #include "core/profiling/profile_method.hpp"
 

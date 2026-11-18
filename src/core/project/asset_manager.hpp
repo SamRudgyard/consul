@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/project/asset_types.hpp"
-
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -9,6 +7,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "core/project/asset_types.hpp"
 
 class Material;
 class Mesh;

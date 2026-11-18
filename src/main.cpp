@@ -1,6 +1,5 @@
 #include <cmath>
 #include <memory>
-#include <utility>
 
 #include "core/consul.hpp"
 #include "core/ecs/components.hpp"

@@ -1,14 +1,9 @@
 #pragma once
 
-#include "core/ui/property_registry.hpp"
 #include "graphics/colour.hpp"
 #include "graphics/shader/uniform.hpp"
 #include "graphics/texture/texture.hpp"
 #include "graphics/shader/shader.hpp"
-
-#include <memory>
-#include <utility>
-#include <vector>
 
 class Material
 {

@@ -3,7 +3,6 @@
 #include "glm/glm.hpp"
 
 #include <memory>
-#include <vector>
 
 enum class GraphicsAPI
 {

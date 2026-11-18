@@ -1,5 +1,7 @@
 #include "material.hpp"
 
+#include "core/ui/property_registry.hpp"
+
 void Material::registerProperties()
 {
     PropertyRegistry& registry = PropertyRegistry::get();

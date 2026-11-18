@@ -1,7 +1,5 @@
 #include "shader.hpp"
 
-#include <utility>
-
 #include "utils.hpp"
 
 VertexShader::VertexShader()

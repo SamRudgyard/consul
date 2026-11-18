@@ -1,8 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "graphics/mesh/mesh.hpp"
 #include "graphics/material/material.hpp"
