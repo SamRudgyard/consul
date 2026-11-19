@@ -7,14 +7,14 @@ InputSystem::~InputSystem() = default;
 
 void InputSystem::beginTick()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
     keyboard.beginTick();
     mouse.beginTick();
 }
 
 void InputSystem::endTick()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
     mouse.endTick();
 }
 

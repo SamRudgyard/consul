@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(Examples2D
-    DESCRIPTION "2D examples of the Consul rendering engine"
+    DESCRIPTION "2D examples of the Crema rendering engine"
     LANGUAGES CXX
 )
 
@@ -11,9 +11,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Set bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
-set(BUILD_TESTS OFF CACHE BOOL "Disable Consul tests for examples" FORCE)
+set(BUILD_TESTS OFF CACHE BOOL "Disable Crema tests for examples" FORCE)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. ${CMAKE_CURRENT_BINARY_DIR}/consul)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. ${CMAKE_CURRENT_BINARY_DIR}/crema)
 
 add_executable(2d_camera
     ${CMAKE_CURRENT_LIST_DIR}/2d_camera.cpp
@@ -21,7 +21,7 @@ add_executable(2d_camera
 
 target_link_libraries(2d_camera
     PRIVATE
-        consul::consul
+        crema::crema
 )
 
 add_executable(2d_rotate_camera
@@ -30,5 +30,5 @@ add_executable(2d_rotate_camera
 
 target_link_libraries(2d_rotate_camera
     PRIVATE
-        consul::consul
+        crema::crema
 )

@@ -135,7 +135,7 @@ void PerformanceWindow::update()
             const std::vector<std::string>& methods = profiler.getRegisteredMethods();
             if (methods.empty()) {
                 ImGui::TextUnformatted("No methods profiled yet.");
-                ImGui::TextUnformatted("Use CONSUL_PROFILE_METHOD() or CONSUL_PROFILE_SCOPE(\"name\") in methods you want to track.");
+                ImGui::TextUnformatted("Use CREMA_PROFILE_METHOD() or CREMA_PROFILE_SCOPE(\"name\") in methods you want to track.");
                 ImGui::EndTabItem();
                 ImGui::EndTabBar();
                 ImGui::End();

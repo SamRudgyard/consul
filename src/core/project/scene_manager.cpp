@@ -12,7 +12,7 @@
 
 void SceneManager::loadScene(std::unique_ptr<Scene> scene)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     // Close previous scene's assets
     if (currentScene) {
@@ -30,7 +30,7 @@ void SceneManager::loadScene(std::unique_ptr<Scene> scene)
 
 void SceneManager::unloadScene()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (!currentScene) {
         Console::get().error("[SceneManager::unloadScene] No scene is currently loaded!");
@@ -46,7 +46,7 @@ void SceneManager::unloadScene()
 
 void SceneManager::update()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (!currentScene) {
         Console::get().error("[SceneManager::update] No scene was loaded!");
@@ -62,7 +62,7 @@ void SceneManager::update()
 
 void SceneManager::shutdown()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (!currentScene) {
         return;

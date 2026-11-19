@@ -10,7 +10,7 @@ Console::~Console()
 
 void Console::appendMessage(const std::string& message)
 {
-#ifdef CONSUL_CONSOLE_STDOUT
+#ifdef CREMA_CONSOLE_STDOUT
     std::cout << message << '\n';
     return;
 #else

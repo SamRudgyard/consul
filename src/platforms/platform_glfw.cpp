@@ -165,7 +165,7 @@ void PlatformGLFW::initialiseGraphics(Renderer& renderer)
 
 void PlatformGLFW::pollEvents()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     const InputSystem& input = Engine::get().inputSystem;
     glfwSetInputMode(handle, GLFW_CURSOR, input.getMouseVisibility() ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN);
@@ -175,21 +175,21 @@ void PlatformGLFW::pollEvents()
 
 void PlatformGLFW::swapBuffers()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     glfwSwapBuffers(handle);
 }
 
 bool PlatformGLFW::shouldClose()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     return glfwWindowShouldClose(handle);
 }
 
 double PlatformGLFW::getTime()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     return glfwGetTime();
 }

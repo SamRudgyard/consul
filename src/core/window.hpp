@@ -10,7 +10,7 @@ struct Window
     glm::vec2 framebufferSize = glm::vec2(1280.f, 720.f); // Size (pixels) of the framebuffer
     glm::vec2 contentScale = glm::vec2(1.f, 1.f);         // Content scale (for high-DPI displays)
 
-    const char* title = "Consul Application";
+    const char* title = "Crema Application";
 
     bool isFullscreen = false;      // Fullscreen window
     bool isVisible = true;          // Window is visible

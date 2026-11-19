@@ -5,7 +5,7 @@
 
 void Scene::init()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (!isInitialised) {
         onInit();
@@ -15,14 +15,14 @@ void Scene::init()
 
 void Scene::update()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     onUpdate();
 }
 
 void Scene::shutdown()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (!isInitialised) {
         Console::get().error("[Scene::shutdown] Scene is not initialised!");

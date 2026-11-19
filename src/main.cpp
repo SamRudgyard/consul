@@ -1,7 +1,7 @@
 #include <cmath>
 #include <memory>
 
-#include "core/consul.hpp"
+#include "core/crema.hpp"
 #include "core/ecs/components.hpp"
 #include "core/engine.hpp"
 #include "core/window.hpp"
@@ -149,9 +149,9 @@ int main(int argc, char **argv)
     window.title = "Test";
     window.isMaximised = true;
 
-    Consul consul(window);
-    consul.loadScene(std::make_unique<ExampleScene>());
-    consul.run();
+    Crema crema(window);
+    crema.loadScene(std::make_unique<ExampleScene>());
+    crema.run();
 
     return 0;
 }

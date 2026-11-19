@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.24)
-project(Consul)
+project(Crema)
 
 # Options
 option(BUILD_TESTS "Build tests" OFF)
-option(BUILD_CONSUL_APP "Build the Consul demo application" ${PROJECT_IS_TOP_LEVEL})
-option(CONSUL_CONSOLE_STDOUT "Route console output to stdout instead of the ImGui console window" OFF)
+option(BUILD_CREMA_APP "Build the Crema demo application" ${PROJECT_IS_TOP_LEVEL})
+option(CREMA_CONSOLE_STDOUT "Route console output to stdout instead of the ImGui console window" OFF)
 
 # Prefer the NEW behavior for FetchContent extraction timestamps
 if(POLICY CMP0135)
@@ -142,18 +142,18 @@ include_directories(${SRC_DIR})
 set(ENGINE_CPP_SOURCES ${CPP_SOURCES})
 list(REMOVE_ITEM ENGINE_CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
-add_library(consul STATIC ${ENGINE_CPP_SOURCES} ${C_SOURCES} ${HPP_HEADERS} ${H_HEADERS})
-add_library(consul::consul ALIAS consul)
+add_library(crema STATIC ${ENGINE_CPP_SOURCES} ${C_SOURCES} ${HPP_HEADERS} ${H_HEADERS})
+add_library(crema::crema ALIAS crema)
 
-target_include_directories(consul PUBLIC ${SRC_DIR} ${stb_SOURCE_DIR})
+target_include_directories(crema PUBLIC ${SRC_DIR} ${stb_SOURCE_DIR})
 
-target_compile_definitions(consul PUBLIC ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
-target_compile_definitions(consul PUBLIC SHADERS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders")
-if(CONSUL_CONSOLE_STDOUT)
-  target_compile_definitions(consul PUBLIC CONSUL_CONSOLE_STDOUT)
+target_compile_definitions(crema PUBLIC ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
+target_compile_definitions(crema PUBLIC SHADERS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders")
+if(CREMA_CONSOLE_STDOUT)
+  target_compile_definitions(crema PUBLIC CREMA_CONSOLE_STDOUT)
 endif()
 
-target_link_libraries(consul
+target_link_libraries(crema
   PUBLIC
     glfw
     glad
@@ -163,11 +163,11 @@ target_link_libraries(consul
     nlohmann_json::nlohmann_json
 )
 
-if(BUILD_CONSUL_APP)
-  set(CONSUL_APP_TARGET consul_app)
-  add_executable(${CONSUL_APP_TARGET} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-  set_target_properties(${CONSUL_APP_TARGET} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-  target_link_libraries(${CONSUL_APP_TARGET} PRIVATE consul)
+if(BUILD_CREMA_APP)
+  set(CREMA_APP_TARGET crema_app)
+  add_executable(${CREMA_APP_TARGET} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+  set_target_properties(${CREMA_APP_TARGET} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+  target_link_libraries(${CREMA_APP_TARGET} PRIVATE crema)
 endif()
 
 if(BUILD_TESTS)

@@ -14,27 +14,27 @@
 enum class PlatformType;
 class GLTFImporter;
 
-class Consul
+class Crema
 {
 public:
 
     /**
-     * Initialise a Consul application, using default window configuration.
+     * Initialise a Crema application, using default window configuration.
      */
-    Consul() { initialiseEngine(); };
+    Crema() { initialiseEngine(); };
 
     /**
-     * Initialise a Consul application with the given window configuration.
+     * Initialise a Crema application with the given window configuration.
      * @param window Window configuration settings.
      */
-    Consul(Window& window) { engine.window = window; initialiseEngine(); };
+    Crema(Window& window) { engine.window = window; initialiseEngine(); };
 
-    ~Consul();
+    ~Crema();
 
     void initialiseEngine();
 
     /**
-     * Runs the Consul application. Initialises a scene,
+     * Runs the Crema application. Initialises a scene,
      * and updates the scene each frame.
      */
     void run();
