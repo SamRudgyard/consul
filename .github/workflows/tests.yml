@@ -32,16 +32,6 @@ jobs:
             libxcursor-dev \
             libxi-dev
 
-      - name: Cache build dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache
-            build/_deps
-          key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-cmake-
-
       - name: Configure
         run: cmake -S . -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
 
