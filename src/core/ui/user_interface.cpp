@@ -4,7 +4,7 @@
 #include "graphics/material/material.hpp"
 
 UserInterface::UserInterface()
-#ifndef CONSUL_CONSOLE_STDOUT
+#ifndef CREMA_CONSOLE_STDOUT
     : consoleWindow(std::make_unique<ConsoleWindow>()),
       windows{consoleWindow.get(), &performanceWindow}
 #else
@@ -16,7 +16,7 @@ UserInterface::UserInterface()
 
 void UserInterface::update()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     for (UIWindow* window : windows) {
         if (window == nullptr) {

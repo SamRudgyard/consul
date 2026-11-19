@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#ifndef CONSUL_CONSOLE_STDOUT
+#ifndef CREMA_CONSOLE_STDOUT
 #define MAX_CONSOLE_SIZE 1000
 #endif
 

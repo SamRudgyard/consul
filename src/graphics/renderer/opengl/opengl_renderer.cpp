@@ -73,7 +73,7 @@ void OpenGLRenderer::initialiseImGui()
 
 void OpenGLRenderer::clearBackground(const glm::vec4& colour)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     glClearColor(colour.r, colour.g, colour.b, colour.a);
     clearScreenBuffer();
@@ -81,14 +81,14 @@ void OpenGLRenderer::clearBackground(const glm::vec4& colour)
 
 void OpenGLRenderer::clearScreenBuffer()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void OpenGLRenderer::releaseExpiredResources()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     releaseExpiredShaders();
     releaseExpiredMeshes();
@@ -97,7 +97,7 @@ void OpenGLRenderer::releaseExpiredResources()
 
 void OpenGLRenderer::setViewport(int x, int y, int width, int height)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (width < 0) {
         Console::get().error("[OpenGLRenderer::setViewport] Viewport width cannot be -ve: " + std::to_string(width));
@@ -113,7 +113,7 @@ void OpenGLRenderer::setViewport(int x, int y, int width, int height)
 
 void OpenGLRenderer::render(const Scene& scene)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     const Engine& engine = Engine::get();
     const ECS& ecs = scene.getECS();
@@ -222,7 +222,7 @@ void OpenGLRenderer::render(const Scene& scene)
 
 void OpenGLRenderer::uploadShader(const std::shared_ptr<Shader>& shader)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (!shader) {
         return;
@@ -310,7 +310,7 @@ void OpenGLRenderer::uploadShader(const std::shared_ptr<Shader>& shader)
 
 void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& mesh)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (!mesh) {
         return;
@@ -436,7 +436,7 @@ void OpenGLRenderer::uploadMesh(const std::shared_ptr<Mesh>& mesh)
 
 void OpenGLRenderer::uploadMaterial(const std::shared_ptr<Material>& material)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (!material) {
         return;
@@ -471,7 +471,7 @@ void OpenGLRenderer::uploadMaterial(const std::shared_ptr<Material>& material)
 
 void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (!texture) {
         return;
@@ -539,7 +539,7 @@ void OpenGLRenderer::uploadTexture(const std::shared_ptr<Texture>& texture)
 
 unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec2>& data, AttributeType attribute, bool useDynamicDraw)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     unsigned int vbo;
     glGenBuffers(1, &vbo);
@@ -557,7 +557,7 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec2>& da
 
 unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec3>& data, AttributeType attribute, bool useDynamicDraw)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
     
     unsigned int vbo;
     glGenBuffers(1, &vbo);
@@ -574,7 +574,7 @@ unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec3>& da
 
 unsigned int OpenGLRenderer::enableVertexBuffer(const std::vector<glm::vec4>& data, AttributeType attribute, bool useDynamicDraw)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     unsigned int vbo;
     glGenBuffers(1, &vbo);
@@ -596,7 +596,7 @@ void OpenGLRenderer::bindTexture(
     const std::shared_ptr<Texture>& texture
 )
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     auto it = textures.find(texture);
     if (it == textures.end()) {
@@ -647,7 +647,7 @@ void OpenGLRenderer::releaseExpiredShaders()
 
 void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, int value)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
@@ -657,7 +657,7 @@ void OpenGLRenderer::setUniformInt(GLuint programID, const char* uniformName, in
 
 void OpenGLRenderer::setUniformFloat(GLuint programID, const char* uniformName, float value)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
@@ -667,7 +667,7 @@ void OpenGLRenderer::setUniformFloat(GLuint programID, const char* uniformName, 
 
 void OpenGLRenderer::setUniformVec2(GLuint programID, const char* uniformName, const glm::vec2& value)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
@@ -677,7 +677,7 @@ void OpenGLRenderer::setUniformVec2(GLuint programID, const char* uniformName, c
 
 void OpenGLRenderer::setUniformVec3(GLuint programID, const char* uniformName, const glm::vec3& value)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
@@ -688,7 +688,7 @@ void OpenGLRenderer::setUniformVec3(GLuint programID, const char* uniformName, c
 
 void OpenGLRenderer::setUniformVec4(GLuint programID, const char* uniformName, const glm::vec4& value)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
@@ -698,7 +698,7 @@ void OpenGLRenderer::setUniformVec4(GLuint programID, const char* uniformName, c
 
 void OpenGLRenderer::setUniformMat3(GLuint programID, const char* uniformName, const glm::mat3& value)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
@@ -708,7 +708,7 @@ void OpenGLRenderer::setUniformMat3(GLuint programID, const char* uniformName, c
 
 void OpenGLRenderer::setUniformMat4(GLuint programID, const char* uniformName, const glm::mat4& value)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     const GLint location = glGetUniformLocation(programID, uniformName);
     if (location >= 0) {
@@ -720,7 +720,7 @@ void OpenGLRenderer::setUniformMat4(GLuint programID, const char* uniformName, c
 
 void OpenGLRenderer::releaseMesh(MeshBuffer& mesh)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (mesh.positionVBO != 0) {
         glDeleteBuffers(1, &mesh.positionVBO);
@@ -755,7 +755,7 @@ void OpenGLRenderer::releaseMesh(MeshBuffer& mesh)
 
 void OpenGLRenderer::releaseShader(ShaderBuffer& shader)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     if (shader.id != 0) {
         glDeleteProgram(shader.id);
@@ -765,7 +765,7 @@ void OpenGLRenderer::releaseShader(ShaderBuffer& shader)
 
 void OpenGLRenderer::releaseTexture(TextureBuffer& texture)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
     
     if (texture.id != 0) {
         glDeleteTextures(1, &texture.id);

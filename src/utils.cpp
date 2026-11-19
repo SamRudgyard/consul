@@ -23,7 +23,7 @@ bool doesFileExist(const std::string& filePath)
 
 const std::string readFile(const std::string& filePath)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
     if (!doesFileExist(filePath)) Console::get().error("[readFile] File does not exist: '" + filePath + "'");
 
     // Read the file contents
@@ -95,7 +95,7 @@ bool contains(const std::vector<std::string>& vec, const std::string& value) {
 
 void waitTime(double seconds)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
     if (seconds < 0) return;    // Security check
 
     // System halt functions

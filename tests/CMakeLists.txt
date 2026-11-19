@@ -9,7 +9,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(consul_tests
+add_executable(crema_tests
   test_asset_manager.cpp
   test_constants.cpp
   test_ecs.cpp
@@ -24,18 +24,18 @@ add_executable(consul_tests
   test_unit_conversions.cpp
 )
 
-target_link_libraries(consul_tests
+target_link_libraries(crema_tests
   PRIVATE
-    consul::consul
+    crema::crema
     Catch2::Catch2WithMain
     glm::glm
 )
 
-target_include_directories(consul_tests
+target_include_directories(crema_tests
   PRIVATE
     ${CMAKE_SOURCE_DIR}/src
 )
 
 include(CTest)
 include(Catch)
-catch_discover_tests(consul_tests)
+catch_discover_tests(crema_tests)

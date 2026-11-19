@@ -1,4 +1,4 @@
-#include "consul.hpp"
+#include "crema.hpp"
 
 #include <memory>
 #include <utility>
@@ -12,20 +12,20 @@
 #include "utils.hpp"
 #include "core/profiling/profile_method.hpp"
 
-void Consul::initialiseEngine()
+void Crema::initialiseEngine()
 {
     // Prepare console
     console.clearLog();
-    console.log("---- CONSUL ----");
+    console.log("---- CREMA ----");
 
-    console.log("[Consul] Initialising Consul...");
+    console.log("[Crema] Initialising Crema...");
     initialiseWindow(PlatformType::GLFW);
-    console.log("[Consul] Windowing platform initialised.");
+    console.log("[Crema] Windowing platform initialised.");
 
     GraphicsAPI gfxApi = GraphicsAPI::OpenGL;
     initialiseRenderer(gfxApi);
     platform->initialiseGraphics(*renderer);
-    console.log("[Consul] Graphics renderer initialised.");
+    console.log("[Crema] Graphics renderer initialised.");
 
     // Setup ImGui context
     IMGUI_CHECKVERSION();
@@ -38,47 +38,47 @@ void Consul::initialiseEngine()
     ImGui::StyleColorsDark();
     platform->initialiseImGui(gfxApi);
     renderer->initialiseImGui();
-    console.log("[Consul] ImGui initialised.");
+    console.log("[Crema] ImGui initialised.");
 
     engine.time.previousTime = platform->getTime();
     engine.time.currentTime = engine.time.previousTime;
     engine.time.deltaTime = engine.time.targetFrameTime;
 }
 
-void Consul::initialiseWindow(PlatformType platformType)
+void Crema::initialiseWindow(PlatformType platformType)
 {
     switch (platformType) {
         case PlatformType::GLFW:
             platform = std::make_unique<PlatformGLFW>();
             break;
         default:
-            console.error("[Consul] Unknown windowing platform!");
+            console.error("[Crema] Unknown windowing platform!");
             break;
     }
 
     if (!platform) {
-        console.error("[Consul] Failed to create windowing platform!");
+        console.error("[Crema] Failed to create windowing platform!");
         return;
     }
 
     platform->initialiseWindow();
 }
 
-void Consul::initialiseRenderer(GraphicsAPI gfxApi)
+void Crema::initialiseRenderer(GraphicsAPI gfxApi)
 {
     switch (gfxApi) {
         case GraphicsAPI::OpenGL:
             renderer = std::make_unique<OpenGLRenderer>();
             break;
         default:
-            console.error("[Consul] Unknown graphics API!");
+            console.error("[Crema] Unknown graphics API!");
             break;
     }
 }
 
-Consul::~Consul()
+Crema::~Crema()
 {
-    console.log("[Consul] Shutting down Game Engine...");
+    console.log("[Crema] Shutting down Game Engine...");
 
     SceneManager* sceneManager = engine.getSceneManager();
 
@@ -90,24 +90,24 @@ Consul::~Consul()
     ImGui_ImplGlfw_Shutdown();
     ImPlot::DestroyContext();
     ImGui::DestroyContext();
-    console.log("[Consul] ImGui terminated.");
+    console.log("[Crema] ImGui terminated.");
 
     renderer.reset();
     platform.reset();
 
-    console.log("[Consul] Windowing platform terminated.");
+    console.log("[Crema] Windowing platform terminated.");
 
-    console.log("[Consul] Shutdown complete.");
+    console.log("[Crema] Shutdown complete.");
 }
 
-void Consul::loadScene(std::unique_ptr<Scene> newScene)
+void Crema::loadScene(std::unique_ptr<Scene> newScene)
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     SceneManager* sceneManager = engine.getSceneManager();
 
     if (!sceneManager) {
-        console.error("[Consul::loadScene] Cannot load scene - scene manager is not initialised!");
+        console.error("[Crema::loadScene] Cannot load scene - scene manager is not initialised!");
         return;
     }
 
@@ -118,7 +118,7 @@ void Consul::loadScene(std::unique_ptr<Scene> newScene)
     sceneManager->loadScene(std::move(newScene));
 }
 
-void Consul::run()
+void Crema::run()
 {
     while (!close) {
         beginTick();
@@ -130,11 +130,11 @@ void Consul::run()
     }
 }
 
-void Consul::beginTick()
+void Crema::beginTick()
 {
     Time& time = engine.time;
     engine.profiler.beginFrame((float)(time.deltaTime));
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     time.currentTime = platform->getTime();
     time.renderTime = time.currentTime - time.previousTime;
@@ -147,9 +147,9 @@ void Consul::beginTick()
     platform->pollEvents();
 }
 
-void Consul::endTick()
+void Crema::endTick()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     
 
@@ -200,9 +200,9 @@ void Consul::endTick()
     platform->swapBuffers();
 }
 
-void Consul::syncAssets()
+void Crema::syncAssets()
 {
-    CONSUL_PROFILE_METHOD();
+    CREMA_PROFILE_METHOD();
 
     engine.getMeshAssetManager()->removeExpiredAssets();
     engine.getModelAssetManager()->removeExpiredAssets();

@@ -1,7 +1,7 @@
 #include <memory>
 #include <utility>
 
-#include "core/consul.hpp"
+#include "core/crema.hpp"
 #include "core/ecs/components.hpp"
 #include "core/engine.hpp"
 #include "core/project/scene.hpp"
@@ -103,9 +103,9 @@ int main()
     Window window;
     window.title = "2D Example - Custom Rotating Camera";
 
-    Consul consul(window);
-    consul.setTargetFPS(60);
-    consul.loadScene(std::make_unique<RotateCameraScene>());
-    consul.run();
+    Crema crema(window);
+    crema.setTargetFPS(60);
+    crema.loadScene(std::make_unique<RotateCameraScene>());
+    crema.run();
     return 0;
 }

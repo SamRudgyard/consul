@@ -2,7 +2,7 @@
 #include <memory>
 #include <utility>
 
-#include "core/consul.hpp"
+#include "core/crema.hpp"
 #include "core/ecs/components.hpp"
 #include "core/engine.hpp"
 #include "core/project/scene.hpp"
@@ -101,8 +101,8 @@ int main()
 {
     Window window;
     window.title = "2D Example - Default Camera Movement";
-    Consul consul(window);
-    consul.loadScene(std::make_unique<ExampleScene>());
-    consul.run();
+    Crema crema(window);
+    crema.loadScene(std::make_unique<ExampleScene>());
+    crema.run();
     return 0;
 }
